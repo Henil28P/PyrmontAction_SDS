@@ -1,23 +1,18 @@
-const userController = require('./userController')
 const router = require('express').Router();
-const userAuth = require('./userAuthentication')
+const userController = require('./userController');
+const { verifyAccessToken, requireAdmin, requireMember } = require('../../middlewares/jwtMiddleware');
 
-router.post('/api/submitForm', function(req, res){
-    userController.register(req, res, req.db);
-})
-    
-router.post('/api/login', function(req, res){
-    userController.login(req, res, req.db);
-})
+// All routes require authentication
+router.use(verifyAccessToken);
 
-router.get('/api/admin', userAuth.verifyToken, function(req, res){
-    userController.displayAdminDetails(req, res, req.db);
-})
+// User profile routes (accessible by the user themselves)
+router.get('/profile', userController.getProfile);
+router.put('/profile', userController.updateProfile);
+router.put('/change-password', userController.changePassword);
 
-router.get('/api/members', userAuth.verifyToken, function(req, res){
-    userController.displayMemberDetails(req, res, req.db);
-})
-
-
+// Admin only routes
+router.get('/all', requireAdmin, userController.getAllUsers);
+router.get('/:id', requireAdmin, userController.getUserById);
+router.put('/:id/deactivate', requireAdmin, userController.deactivateUser);
 
 module.exports = router;

@@ -1,38 +1,44 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import loginAuthenticationService from '../services/loginAuthServices'
-    const loginInput = {
-        email: '',
-        password: ''
-    }
-    const router = useRouter();
-    const loginErrors = ref(false);
+import { useAuthStore } from '../../../stores/auth';
 
-    const handleSubmit = async() => {
-        try{
-            const response = await loginAuthenticationService.login(loginInput);
-            loginErrors.value = response.ok ? false : true;
-            // const details = await response.json();
-            localStorage.setItem('accessToken', response.token.accessToken);
-            localStorage.setItem('refreshToken', response.token.refreshToken);
-            localStorage.setItem('loggedIn', true);
-            localStorage.setItem('role', response.user.role);
+const loginInput = ref({
+    email: '',
+    password: ''
+});
 
-            if(response.user.role === 0){
-                await router.push('/admin')
+const router = useRouter();
+const authStore = useAuthStore();
+const loginErrors = ref('');
+const isLoading = ref(false);
+
+const handleSubmit = async() => {
+    try {
+        loginErrors.value = '';
+        isLoading.value = true;
+
+        const result = await authStore.login(loginInput.value);
+        
+        if (result.success) {
+            // Redirect based on user role
+            if (authStore.isAdmin) {
+                await router.push('/admin');
+            } else if (authStore.isMember) {
+                await router.push('/member');
+            } else {
+                await router.push('/');
             }
-            else if(response.user.role === 1){
-                await router.push('/member')
-            }
+        } else {
+            loginErrors.value = result.message || 'Login failed';
         }
-        catch(error){
-            loginErrors.value = true;
-        }
+    } catch (error) {
+        console.error('Login error:', error);
+        loginErrors.value = 'An unexpected error occurred. Please try again.';
+    } finally {
+        isLoading.value = false;
     }
-
-    
-
+}
 </script>
 
 <template>
@@ -60,12 +66,13 @@ import loginAuthenticationService from '../services/loginAuthServices'
                             <input type="password" id="password" v-model="loginInput.password" required />
                         </div>
                         <div class="error-and-forgot-password-section">
-                            
-                            <span v-if="loginErrors" id="error-message">Incorrect Username or Password</span>
+                            <span v-if="loginErrors" id="error-message">{{ loginErrors }}</span>
                             <a href="link" id="forgot-password-link"> Forgot Password </a>
                         </div>
                         
-                        <button id="submitBtn" type="submit">Sign In</button>
+                        <button id="submitBtn" type="submit" :disabled="isLoading">
+                            {{ isLoading ? 'Signing In...' : 'Sign In' }}
+                        </button>
 
                         <div class="signup-container">
                             <span id="signup-text"> Don't have an account &nbsp</span>

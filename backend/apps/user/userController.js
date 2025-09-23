@@ -1,70 +1,226 @@
 
-const user = require('./user');
-const userAuth = require('./userAuthentication')
+const User = require('./userModel');
+const Role = require('./roleModel');
+const bcrypt = require('bcrypt');
 
 module.exports = {
-    async register(req, res, db) {
-        try{
-            const validateUser = await userAuth.inputValidatorJoinUs(req, res, db);
-            const hashedPassword = await user.hashPassword(req.body.password);
-            userDetails = [req.body.email, hashedPassword, req.body.firstName, req.body.lastName, req.body.mobilePhone, req.body.areaOfInterest, req.body.streetName, req.body.city, req.body.state, req.body.postcode, 1]
-            await user.createUser(userDetails, db);
+    // Get current user's profile information
+    async getProfile(req, res) {
+        try {
+            const user = await User.findById(req.user.id).populate('role').select('-password');
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
 
-            // const adminHashed = await user.hashPassword("admin");
-
-            // await user.createUser(['admin@admin.com', adminHashed, 'admin', 'admin', '1234567890', 'fdsfadfsdsafdsa', 'fdsafdsafdsafdsa', 'fdasfsaf', 'NSW', '0000', 0], db)
-            res.status(200).json({ message: 'User Inserted successfully.'});
-        }
-        catch(error){
-            return res.status(400).json({message: 'Error has occurred when registering', errors : error});
-        }
-    },
-
-    async login(req, res, db) {
-        try{
-                // db.exec(
-                // `INSERT INTO roles(role_id, role_type)
-                // VALUES
-                //     (0, 'admin'),
-                //     (1, 'member');
-                //  `)
-            const validateUser = await userAuth.inputValidatorLogin(req, res);
-            const userEmailInput = req.body.email;
-            const userPasswordInput = req.body.password;
-            userInfo = await user.getUser(userEmailInput, db);
-            userChecker = await user.getCheck(userEmailInput, userPasswordInput, userInfo.email, userInfo.password);
-            access_token = await userAuth.generateAccessToken(userInfo.email, userInfo.role_id);
-            refresh_token = await userAuth.generateRefreshToken(userInfo.email, userInfo.role_id);
-            return res.status(200).json({message: 'Successfully logged in', token: {accessToken: access_token, refreshToken: refresh_token}, user: { email: userInfo.email, role: userInfo.role_id}});
-
-        }
-        catch(error){
-            return res.status(403).json({message: 'Error occurred during login'});
-        }
-    },
-    async displayAdminDetails(req, res, db) {
-        try{
-            const userDetails = await user.getAllUserDetails(req.user.email, db);
-            res.status(200).json({ message: 'Admin User Details Found successfully.', adminInfo: userDetails});
-        }
-        catch(error){
-            console.log(error);
-            return res.status(400).json({message: 'Error with displaying admin', errors : error});
+            return res.status(200).json({
+                message: 'Profile retrieved successfully',
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    mobilePhone: user.mobilePhone,
+                    areaOfInterest: user.areaOfInterest,
+                    streetName: user.streetName,
+                    city: user.city,
+                    state: user.state,
+                    postcode: user.postcode,
+                    role: user.role.name,
+                    isActive: user.isActive,
+                    createdAt: user.createdAt
+                }
+            });
+        } catch (error) {
+            console.error("Get profile error:", error);
+            return res.status(500).json({ message: 'Error retrieving profile' });
         }
     },
 
-    async displayMemberDetails(req, res, db) {
-        try{
-            const userDetails = await user.getAllUserDetails(req.user.email, db);
-            res.status(200).json({ message: 'Member User Details Found successfully.', memberInfo: userDetails});
-        }
-        catch(error){
-            console.log(error);
-            return res.status(400).json({message: 'Error with displaying members', errors : error});
+    // Update user profile (excluding email and role)
+    async updateProfile(req, res) {
+        try {
+            const allowedUpdates = [
+                'firstName', 'lastName', 'mobilePhone', 'areaOfInterest', 
+                'streetName', 'city', 'state', 'postcode'
+            ];
+            
+            const updates = {};
+            Object.keys(req.body).forEach(key => {
+                if (allowedUpdates.includes(key) && req.body[key] !== undefined) {
+                    updates[key] = req.body[key];
+                }
+            });
+
+            if (Object.keys(updates).length === 0) {
+                return res.status(400).json({ message: 'No valid fields to update' });
+            }
+
+            const user = await User.findByIdAndUpdate(
+                req.user.id, 
+                updates, 
+                { new: true, runValidators: true }
+            ).populate('role').select('-password');
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            return res.status(200).json({
+                message: 'Profile updated successfully',
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    mobilePhone: user.mobilePhone,
+                    areaOfInterest: user.areaOfInterest,
+                    streetName: user.streetName,
+                    city: user.city,
+                    state: user.state,
+                    postcode: user.postcode,
+                    role: user.role.name,
+                    isActive: user.isActive,
+                    createdAt: user.createdAt
+                }
+            });
+        } catch (error) {
+            console.error("Update profile error:", error);
+            
+            if (error.name === 'ValidationError') {
+                const errors = {};
+                Object.keys(error.errors).forEach(key => {
+                    errors[key] = [error.errors[key].message];
+                });
+                return res.status(400).json({ 
+                    message: 'Validation errors', 
+                    errors 
+                });
+            }
+            
+            return res.status(500).json({ message: 'Error updating profile' });
         }
     },
 
+    // Change password
+    async changePassword(req, res) {
+        try {
+            const { currentPassword, newPassword } = req.body;
 
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ message: 'Current password and new password are required' });
+            }
 
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            // Verify current password
+            const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+            if (!isCurrentPasswordValid) {
+                return res.status(400).json({ message: 'Current password is incorrect' });
+            }
+
+            // Update password
+            user.password = newPassword;
+            await user.hashPassword();
+            await user.save();
+
+            return res.status(200).json({ message: 'Password changed successfully' });
+        } catch (error) {
+            console.error("Change password error:", error);
+            return res.status(500).json({ message: 'Error changing password' });
+        }
+    },
+
+    // Admin only: Get all users
+    async getAllUsers(req, res) {
+        try {
+            const users = await User.find({ isActive: true }).populate('role').select('-password');
+            
+            return res.status(200).json({
+                message: 'Users retrieved successfully',
+                users: users.map(user => ({
+                    id: user._id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: user.role.name,
+                    createdAt: user.createdAt
+                }))
+            });
+        } catch (error) {
+            console.error("Get all users error:", error);
+            return res.status(500).json({ message: 'Error retrieving users' });
+        }
+    },
+
+    // Admin only: Get user by ID
+    async getUserById(req, res) {
+        try {
+            const { id } = req.params;
+            const user = await User.findById(id).populate('role').select('-password');
+            
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            return res.status(200).json({
+                message: 'User retrieved successfully',
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    mobilePhone: user.mobilePhone,
+                    areaOfInterest: user.areaOfInterest,
+                    streetName: user.streetName,
+                    city: user.city,
+                    state: user.state,
+                    postcode: user.postcode,
+                    role: user.role.name,
+                    isActive: user.isActive,
+                    createdAt: user.createdAt
+                }
+            });
+        } catch (error) {
+            console.error("Get user by ID error:", error);
+            return res.status(500).json({ message: 'Error retrieving user' });
+        }
+    },
+
+    // Admin only: Deactivate user (soft delete)
+    async deactivateUser(req, res) {
+        try {
+            const { id } = req.params;
+            
+            // Prevent admin from deactivating themselves
+            if (req.user.id === id) {
+                return res.status(400).json({ message: 'Cannot deactivate your own account' });
+            }
+
+            const user = await User.findByIdAndUpdate(
+                id, 
+                { isActive: false }, 
+                { new: true }
+            ).select('-password');
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            return res.status(200).json({
+                message: 'User deactivated successfully',
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    isActive: user.isActive
+                }
+            });
+        } catch (error) {
+            console.error("Deactivate user error:", error);
+            return res.status(500).json({ message: 'Error deactivating user' });
+        }
+    }
 };
 
