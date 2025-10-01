@@ -1,26 +1,19 @@
-import LoginView from "./views/LoginView.vue"
-export const loginRoutes = [
-    {
-        path: '/login',
-        name: 'Login',
-        component: LoginView,
-        beforeEnter: (to, from, next) => {
-            if(localStorage.getItem('loggedIn')){
-                console.log(localStorage.getItem('role') === 0)
+﻿import LoginPage from "./views/LoginPage.vue";
 
-                if(+localStorage.getItem('role') === 0){
-                    next('/admin');
-                }
-                else if(+localStorage.getItem('role') === 1){
-                    next('/member');
-                }
-            }
-            else{
-                console.log("here2222")
-                next();
-            }
-        
-        
-        }
-    }
-]
+export const loginRoutes = [
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
+    beforeEnter: (to, from, next) => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role"); // "0" admin, "1" member
+
+      if (token) {
+        if (role === "0") return next("/admin/dashboard");
+        if (role === "1") return next("/member/dashboard");
+      }
+      next(); // no token or no role -> stay on login
+    },
+  },
+];

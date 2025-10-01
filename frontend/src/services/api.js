@@ -1,45 +1,37 @@
+﻿import axios from 'axios';
+
 const server = "http://localhost:5000";
 
-
 const api = {
-    async get(endpoint, token){
-        try{
-            const response = await fetch(server + "/" + endpoint, {
-                method: "GET",
+    async get(endpoint, token) {
+        try {
+            const response = await axios.get(`${server}/${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
-                    
                 },
             });
-            return response;
-
-        }
-        catch(error){
-            console.error('Error caused from GET Request: ' + error)
+            return response.data;
+        } catch (error) {
+            console.error('Error caused from GET Request: ' + error);
+            throw error;
         }
     },
 
-    async post(endpoint, data, token){
-        try{
-            const response = await fetch(server + "/" + endpoint, {
-                method: "POST",
+    async post(endpoint, data, token) {
+        try {
+            const response = await axios.post(`${server}/${endpoint}`, data, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'authorization': token,
+                    'Authorization': token,
                 },
-                body: JSON.stringify(data),
-                
-            })
-            return response;
-
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error caused from POST Request: ' + error);
+            throw error;
         }
-        catch(error){
-            console.error('Error caused from POST Request:' + error)
-        }
-    }
-
-    
-}
+    },
+};
 
 export default api;

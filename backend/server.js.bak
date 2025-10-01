@@ -1,0 +1,33 @@
+﻿require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+mongoose.set('strictQuery', true);
+mongoose.connect(process.env.MONGO_URI, { dbName: 'pyrmont' })
+  .then(() => console.log(' MongoDB connected'))
+  .catch(err => console.error('Mongo error:', err));
+
+const app = express();
+app.use(cors({ origin: 'http://localhost:5173' }));
+
+// --- Stripe webhook must use RAW body BEFORE express.json
+const paymentsWebhook = require('./stripe/paymentsWebhook');
+app.post('/api/webhooks/stripe', bodyParser.raw({ type: '*/*' }), paymentsWebhook);
+
+// --- JSON for normal routes
+app.use(express.json());
+
+// --- your existing routes
+app.use('/api/users', require('./apps/user/userRoutes'));
+app.use('/api/projects', require('./apps/projects/projectRoutes'));
+app.use('/api/gallery', require('./apps/gallery/galleryRoutes'));
+app.use('/api/contact', require('./apps/contact-form/contactRoute'));
+
+// --- new routes
+app.use('/api/join', require('./join/joinRoutes'));
+app.use('/api/auth', require('./auth/authRoutes'));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server listening at http://localhost:${PORT}`));

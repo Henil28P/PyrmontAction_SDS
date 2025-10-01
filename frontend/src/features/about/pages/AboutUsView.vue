@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <HeroSection />
   <ObjectivesSection />
   <HistorySection />

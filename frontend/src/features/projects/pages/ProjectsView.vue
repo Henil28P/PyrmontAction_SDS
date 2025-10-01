@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="projects-page">
     <ProjectsShowcase :projectType="route.params.projectType" :count=count />
     <ProjectsCardGrid
@@ -24,10 +24,8 @@
 
     async function fetchData(id){
         try{
-            const openProjects = await projects.viewOpenProjects();
-            const closedProjects = await projects.viewClosedProjects();
-            const openData = await openProjects.json();
-            const closedData = await closedProjects.json();
+            const openData = await projects.viewOpenProjects();
+            const closedData = await projects.viewClosedProjects();
 
             if (id === "open") {
               project.value = openData.projects;

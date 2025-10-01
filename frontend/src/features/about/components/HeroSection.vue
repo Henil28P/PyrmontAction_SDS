@@ -1,4 +1,4 @@
-<!-- Add this inside your main HTML file or a global style file to load fonts -->
+﻿<!-- Add this inside your main HTML file or a global style file to load fonts -->
 <link rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@700&family=Roboto&display=swap" />
 

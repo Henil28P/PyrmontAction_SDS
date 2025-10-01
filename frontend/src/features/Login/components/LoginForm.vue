@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import loginAuthenticationService from '../services/loginAuthServices'
@@ -13,21 +13,18 @@ import loginAuthenticationService from '../services/loginAuthServices'
         try{
             const response = await loginAuthenticationService.login(loginInput);
             loginErrors.value = response.ok ? false : true;
-            const details = await response.json();
-            localStorage.setItem('accessToken', details.token.accessToken);
-            localStorage.setItem('refreshToken', details.token.refreshToken);
+            // const details = await response.json();
+            localStorage.setItem('accessToken', response.token.accessToken);
+            localStorage.setItem('refreshToken', response.token.refreshToken);
             localStorage.setItem('loggedIn', true);
-            localStorage.setItem('role', details.user.role);
-            
-            if(details.user.role === 0){
+            localStorage.setItem('role', response.user.role);
+
+            if(response.user.role === 0){
                 await router.push('/admin')
             }
-            else if(details.user.role === 1){
+            else if(response.user.role === 1){
                 await router.push('/member')
             }
-
-
-
         }
         catch(error){
             loginErrors.value = true;

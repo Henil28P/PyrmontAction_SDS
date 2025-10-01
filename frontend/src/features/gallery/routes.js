@@ -1,4 +1,4 @@
-// src/features/gallery/routes.js
+﻿// src/features/gallery/routes.js
 export const galleryRoutes = [
     {
         path: '/gallery',

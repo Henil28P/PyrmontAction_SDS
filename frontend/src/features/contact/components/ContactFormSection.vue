@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section
       class="ask-us-hero fade-in"
       role="region"
@@ -18,7 +18,7 @@
             role="status"
             aria-live="polite"
         >
-          Thank you for contacting us! We’ll get back to you soon.
+          Thank you for contacting us! Weâ€™ll get back to you soon.
         </div>
 
         <div
@@ -112,36 +112,44 @@ const error = ref(false)
 const submitted = ref(false)
 const submitting = ref(false)
 
+function processErrors(errors) {
+  errorMessageForm.value.messageError = errors.includes("message");
+  errorMessageForm.value.emailError = errors.includes("email");
+  errorMessageForm.value.firstNameError = errors.includes("firstName");
+  errorMessageForm.value.lastNameError = errors.includes("lastName");
+}
+
 async function handleSubmit() {
-  submitted.value = false
+  submitted.value = false;
 
   try {
-    errorMessageForm.value = { firstNameError: false, lastNameError: false, emailError: false, messageError: false }
-    submitting.value = true
-    error.value = false
-    const response =  await contactUsAPIServices.sendInquiry(form.value);
-    const message = await response.json();
-    submitted.value = true
+    errorMessageForm.value = {
+      firstNameError: false,
+      lastNameError: false,
+      emailError: false,
+      messageError: false,
+    };
+    submitting.value = true;
+    error.value = false;
 
-    if(!response.ok){
-      errorMessageForm.value.messageError = message.errors.indexOf("message") !== -1;
-      errorMessageForm.value.emailError = message.errors.indexOf("email") !== -1;
-      errorMessageForm.value.firstNameError = message.errors.indexOf("firstName") !== -1;
-      errorMessageForm.value.lastNameError = message.errors.indexOf("lastName") !== -1;
-      error.value = true
-      console.log(errorMessageForm)
-    }
-    else{
-      form.value = { firstName: '', lastName: '', email: '', message: '' }
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const result = await contactUsAPIServices.sendInquiry(form.value);
+    submitted.value = true;
 
-    
-  } catch (error) {
-    console.error('Submission error:', error)
+    if (!result.ok) {
+      processErrors(result.errors || []);
+      error.value = true;
+    } else {
+      // success
+      form.value = { firstName: "", lastName: "", email: "", message: "" };
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  } catch (err) {
+    // Unexpected runtime error (should be rare since service normalizes axios errors)
+    console.error("Unexpected submission error:", err);
+    error.value = true;
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 

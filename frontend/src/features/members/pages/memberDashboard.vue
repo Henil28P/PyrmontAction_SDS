@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 import { useRouter } from 'vue-router';
 import memberServices  from '../services/memberServices'
 import router from '@/router';
@@ -25,15 +25,15 @@ export default {
     try{
       const accessToken = await localStorage.getItem('accessToken');
       const response = await memberServices.memberDisplay(accessToken);
-      const memberData = await response.json();
-      if(!response.ok || memberData.memberInfo.role_id !== 1){
+      // const memberData = await response.json();
+      if(!response.ok || response.memberInfo.role_id !== 1){
         await router.push("/login")
       }
       else{
-        this.memberFirstName = memberData.memberInfo.firstName;
-        this.memberLastName = memberData.memberInfo.lastName;
-        this.memberPhoneNumber = memberData.memberInfo.mobilePhone;
-        this.memberPostCode = memberData.memberInfo.state;
+        this.memberFirstName = response.memberInfo.firstName;
+        this.memberLastName = response.memberInfo.lastName;
+        this.memberPhoneNumber = response.memberInfo.mobilePhone;
+        this.memberPostCode = response.memberInfo.state;
       }
     }
     catch(error){

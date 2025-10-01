@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="gallery-layout">
     <main class="gallery-main">
       <router-view />

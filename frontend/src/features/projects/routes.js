@@ -1,4 +1,4 @@
-// src/features/projects/routes.js
+﻿// src/features/projects/routes.js
 export const projectsRoutes = [
     
     {
@@ -25,3 +25,4 @@ export const projectsRoutes = [
         ],
     },
 ]
+

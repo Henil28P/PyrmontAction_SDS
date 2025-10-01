@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <input class="textbox" type="text" v-model="input" placeholder="Search projects..." />
   <section class="projects-grid-section">
     <!-- Section Heading -->
@@ -31,9 +31,9 @@
 
           <!-- Learn More Link -->
 
-          <a :href="`/projects/${project.project_type}/${project.project_id}`" class="project-card__link">
+          <a :href="`/projects/${project.project_type}/${project._id}`" class="project-card__link">
             LEARN MORE
-            <span class="arrow">→</span>
+            <span class="arrow">â†’</span>
           </a>
         </div>
       </article>
@@ -132,7 +132,7 @@ function filteredProjects() {
   position: relative;
   height: 200px;
   overflow: hidden;
-  background-color: #f2f2f2; /* fallback if image doesn’t load */
+  background-color: #f2f2f2; /* fallback if image doesnâ€™t load */
   flex-shrink: 0;
 }
 

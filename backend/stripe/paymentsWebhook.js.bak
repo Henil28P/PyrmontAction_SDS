@@ -1,0 +1,59 @@
+﻿const Stripe = require("stripe");
+const User = require("../models/User");
+const RegistrationIntent = require("../models/RegistrationIntent");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
+
+module.exports = async function paymentsWebhook(req, res) {
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      req.headers["stripe-signature"],
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error("Webhook verify failed:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    const s = event.data.object;
+    const email = s.customer_details?.email;
+    const subscriptionId = s.subscription;
+    const customerId = s.customer;
+    const intentId = s.metadata?.intentId;
+
+    if (intentId && email) {
+      const intent = await RegistrationIntent.findById(intentId);
+      if (intent && intent.status === "awaiting_payment") {
+        await User.findOneAndUpdate(
+          { email },
+          {
+            $set: {
+              email,
+              passwordHash: intent.passwordHash,
+              firstName: intent.firstName,
+              lastName: intent.lastName,
+              mobilePhone: intent.mobilePhone,
+              streetName: intent.streetName,
+              city: intent.city,
+              state: intent.state,
+              postcode: intent.postcode,
+              stripeCustomerId: customerId,
+              subscriptionId,
+              membershipStatus: "active",
+              paidAt: new Date(),
+              role_id: 1
+            }
+          },
+          { upsert: true, new: true }
+        );
+        intent.status = "completed";
+        await intent.save();
+        console.log(" Membership activated for", email);
+      }
+    }
+  }
+
+  return res.sendStatus(200);
+};

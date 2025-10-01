@@ -1,139 +1,58 @@
-<!-- src/components/Navigation.vue -->
-<template>
+﻿<template>
   <header class="site-header">
-    <nav>
-      <div class="logo">
-        <RouterLink :to="{ name: 'home' }">
-          <img src="@/assets/logo.png" alt="Pyrmont logo" />
-        </RouterLink>
-      </div>
+    <div class="container nav-wrap">
+      <RouterLink class="brand" to="/">PYRMONTACTION</RouterLink>
 
-      <ul class="navigation">
-        <li class="dropdown">
-          <span class="link">Projects ▾</span>
-          <ul class="dropdown-menu">
-            <li><RouterLink class="link" :to="{ name: 'projects', params: { projectType: 'open' }}">Open Projects</RouterLink></li>
-            <li><RouterLink class="link" :to="{ name: 'projects', params: { projectType: 'closed' }}">Closed Projects</RouterLink></li>
-          </ul>
-        </li>
-        <li><RouterLink class="link" :to="{ name: 'about'    }">About Us</RouterLink></li>
-        <li><RouterLink class="link" :to="{ name: 'gallery'  }">Gallery</RouterLink></li>
-        <li><RouterLink class="link" :to="{ name: 'contact'  }">Contact</RouterLink></li>
-        <li><RouterLink class="link" :to="{ name: 'Join Us'  }">Join Us</RouterLink></li>
-        <li><RouterLink class="login" :to="{ name: 'Login'  }">Login</RouterLink></li>
-      </ul>
-    </nav>
+      <nav class="main-nav">
+        <RouterLink class="nav-link" to="/projects">Projects</RouterLink>
+        <RouterLink class="nav-link" to="/about">About us</RouterLink>
+        <RouterLink class="nav-link" to="/gallery">Gallery</RouterLink>
+        <RouterLink class="nav-link" to="/contact">Contact</RouterLink>
+        <RouterLink class="nav-link" to="/joinus">Join us</RouterLink>
+
+        <!-- Right side: auth -->
+        <RouterLink v-if="!isAuthed" class="btn btn-outline" to="/login">Login</RouterLink>
+        <div v-else class="auth-right">
+          <span class="email">{{ auth.state.email }}</span>
+          <button class="btn btn-dark" @click="logout">Sign out</button>
+        </div>
+      </nav>
+    </div>
   </header>
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
+import { useAuth } from "@/composables/useAuth";
+
+const router = useRouter();
+const auth = useAuth();
+const isAuthed = auth.isAuthed;
+
+function logout() {
+  auth.logout();
+  router.push("/");
+}
 </script>
 
-<style lang="css">
-header {
-  background-color: #fff;
-  height: 85px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 99;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  transition: 0.4s ease all;
+<style scoped>
+:root{
+  --gold:#dda23b;
+  --black:#111;
+  --muted:#6b7280;
 }
-
-nav {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.logo img {
-  height: 48px;
-  width: auto;
-  transition: 0.3s ease all;
-}
-
-.navigation {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-nav li {
-  display: flex;
-  align-items: center;
-}
-
-.link,
-.login {
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: #222;
-  border-bottom: 2px solid transparent;
-  transition: 0.25s ease;
-}
-
-nav .link:hover {
-    color: #EBBD6D;
-    border-color: #EBBD6D;
-}
-
-.login {
-  border: 1px solid #000;
-  border-radius: 6px;
-  padding: 6px 14px;
-  font-weight: 600;
-  transition: 0.25s ease;
-}
-
-nav .login:hover {
-    background-color: #EBBD6D;
-    border-color: #EBBD6D;
-    color: #fff;
-}
-
-nav .logo {
-    display: flex;
-    align-items: center;
-}
-
-nav .logo img {
-    width: 300px;
-    transition: .5s ease all;
-}
-
-nav .navigation {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    justify-content: flex-end;
-}
-
-nav .dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  list-style: none;
-  z-index: 1000;
-}
-
-nav .dropdown:hover .dropdown-menu {
-  display: block;
-}
-
-nav .dropdown-menu li {
-  padding: 8% 8%;
-}
+.site-header{ background:#fff; border-bottom:1px solid #eee; }
+.container{ max-width:1100px; margin:0 auto; padding:12px 16px; }
+.nav-wrap{ display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.brand{ font-weight:800; letter-spacing:.5px; color:var(--black); text-decoration:none; }
+.main-nav{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+.nav-link{ color:#111; text-decoration:none; font-weight:600; opacity:.85 }
+.nav-link:hover{ opacity:1 }
+.auth-right{ display:flex; align-items:center; gap:10px; }
+.email{ font-weight:700; color:#111; }
+.btn{ padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:700; }
+.btn-outline{ border:1px solid var(--black); color:var(--black); background:#fff; }
+.btn-outline:hover{ background:#f5f5f5; }
+.btn-dark{ background:var(--black); color:#fff; border:1px solid var(--black); }
+.btn-dark:hover{ opacity:.9 }
 </style>

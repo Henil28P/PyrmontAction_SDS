@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div class="coreValues">
         <h1 class="coreValues-title">Core Values</h1>
         <div class="coreValue-contents">
@@ -6,7 +6,7 @@
                 <img src="../../../assets/AboutUs/democratic.png" alt="Democratic"/>
                 <h2 class="subheading">Democratic</h2>
                 <p class="coreValue-body">Every voice matters. We encourage participation and ensure decisions represent
-                    the community’s collective interest. </p>
+                    the communityâ€™s collective interest. </p>
             </div>
             <div class="coreValue">
                 <img src="../../../assets/AboutUs/future-thinking.png" alt="Innovative"/>

@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
   import JoinUs from "../components/JoinUsForm.vue"
 </script>
 

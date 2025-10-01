@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <transition name="lightbox">
     <div v-if="image" class="lightbox-overlay" @click.self="close">
       <button

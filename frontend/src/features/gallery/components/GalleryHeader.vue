@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="gallery-banner">
     <div class="banner-text-block">
       <h1 class="banner-title">Gallery</h1>

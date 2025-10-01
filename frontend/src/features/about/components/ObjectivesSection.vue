@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="objectives-section fade-in">
     <!-- Section Header / Text -->
     <div class="objectives-text">
@@ -22,7 +22,7 @@
         <h4>Democratic</h4>
         <p>
           Every voice matters. We encourage participation and ensure decisions
-          represent the community’s collective interest.
+          represent the communityâ€™s collective interest.
         </p>
       </div>
 

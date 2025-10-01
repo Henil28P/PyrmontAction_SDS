@@ -1,4 +1,4 @@
-<!-- src/features/gallery/components/GalleryCollage.vue -->
+﻿<!-- src/features/gallery/components/GalleryCollage.vue -->
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 import placeholder from '@/assets/placeholder.png'   // single fallback
@@ -7,7 +7,7 @@ import placeholder from '@/assets/placeholder.png'   // single fallback
 const props = defineProps({ images: { type: Array, required: true } })
 const emit  = defineEmits(['select-image'])
 
-/* ---------- 1. build‑time image map ---------- */
+/* ---------- 1. buildâ€‘time image map ---------- */
 const modules = import.meta.glob('@/assets/Gallery/*',
     { eager: true, import: 'default' })
 
@@ -32,7 +32,7 @@ function handleImageError(e) {
   <div class="gallery-collage">
     <div
         v-for="(image, index) in images"
-        :key="image.image_id"
+        :key="image._id"
         class="collage-item"
         :style="{ '--animation-order': index }"
         role="button"

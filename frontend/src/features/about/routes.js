@@ -1,4 +1,4 @@
-// src/features/about/routes.js
+﻿// src/features/about/routes.js
 export const aboutRoutes = [
     {
         path: '/about',

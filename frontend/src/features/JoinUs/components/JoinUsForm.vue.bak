@@ -1,0 +1,134 @@
+﻿<template>
+  <div class="joinus">
+    <!-- Success / Cancel interstitials -->
+    <div v-if="paidSuccess" class="card success">
+      <h2> Account signup successful</h2>
+      <p>Your payment finished and your account has been activated.</p>
+      <p class="dim">Youll be redirected to the login page in {{ secondsLeft }}s</p>
+    </div>
+
+    <div v-else-if="paidCancel" class="card warn">
+      <h2> Payment canceled</h2>
+      <p>No worries — you can try again below.</p>
+    </div>
+
+    <!-- Normal form -->
+    <template v-else>
+      <h1>Become a member</h1>
+
+      <form @submit.prevent="onSubmit" class="form">
+        <section>
+          <h3>Login Details</h3>
+          <input v-model="form.email" type="email" placeholder="Email address" required />
+          <input v-model="form.password" type="password" placeholder="Password" required />
+        </section>
+
+        <section>
+          <h3>Personal Details</h3>
+          <div class="grid">
+            <input v-model="form.firstName" placeholder="First Name" />
+            <input v-model="form.lastName" placeholder="Last Name" />
+          </div>
+          <input v-model="form.mobilePhone" placeholder="Mobile Phone" />
+          <input v-model="form.areaOfInterest" placeholder="Area of Interest" />
+        </section>
+
+        <section>
+          <h3>Address Details</h3>
+          <input v-model="form.streetName" placeholder="Street Name" />
+          <div class="grid">
+            <input v-model="form.city" placeholder="City" />
+            <input v-model="form.state" placeholder="State" />
+          </div>
+          <input v-model="form.postcode" placeholder="Postcode" />
+        </section>
+
+        <button :disabled="loading" class="btn">
+          {{ loading ? "Processing" : "Sign Up & Pay" }}
+        </button>
+      </form>
+
+      <p v-if="error" class="error">{{ error }}</p>
+    </template>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const route = useRoute();
+const router = useRouter();
+
+const form = ref({
+  email: "",
+  password: "",
+  firstName: "",
+  lastName: "",
+  mobilePhone: "",
+  areaOfInterest: "",
+  streetName: "",
+  city: "",
+  state: "",
+  postcode: ""
+});
+
+const loading = ref(false);
+const error = ref("");
+
+const paidSuccess = computed(() => route.query?.status === "success");
+const paidCancel  = computed(() => route.query?.status === "cancel");
+
+// auto-redirect after success
+const secondsLeft = ref(4);
+onMounted(() => {
+  if (paidSuccess.value) {
+    const t = setInterval(() => {
+      secondsLeft.value -= 1;
+      if (secondsLeft.value <= 0) {
+        clearInterval(t);
+        router.replace("/login");
+      }
+    }, 1000);
+  }
+});
+
+async function onSubmit() {
+  loading.value = true;
+  error.value = "";
+  try {
+    const res = await fetch(`${API}/api/join/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form.value)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      error.value = data?.message || data?.error || "Failed to start checkout";
+      loading.value = false;
+      return;
+    }
+    if (data?.url) window.location.href = data.url;
+    else {
+      error.value = "No checkout URL returned.";
+      loading.value = false;
+    }
+  } catch (e) {
+    error.value = e.message || String(e);
+    loading.value = false;
+  }
+}
+</script>
+
+<style scoped>
+.joinus { max-width: 900px; margin: 24px auto; background:#fff; padding:20px; }
+.form input { width:100%; padding:10px; margin:8px 0 12px; }
+.grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.btn { background:#dda23b; border:0; padding:10px 16px; font-weight:700; cursor:pointer; }
+.error{ color:#b42318; margin-top:12px; }
+.card { padding:22px; border-radius:10px; margin:22px auto; }
+.card.success{ background:#ecfff4; border:1px solid #9be5bf; }
+.card.warn{ background:#fff7f3; border:1px solid #f2b8a3; }
+.dim{ opacity:.7; margin-top:4px; }
+</style>

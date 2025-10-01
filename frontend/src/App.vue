@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import Navigation from "./components/Navigation.vue"
 import Footer from "./components/Footer.vue"

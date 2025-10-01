@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="history-section">
     <div class="history-overlay">
       <div class="history-content">
@@ -14,7 +14,7 @@
         </p>
         <p class="stagger-fade-paragraph hover-text-fx">
           From hosting cultural events to advocating for sustainable development,
-          we continue to play a pivotal role in shaping Pyrmont’s future. Our
+          we continue to play a pivotal role in shaping Pyrmontâ€™s future. Our
           history is a testament to the power of collective effort and
           community-driven progress.
         </p>

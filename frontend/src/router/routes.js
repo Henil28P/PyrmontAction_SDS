@@ -1,4 +1,4 @@
-import { homeRoutes }     from '~features/home/routes'
+﻿import { homeRoutes }     from '~features/home/routes'
 import { aboutRoutes }    from '~features/about/routes'
 import { contactRoutes }  from '~features/contact/routes'
 import { galleryRoutes }  from '~features/gallery/routes'

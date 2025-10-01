@@ -1,4 +1,4 @@
-<!-- src/views/ContactView.vue -->
+﻿<!-- src/views/ContactView.vue -->
 <template>
   <div class="contact-page">
     <ContactHeroSection />

@@ -1,4 +1,4 @@
-import JoinUsView from "./views/JoinUsView.vue"
+﻿import JoinUsView from "./views/JoinUsView.vue"
 export const joinusRoutes = [
     {
       path: '/joinus',

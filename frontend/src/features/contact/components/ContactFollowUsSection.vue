@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 // No additional script needed unless you want dynamic links, etc.
 </script>
 

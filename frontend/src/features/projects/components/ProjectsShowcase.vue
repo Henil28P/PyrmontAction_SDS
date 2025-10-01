@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="showcase">
     <!-- Decorative Wavy Background -->
     <div class="showcase__bg-wave"></div>

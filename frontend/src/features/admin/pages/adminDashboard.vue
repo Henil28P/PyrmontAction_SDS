@@ -1,4 +1,4 @@
-<script>
+﻿<script>
     import { useRouter } from 'vue-router';
     import adminService from '../services/adminServices'
     import router from '@/router';
@@ -26,15 +26,15 @@ export default {
     try{
       const accessToken = await localStorage.getItem('accessToken');
       const response = await adminService.adminDisplay(accessToken);
-      const adminData = await response.json();
-      if(!response.ok || adminData.adminInfo.role_id !== 0){
+      // const adminData = await response.json();
+      if(!response.ok || response.adminInfo.role_id !== 0){
         await router.push("/login")
       }
       else{
-        this.adminFirstName = adminData.adminInfo.firstName;
-        this.adminLastName = adminData.adminInfo.lastName;
-        this.adminPhoneNumber = adminData.adminInfo.mobilePhone;
-        this.adminPostCode = adminData.adminInfo.state;
+        this.adminFirstName = response.adminInfo.firstName;
+        this.adminLastName = response.adminInfo.lastName;
+        this.adminPhoneNumber = response.adminInfo.mobilePhone;
+        this.adminPostCode = response.adminInfo.state;
       }
     }
     catch(error){

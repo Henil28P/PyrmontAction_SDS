@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div class="project-individual-details">
         <p class="project-individual-description"> {{ individualProject.project_description }}</p>
     </div>

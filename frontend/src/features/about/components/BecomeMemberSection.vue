@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="become-member-section fade-in">
     <div class="member-info">
       <h2 class="member-title">Become a Member</h2>

@@ -1,11 +1,11 @@
-<template>
+﻿<template>
     <div class="project-list">
         <h2 class="project-list-header">More {{projectType}} Projects</h2>
-        <div v-for="projectItem in projects" :key="projectItem.project_id" class="project-list-item">
+        <div v-for="projectItem in projects" :key="projectItem._id" class="project-list-item">
             <router-link class="link-projects" :to="{
                 name: 'Individual Projects', params: {
                     projectType: projectItem.project_type,
-                    projectId: projectItem.project_id
+                    projectId: projectItem._id
                 }
             }">
                 <div class="project-list-image">

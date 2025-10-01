@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="rules-section fade-in">
     <div class="rules-section__swirl-overlay" aria-hidden="true"></div>
     <div class="rules-section__container">
@@ -17,7 +17,7 @@
         <p class="hover-text-fx">
           By adhering to these rules, we foster trust within the community and
           maintain a safe, welcoming space for all. These by-laws guide
-          decision-making, dispute resolution, and uphold the group’s core
+          decision-making, dispute resolution, and uphold the groupâ€™s core
           values and mission.
         </p>
         <p class="hover-text-fx">
@@ -62,7 +62,7 @@
   --heading-font: 'League Spartan', sans-serif;
   --body-font: 'Roboto', sans-serif;
 
-  /* You can keep --primary-color if it’s used elsewhere; it’s unused in this hover style. */
+  /* You can keep --primary-color if itâ€™s used elsewhere; itâ€™s unused in this hover style. */
   --primary-color: #3498db;
 }
 
@@ -162,7 +162,7 @@
 
 /*
    Underline gently widens on hover of the heading.
-   It's subtle—just enough to emphasize the interaction.
+   It's subtleâ€”just enough to emphasize the interaction.
 */
 .rules-section__title:hover + .blue-underline {
   width: 100px;

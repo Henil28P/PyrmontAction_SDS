@@ -1,4 +1,4 @@
-// src/features/home/routes.js
+﻿// src/features/home/routes.js
 export const homeRoutes = [
     {
         path: '/',

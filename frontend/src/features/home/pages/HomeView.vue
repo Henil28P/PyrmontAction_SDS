@@ -1,7 +1,8 @@
-<template>
+﻿<template>
     <div class="home float-in">
-        <Carousel v-if="isLoaded" class="carousel" v-slot="{ currentSlide }">
-            <Slide v-for="(projectItem, index) in project" :key="index">
+        <div v-if="!isLoaded" class="loading">Loading projects...</div>
+        <Carousel v-else-if="project.length > 0" class="carousel" v-slot="{ currentSlide }">
+            <Slide v-for="(projectItem, index) in project" :key="projectItem._id">
                 <div v-show="currentSlide === index + 1" class="slide-info">
                     <img :src="`/src/assets/Projects/${projectItem.project_image}`" alt="image" />
                     <div class="overlay">
@@ -10,7 +11,7 @@
                             <li><router-link class="link" :to="{
                                 name: 'Individual Projects', params: {
                                     projectType: projectItem.project_type,
-                                    projectId: projectItem.project_id
+                                    projectId: projectItem._id
                                 }
                             }">LEARN MORE</router-link></li>
                         </ul>
@@ -37,12 +38,19 @@ const isLoaded = ref(false);
 
 onMounted(async () => {
   try {
+    console.log('Fetching open projects...');
     response = await projects.viewOpenProjects();
-    const projectData = await response.json();
-    project.value = projectData.projects.slice(-4);
-    isLoaded.value = true;
+    console.log('API Response:', response);
+    if (response && response.projects) {
+      project.value = response.projects.slice(-4);
+      console.log('Processed projects:', project.value);
+      isLoaded.value = true;
+    } else {
+      console.error('No projects data in response:', response);
+    }
   } catch (error) {
     console.error("Error loading projects:", error);
+    isLoaded.value = false;
   }
 });
 </script>
@@ -131,5 +139,12 @@ onMounted(async () => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
 }
 </style>
