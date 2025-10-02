@@ -1,10 +1,12 @@
-const galleryController = require('./galleryController') 
 const router = require('express').Router();
+const ctrl = require('./galleryController');
+const { requireAuth, requireRole } = require('../middleware/roles');
 
-router.get('/api/getAllImages', function(req, res){
-    galleryController.getAllGalleryImage(req, res, req.db);
-})
+// Public
+router.get('/gallery', ctrl.getImages);
 
-
+// Admin
+router.post('/admin/gallery', requireAuth, requireRole('Admin'), ctrl.addImage);
+router.delete('/admin/gallery/:id', requireAuth, requireRole('Admin'), ctrl.deleteImage);
 
 module.exports = router;
