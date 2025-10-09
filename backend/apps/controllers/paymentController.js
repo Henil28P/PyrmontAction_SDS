@@ -69,6 +69,7 @@ exports.confirmPayment = async (req, res) => {
     console.error('Error confirming payment:', error);
     res.status(500).json({ error: 'Unable to confirm payment' });
   }
+};
   // ✅ Check payment status and update expiry date
 exports.getPaymentStatus = async (req, res) => {
   try {
