@@ -100,8 +100,25 @@
             console.log("Validation state:", v$.value);
 
             if (result) {
-                await joinUsService.joinus(formData.value); // Create user
-                await router.push('/login'); //redirect to login page
+                await joinUsService.joinus(formData.value); // Create user successfully
+
+                // ✅ After successful signup, call backend to create Stripe Checkout session
+                const paymentResponse = await fetch("http://localhost:5000/api/payments/create-checkout-session", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: formData.value.email }),
+                });
+
+                const paymentSession = await paymentResponse.json();
+
+                // ✅ If Stripe session created successfully → redirect user to Stripe payment page
+                if (paymentSession?.url) {
+                  window.location.href = paymentSession.url;
+                  return; // stop here so router.push doesn’t run
+                } else {
+                  console.error("Stripe session not created:", paymentSession);
+                  await router.push("/login"); // fallback if Stripe fails
+                }
             }
 
         } catch (error) {
