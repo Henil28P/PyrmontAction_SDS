@@ -69,4 +69,39 @@ exports.confirmPayment = async (req, res) => {
     console.error('Error confirming payment:', error);
     res.status(500).json({ error: 'Unable to confirm payment' });
   }
+  // ✅ Check payment status and update expiry date
+exports.getPaymentStatus = async (req, res) => {
+  try {
+    const sessionId = req.query.session_id; // from Stripe redirect URL
+    if (!sessionId) return res.status(400).json({ message: 'Session ID missing' });
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status === 'paid') {
+      const email = session.customer_details.email;
+
+      // Find the user's payment record
+      const payment = await Payment.findOne({ email }).sort({ createdAt: -1 });
+
+      if (payment) {
+        // Set new expiry date — 1 year from today
+        const newExpiry = new Date();
+        newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+        payment.expiryDate = newExpiry;
+        payment.status = 'active';
+        await payment.save();
+      }
+
+      return res.json({
+        success: true,
+        email,
+        expiryDate: payment?.expiryDate || null,
+      });
+    }
+
+    res.json({ success: false, message: 'Payment not completed yet' });
+  } catch (error) {
+    console.error('Error checking payment status:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
 };
