@@ -35,6 +35,16 @@ onMounted(async () => {
     const response = await services.getCurrentUserDetails(userStore.getToken)
     console.log('API Response:', response)
     userData.value = response
+    // ✅ Check if payment just succeeded (Stripe redirect)
+    if (route.query.paid === 'true') {
+      // Set expiry to 1 year from today
+      const newExpiry = new Date();
+      newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+      userData.value.membershipExpiry = newExpiry.toISOString();
+
+      alert('✅ Payment successful! Your membership has been renewed.');
+}
+
   } catch (error) {
     console.error('Failed to load member data:', error)
     logout()
@@ -135,7 +145,10 @@ async function confirmPayment(sessionId) {
           <div class="summary-head">
             <span class="summary-label">Payment Expiry</span>
           </div>
-          <div class="summary-value">DD/MM/YY → Add Later</div>
+          <div class="summary-value">
+            {{ userData?.membershipExpiry ? new Date(userData.membershipExpiry).toLocaleDateString() : 'Not set' }}
+          </div>
+
           <button class="link-btn" @click="startMembershipCheckout">
             Renew membership
           </button>
