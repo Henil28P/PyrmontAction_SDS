@@ -1,3 +1,21 @@
+import { onMounted } from 'vue';
+import axios from 'axios';
+
+onMounted(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  if (sessionId) {
+    try {
+      const res = await axios.get(`/api/payments/status?session_id=${sessionId}`);
+      console.log('Updated payment info:', res.data);
+      window.location.href = '/member-dashboard'; // reload cleanly
+    } catch (err) {
+      console.error('Error verifying payment:', err);
+    }
+  }
+});
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, RouterLink, useRoute } from 'vue-router'
