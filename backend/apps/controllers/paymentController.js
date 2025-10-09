@@ -24,7 +24,7 @@ exports.createCheckoutSession = async (req, res) => {
         },
       ],
       success_url: `${process.env.FRONTEND_BASE_URL}/member-dashboard?paid=true`,
-      cancel_url: `${process.env.FRONTEND_BASE_URL}/member`,
+      cancel_url: `${process.env.FRONTEND_BASE_URL}/member-dashboard`,
     });
 
     // Save payment record
