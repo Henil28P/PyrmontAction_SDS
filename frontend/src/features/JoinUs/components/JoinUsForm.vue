@@ -4,6 +4,8 @@
     import { useRouter } from 'vue-router';
     import useVuelidate from '@vuelidate/core';
     import { required, helpers, email, minLength, maxLength, numeric } from '@vuelidate/validators';
+    import axios from 'axios';
+
 
     const stateChosen = ref('Default');
     const stateOptions = ref([
@@ -91,23 +93,29 @@
 
     const router = useRouter();
 
-    const handleSubmit = async () => {
-        try {
-            formData.value.state = stateChosen.value;
+const handleSubmit = async () => {
+  try {
+    formData.value.state = stateChosen.value;
 
-            const result = await v$.value.$validate();
-            console.log("Validation result:", result);
-            console.log("Validation state:", v$.value);
+    const result = await v$.value.$validate();
+    if (result) {
+      // First create the user
+      await joinUsService.joinus(formData.value);
 
-            if (result) {
-                await joinUsService.joinus(formData.value); // Create user
-                await router.push('/login'); //redirect to login page
-            }
+      // Then call backend to create Stripe checkout session
+      const response = await axios.post('http://localhost:5000/api/payments/create-checkout-session', {
+        email: formData.value.email,
+      });
 
-        } catch (error) {
-            console.error(error);
-        }
-    };
+      if (response.data.url) {
+        window.location.href = response.data.url; // Redirect to Stripe
+      }
+    }
+  } catch (error) {
+    console.error('Error during signup/payment:', error);
+  }
+};
+
 </script>
 
 <template>
