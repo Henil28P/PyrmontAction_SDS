@@ -4,7 +4,10 @@ import { useRouter, RouterLink } from 'vue-router';
 import { useUserStore } from '../../../stores/authStore';
 import services from '../accountServices';
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue';
+import { ref, onMounted } from "vue";
+import axios from "axios";
 
+const member = ref(null);
 const router = useRouter();
 const userStore = useUserStore();
 
@@ -65,7 +68,11 @@ function openRenewForm() {
   alert("Open renew membership form")
 }
 
-
+onMounted(async () => {
+  const email = localStorage.getItem("memberEmail"); // or however you identify logged in user
+  const response = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
+  member.value = response.data;
+});
 
 </script>
 
@@ -78,7 +85,7 @@ function openRenewForm() {
           Welcome back, {{ userData?.firstName }}
           <span class="wave">👋</span>
         </h1>
-        <p class="hero__sub">Here's a quick snapshot of your membership.</p>
+        <p>Membership expires on: {{ new Date(member?.membershipExpiry).toLocaleDateString() }}</p>
       </section>
 
       <!-- Top Summary Cards -->
