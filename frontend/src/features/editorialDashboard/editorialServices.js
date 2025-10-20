@@ -13,6 +13,14 @@ const editorialServices = {
     uploadGalleryImage(token, formData){ return api.postFormData("api/gallery/", formData, token);},
     updateGalleryImage(token, id, formData){ return api.putFormData(`api/gallery/${id}`, formData, token);},
     deleteGalleryImage(token, id){ return api.delete(`api/gallery/${id}`, token);},
+
+    // Blog Management
+    getAllBlogs(token) { return api.get("api/blogs/", token); },
+    createBlog(token, data) { return api.postData("api/blogs/", data, token); },
+    updateBlog(token, id, data) { return api.putData(`api/blogs/${id}`, data, token); },
+    approveBlog(token, id) { return api.putData(`api/blogs/${id}`, { status: "approved" }, token); },
+    deleteBlog(token, id) { return api.delete(`api/blogs/${id}`, token); },
+
 }
 
 export default editorialServices;
