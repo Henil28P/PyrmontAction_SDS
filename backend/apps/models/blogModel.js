@@ -11,8 +11,13 @@ const blogSchema = new mongoose.Schema({
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', 
-    required: true,
+    ref: 'User',
+    required: false, // allows anonymous blog posts
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending', // default status until approved by admin/content creator
   },
   createdAt: {
     type: Date,
