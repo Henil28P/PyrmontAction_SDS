@@ -3,6 +3,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
 const Role = require('./apps/models/roleModel'); 
+const blogRoutes = require('./routes/blogRoutes');
+
 require('dotenv').config();
 
 const app = express();
@@ -32,6 +34,8 @@ app.use('/api/contact', require('./apps/routes/contactRoutes'));
 app.use('/api/auth', require('./apps/routes/authRoutes')); 
 app.use('/api/events', require('./apps/routes/eventRoutes')); 
 app.use('/api/minutes', require('./apps/routes/meetingMinuteRoutes'));
+app.use('/api/blogs', require('./apps/routes/blogRoutes'));
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
