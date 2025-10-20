@@ -45,6 +45,8 @@ import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices'
 import ProjectsAdmin from '../components/ProjectsAdmin.vue'
 import GalleryAdmin from '../components/GalleryAdmin.vue'
+import BlogManagement from "./pages/BlogManagement.vue";
+
 
 const userStore = useUserStore()
 
@@ -52,7 +54,8 @@ const tabs = [
   { name: 'Projects', label: 'Projects', icon: '📁', color: '#fbbf24' },
   // Removed News tab
   { name: 'Events', label: 'Events', icon: '📅', color: '#38bdf8' },
-  { name: 'Gallery', label: 'Gallery', icon: '🖼️', color: '#f472b6' }
+  { name: 'Gallery', label: 'Gallery', icon: '🖼️', color: '#f472b6' },
+  { name: 'Blogs', label: 'Blogs', icon: '📝', color: '#34d399' }
 ]
 const currentTab = ref('Projects')
 
