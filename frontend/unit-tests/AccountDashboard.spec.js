@@ -41,4 +41,18 @@ describe('EditAccountDetailsModal.vue', () => {
         await wrapper.find('form').trigger('submit.prevent');
     });
 
+    // Ensure updateCurrentUser service called on valid form submission
+    it('calls updateCurrentUser service when valid form is submitted', async () => {
+        const wrapper = mount(EditAccountDetailsModal, {
+            props: { userData: mockUser },
+            global: { plugins: [createPinia()] }
+        });
+        await wrapper.find('#email').setValue('Amy.updated@example.com');
+        await wrapper.find('#password').setValue('12345678');
+        await wrapper.find('form').trigger('submit.prevent');
+
+        // use dynamic import assertion to updateCurrentUser
+        const svc = await import('../../frontend/src/features/accountDashboard/dashboardServices');
+        expect(svc.default.updateCurrentUser).toHaveBeenCalled();
+    });
 });
