@@ -35,5 +35,10 @@ describe('EditAccountDetailsModal.vue', () => {
             props: { userData: mockUser },
             global: { plugins: [createPinia()] } // <-- activate Pinia here
         });
+        // set inputs instead of setData
+        await wrapper.find('#email').setValue('Amy.Green@gmail.com');
+        await wrapper.find('#password').setValue('12345678');
+        await wrapper.find('form').trigger('submit.prevent');
     });
+
 });
