@@ -30,6 +30,11 @@
               @galleryUpdated="handleGalleryUpdated" 
             />
           </div>
+          <!-- Blogs Tab -->
+          <div v-if="currentTab === 'Blogs'">
+            <BlogManagement />
+          </div>
+
           <div v-else class="placeholder">
             <p>Edit {{ currentTab }} content here.</p>
           </div>
