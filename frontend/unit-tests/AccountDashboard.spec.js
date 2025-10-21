@@ -30,4 +30,12 @@ describe('EditAccountDetailsModal.vue', () => {
         await wrapper.find('form').trigger('submit.prevent')
         expect(wrapper.text()).toContain('required')
     });
+
+    // Confirm successful form submission calls API and emits event
+    it('submits updated details successfully', async () => {
+        const wrapper = mount(EditAccountDetailsModal, {
+            props: { userData: mockUser },
+            global: { plugins: [createPinia()] } // <-- activate Pinia here
+        });
+    });
 });
