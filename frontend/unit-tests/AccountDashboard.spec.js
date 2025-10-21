@@ -14,4 +14,13 @@ vi.mock("../../frontend/src/features/accountDashboard/dashboardServices", () => 
 
 describe('EditAccountDetailsModal.vue', () => {
     const mockUser = { email: 'Amy.Green@example.com' }
+
+    // Verify initial rendering of email
+    it('renders initial user email', () => {
+        const wrapper = mount(EditAccountDetailsModal, {
+          props: { userData: mockUser },
+          global: { plugins: [createPinia()] } // <-- activate Pinia here
+        });
+        expect(wrapper.find('#email').element.value).toBe('Amy.Green@example.com')
+    });
 })
