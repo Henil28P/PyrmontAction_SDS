@@ -23,4 +23,11 @@ describe('EditAccountDetailsModal.vue', () => {
         });
         expect(wrapper.find('#email').element.value).toBe('Amy.Green@example.com')
     });
-})
+
+    // Check appropriate validation of email and password fields
+    it('validates email and password fields', async () => {
+        const wrapper = mount(EditAccountDetailsModal, { props: { userData: mockUser } })
+        await wrapper.find('form').trigger('submit.prevent')
+        expect(wrapper.text()).toContain('required')
+    });
+});
