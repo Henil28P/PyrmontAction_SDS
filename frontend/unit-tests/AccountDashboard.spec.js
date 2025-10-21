@@ -11,7 +11,7 @@ import EditAccountDetailsModal from "../../frontend/src/features/accountDashboar
 import { createPinia } from 'pinia';
 
 describe('EditAccountDetailsModal.vue', () => {
-    const mockUser = { email: 'Amy.Green@example.com' }
+    const mockUser = { email: 'Amy.Green@gmail.com' }
 
     // Verify initial rendering of email
     it('renders initial user email', () => {
@@ -19,7 +19,7 @@ describe('EditAccountDetailsModal.vue', () => {
           props: { userData: mockUser },
           global: { plugins: [createPinia()] } // <-- activate Pinia here
         });
-        expect(wrapper.find('#email').element.value).toBe('Amy.Green@example.com')
+        expect(wrapper.find('#email').element.value).toBe('Amy.Green@gmail.com')
     });
 
     // Check appropriate validation of email and password fields
