@@ -30,6 +30,9 @@
               @projectsUpdated="handleGalleryUpdated" 
             />
           </div>
+          <div v-if="currentTab === 'Events'">
+            <EventCalendar :events="events" /> <!-- Pass events as a prop -->
+          </div>
           <div v-else class="placeholder">
             <p>Edit {{ currentTab }} content here.</p>
           </div>
@@ -44,12 +47,12 @@ import { ref, onMounted } from 'vue'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices'
 import ProjectsAdmin from '../components/ProjectsAdmin.vue'
+import EventCalendar from '../../EventCalendar/pages/EventCalendar.vue'; // Updated path
 
 const userStore = useUserStore()
 
 const tabs = [
   { name: 'Projects', label: 'Projects', icon: '📁', color: '#fbbf24' },
-  // Removed News tab
   { name: 'Events', label: 'Events', icon: '📅', color: '#38bdf8' },
   { name: 'Gallery', label: 'Gallery', icon: '🖼️', color: '#f472b6' }
 ]
@@ -57,6 +60,8 @@ const currentTab = ref('Projects')
 
 // Dynamic projects data from database
 const projects = ref([])
+const gallery = ref([]) // Keep gallery ref
+const events = ref([]); // Add events ref
 
 // Load projects data
 async function loadProjects() {
@@ -68,13 +73,15 @@ async function loadProjects() {
     console.error('Failed to load projects:', error)
   }
 }
-async function loadGallery() {
+
+// Load events data
+async function loadEvents() {
   try {
-    const response = await services.getGallery(userStore.getToken)
-    gallery.value = response
-    console.log('Loaded gallery:', response)
+    const response = await services.getAllEvents(userStore.getToken); // Adjust this to your actual service
+    events.value = response;
+    console.log('Loaded events:', response);
   } catch (error) {
-    console.error('Failed to load gallery:', error)
+    console.error('Failed to load events:', error);
   }
 }
 
@@ -87,7 +94,7 @@ function handleGalleryUpdated(updatedGallery) {
 
 onMounted(() => {
   loadProjects();
-  loadGallery();
+  loadEvents(); // Load events
 })
 </script>
 
