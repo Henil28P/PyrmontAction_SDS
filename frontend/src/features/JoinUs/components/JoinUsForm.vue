@@ -1,210 +1,368 @@
 <script setup>
-    import joinUsService from '../services/joinUsAuthService';
-    import { computed, ref} from 'vue';
-    import { useRouter } from 'vue-router';
-    import useVuelidate from '@vuelidate/core';
-    import { required, helpers, email, minLength, maxLength, numeric } from '@vuelidate/validators';
-    import axios from 'axios';
+import joinUsService from '../services/joinUsAuthService';
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import useVuelidate from '@vuelidate/core';
+import { required, helpers, email, minLength, maxLength, numeric } from '@vuelidate/validators';
+import axios from 'axios';
 
+// -----------------------------
+// STATE OPTIONS
+// -----------------------------
+const stateChosen = ref('Default');
+const stateOptions = ref([
+  { text: 'State', value: 'Default', placeholder: true },
+  { text: 'NSW', value: 'NSW', placeholder: false },
+  { text: 'SA', value: 'SA', placeholder: false },
+  { text: 'WA', value: 'WA', placeholder: false },
+  { text: 'NT', value: 'NT', placeholder: false },
+  { text: 'QLD', value: 'QLD', placeholder: false },
+  { text: 'VIC', value: 'VIC', placeholder: false },
+  { text: 'TAS', value: 'TAS', placeholder: false },
+]);
 
-    const stateChosen = ref('Default');
-    const stateOptions = ref([
-        {text: 'State', value: "Default", placeholder: true},
-        {text: 'NSW', value: "NSW", placeholder: false},
-        {text: 'SA', value: "SA", placeholder: false},
-        {text: 'WA', value: "WA", placeholder: false},
-        {text: 'NT', value: "NT", placeholder: false},
-        {text: 'QLD', value: "QLD", placeholder: false},
-        {text: 'VIC', value: "VIC", placeholder: false},
-        {text: 'TAS', value: "TAS", placeholder: false}
-    ]);
+// -----------------------------
+// FORM DATA
+// -----------------------------
+const formData = ref({
+  email: '',
+  password: '',
+  firstName: '',
+  lastName: '',
+  mobilePhone: '',
+  areaOfInterest: '',
+  streetName: '',
+  city: '',
+  state: '',
+  postcode: '',
+});
 
-    // Form Data Structure
-    const formData = ref({
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: '',
-        mobilePhone: '',
-        areaOfInterest: '',
-        streetName: '',
-        city: '',
-        state: '',
-        postcode: ''
-    });
+// -----------------------------
+// PASSWORD VALIDATION
+// -----------------------------
+function passwordCheck() {
+  passwordValidator.value.minlength = formData.value.password.length >= 10;
+  passwordValidator.value.uppercase = /[A-Z]/.test(formData.value.password);
+  passwordValidator.value.lowercase = /[a-z]/.test(formData.value.password);
+  passwordValidator.value.number = /[0-9]/.test(formData.value.password);
+  passwordValidator.value.symbols = /[!@#$%^&*()/?]/.test(formData.value.password);
+}
 
-    function passwordCheck(){
-        passwordValidator.value.minlength = formData.value.password.length >= 10;
-        passwordValidator.value.uppercase = /[A-Z]/.test(formData.value.password);
-        passwordValidator.value.lowercase = /[a-z]/.test(formData.value.password);
-        passwordValidator.value.number = /[0-9]/.test(formData.value.password);
-        passwordValidator.value.symbols = /[!@#$%^&*()/?]/.test(formData.value.password);
-    }
+// -----------------------------
+// CUSTOM VALIDATORS
+// -----------------------------
+const validNumber = helpers.withMessage(
+  'Must be exactly 10 digits, start with 04',
+  (value) => /^[0-9]{10}$/.test(value) && value.startsWith('04')
+);
 
-    // Custom validator for vuelidator module
-    const validNumber = helpers.withMessage(
-      'Must be exactly 10 digits, start with 04',
-      (value) => /^[0-9]{10}$/.test(value) && value.startsWith('04')
-    );
-    
-    const stateValidator = helpers.withMessage(
-      'State is required',
-      (value) => value !== 'Default'
-    );
+const stateValidator = helpers.withMessage(
+  'State is required',
+  (value) => value !== 'Default'
+);
 
-    // Update the rules object
-    const rules = computed(() => {
-        return {
-            email: { 
-                required: helpers.withMessage('Email is required', required), 
-                email: helpers.withMessage('Please enter a valid email address', email) 
-            },
-            password: {required: helpers.withMessage('Password is required', required)},
-            firstName: { required: helpers.withMessage('First name is required', required) },
-            lastName: { required: helpers.withMessage('Last name is required', required) },
-            mobilePhone: { 
-              validNumber: validNumber
-            },
-            areaOfInterest: { required: helpers.withMessage('Area of interest is required', required) },
-            streetName: { required: helpers.withMessage('Street name is required', required) },
-            city: { required: helpers.withMessage('City name is required', required) },
-            state: { stateValidator: stateValidator },
-            postcode: { 
-                required: helpers.withMessage('Postcode is required', required),
-                numeric: numeric,
-                minLength: minLength(4),
-                maxLength: maxLength(4)
-             },
-        };
-    });
+// -----------------------------
+// VALIDATION RULES
+// -----------------------------
+const rules = computed(() => {
+  return {
+    email: {
+      required: helpers.withMessage('Email is required', required),
+      email: helpers.withMessage('Please enter a valid email address', email),
+    },
+    password: { required: helpers.withMessage('Password is required', required) },
+    firstName: { required: helpers.withMessage('First name is required', required) },
+    lastName: { required: helpers.withMessage('Last name is required', required) },
+    mobilePhone: { validNumber: validNumber },
+    areaOfInterest: { required: helpers.withMessage('Area of interest is required', required) },
+    streetName: { required: helpers.withMessage('Street name is required', required) },
+    city: { required: helpers.withMessage('City name is required', required) },
+    state: { stateValidator: stateValidator },
+    postcode: {
+      required: helpers.withMessage('Postcode is required', required),
+      numeric: numeric,
+      minLength: minLength(4),
+      maxLength: maxLength(4),
+    },
+  };
+});
 
-    // Vuelidate Variables
-    const v$ = useVuelidate(rules, formData);
+// -----------------------------
+// INIT VALIDATION
+// -----------------------------
+const v$ = useVuelidate(rules, formData);
 
-    const passwordValidator = ref({
-        minlength: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        symbols: false,
-    });
+const passwordValidator = ref({
+  minlength: false,
+  uppercase: false,
+  lowercase: false,
+  number: false,
+  symbols: false,
+});
 
+const router = useRouter();
 
-
-    const router = useRouter();
-
+// -----------------------------
+// FORM SUBMIT HANDLER
+// -----------------------------
 const handleSubmit = async () => {
   try {
+    // Update selected state value
     formData.value.state = stateChosen.value;
 
+    // Validate all form fields
     const result = await v$.value.$validate();
-    if (result) {
-      // First create the user
-      await joinUsService.joinus(formData.value);
+    if (!result) return; // Stop if form is invalid
 
-      // Then call backend to create Stripe checkout session
-      const response = await axios.post('http://localhost:5000/api/payments/create-checkout-session', {
-        email: formData.value.email,
-      });
+    // ✅ 1. Register the user (joins them in database)
+    await joinUsService.joinus(formData.value);
 
-      if (response.data.url) {
-        window.location.href = response.data.url; // Redirect to Stripe
-      }
+    // ✅ 2. Save email locally for dashboard verification later
+    localStorage.setItem('memberEmail', formData.value.email);
+
+    // ✅ 3. Create Stripe checkout session
+    const response = await axios.post(
+      'http://localhost:5000/api/payments/create-checkout-session',
+      { email: formData.value.email }
+    );
+
+    // ✅ 4. Redirect to Stripe Checkout
+    if (response.data.url) {
+      window.location.href = response.data.url;
     }
   } catch (error) {
     console.error('Error during signup/payment:', error);
+    alert('Something went wrong while creating your payment session. Please try again.');
   }
 };
-
 </script>
 
+
 <template>
-    <body>
-        <div class="signup-container">
-            <div class="signup-form-container">
-                <form class="sign-entries" @submit.prevent="handleSubmit">
-                    <h1 id="create-an-account-heading"> Become a member</h1>
+  <div class="signup-container">
+    <div class="signup-form-container">
+      <form class="sign-entries" @submit.prevent="handleSubmit">
+        <h1 id="create-an-account-heading">Become a member</h1>
 
-                    <h2>Login Details</h2>
-                    <div class="login-details-section">
-                        <div class ="field">
-                            <input id="email" placeholder="Email address" v-model="formData.email" :class="{'error-border': v$.email.$errors.length > 0}"/>
-                            <span v-for="error in v$.email.$errors" class="error-message email-border">{{ error.$message }}</span>
-                        </div>
+        <h2>Login Details</h2>
+        <div class="login-details-section">
+          <div class="field">
+            <input
+              id="email"
+              placeholder="Email address"
+              v-model="formData.email"
+              :class="{ 'error-border': v$.email.$errors.length > 0 }"
+            />
+            <span
+              v-for="error in v$.email.$errors"
+              :key="error.$uid"
+              class="error-message email-border"
+            >
+              {{ error.$message }}
+            </span>
+          </div>
 
-                        <div class="field">
-                            <input type="password" id="password" @input="passwordCheck" placeholder="Password" v-model="formData.password" :class="{'error-border': v$.password.$errors.length > 0}" />
-                            <span v-for="error in v$.password.$errors" class="error-message password-border">{{ error.$message }}</span>
-                            <ul class="password-requirement-section">
-                                <li :class="{'password-accept': passwordValidator.minlength}">At least 10 characters</li>
-                                <li :class="{'password-accept': passwordValidator.uppercase}">At least one upper-case letter</li>
-                                <li :class="{'password-accept': passwordValidator.lowercase}">At least one lower-case letter</li>
-                                <li :class="{'password-accept': passwordValidator.number}">At least one digit</li>
-                                <li :class="{'password-accept': passwordValidator.symbols}">At least one symbol</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <h2>Personal Details</h2>
-                    <div class="personal-details-section">
-                        <div class="name-section">
-                            <div class="field">
-                                <input type="text" id="first-name" v-model="formData.firstName" placeholder="First Name" :class="{'error-border': v$.firstName.$errors.length > 0}" />
-                                <span v-for="error in v$.firstName.$errors" class="error-message">{{ error.$message }}</span>
-                            </div>
-
-                            <div class="field">
-                                <input type="text" id="last-name" v-model="formData.lastName" placeholder="Last Name" :class="{'error-border': v$.lastName.$errors.length > 0}" />
-                                <span v-for="error in v$.lastName.$errors" class="error-message">{{ error.$message }}</span>
-                            </div>
-                        </div>
-
-                        <div class="other-personal-info-section">
-                            <div class="field">
-                                <input type="tel" id="mobile-phone" v-model="formData.mobilePhone" placeholder="Mobile Phone" :class="{'error-border': v$.mobilePhone.$errors.length > 0}" />
-                                <span v-for="error in v$.mobilePhone.$errors" class="error-message">{{ error.$message }}</span>
-                            </div>
-                            <div class="field">
-                                <input type="text" v-model="formData.areaOfInterest" :class="{'error-border': v$.areaOfInterest.$errors.length > 0}" id="areaOfInterestTextArea" placeholder="Area of Interest">
-                                <span v-for="error in v$.areaOfInterest.$errors" class="error-message">{{ error.$message }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2>Address Details</h2>
-                    <div class="address-details-section">
-                        <div class="field">
-                            <input type="text" id="street-name" :class="{'error-border': v$.streetName.$errors.length > 0}" v-model="formData.streetName" placeholder="Street Name"/>
-                            <span v-for="error in v$.streetName.$errors" class="error-message">{{ error.$message }}</span>
-                        </div>
-
-                        <div class="state-and-city-row">
-                            <div class="field">
-                                <input type="text" id="city" :class="{'error-border': v$.city.$errors.length > 0}" v-model="formData.city" placeholder="City"/>
-                                <span v-for="error in v$.city.$errors" class="error-message">{{ error.$message }}</span>
-                            </div> 
-
-                            <div class="field">
-                                <select v-model="stateChosen" id="state" :class="v$.state.$errors.length > 0 ? 'error-border' : 'input-valid'" required>
-                                    <option v-for="state in stateOptions" :value="state.value" :disabled="state.placeholder" :hidden="state.placeholder">
-                                        {{ state.text }}
-                                    </option>
-                                </select>
-                                <span v-for="error in v$.state.$errors" class="error-message">{{ error.$message }}</span>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <input type="text" id="postcode" v-model="formData.postcode" placeholder="Postcode" :class="{'error-border': v$.postcode.$errors.length > 0}"/>
-                            <span v-for="error in v$.postcode.$errors" class="error-message">{{ error.$message }}</span>
-                        </div>
-                    </div>
-                    <button id="submitBtn" type="submit">Sign Up</button>
-                </form>
-            </div>
+          <div class="field">
+            <input
+              type="password"
+              id="password"
+              @input="passwordCheck"
+              placeholder="Password"
+              v-model="formData.password"
+              :class="{ 'error-border': v$.password.$errors.length > 0 }"
+            />
+            <span
+              v-for="error in v$.password.$errors"
+              :key="error.$uid"
+              class="error-message password-border"
+            >
+              {{ error.$message }}
+            </span>
+            <ul class="password-requirement-section">
+              <li :class="{ 'password-accept': passwordValidator.minlength }">
+                At least 10 characters
+              </li>
+              <li :class="{ 'password-accept': passwordValidator.uppercase }">
+                At least one upper-case letter
+              </li>
+              <li :class="{ 'password-accept': passwordValidator.lowercase }">
+                At least one lower-case letter
+              </li>
+              <li :class="{ 'password-accept': passwordValidator.number }">
+                At least one digit
+              </li>
+              <li :class="{ 'password-accept': passwordValidator.symbols }">
+                At least one symbol
+              </li>
+            </ul>
+          </div>
         </div>
-    </body>
+
+        <h2>Personal Details</h2>
+        <div class="personal-details-section">
+          <div class="name-section">
+            <div class="field">
+              <input
+                type="text"
+                id="first-name"
+                v-model="formData.firstName"
+                placeholder="First Name"
+                :class="{ 'error-border': v$.firstName.$errors.length > 0 }"
+              />
+              <span
+                v-for="error in v$.firstName.$errors"
+                :key="error.$uid"
+                class="error-message"
+              >
+                {{ error.$message }}
+              </span>
+            </div>
+
+            <div class="field">
+              <input
+                type="text"
+                id="last-name"
+                v-model="formData.lastName"
+                placeholder="Last Name"
+                :class="{ 'error-border': v$.lastName.$errors.length > 0 }"
+              />
+              <span
+                v-for="error in v$.lastName.$errors"
+                :key="error.$uid"
+                class="error-message"
+              >
+                {{ error.$message }}
+              </span>
+            </div>
+          </div>
+
+          <div class="other-personal-info-section">
+            <div class="field">
+              <input
+                type="tel"
+                id="mobile-phone"
+                v-model="formData.mobilePhone"
+                placeholder="Mobile Phone"
+                :class="{ 'error-border': v$.mobilePhone.$errors.length > 0 }"
+              />
+              <span
+                v-for="error in v$.mobilePhone.$errors"
+                :key="error.$uid"
+                class="error-message"
+              >
+                {{ error.$message }}
+              </span>
+            </div>
+
+            <div class="field">
+              <input
+                type="text"
+                v-model="formData.areaOfInterest"
+                id="areaOfInterestTextArea"
+                placeholder="Area of Interest"
+                :class="{ 'error-border': v$.areaOfInterest.$errors.length > 0 }"
+              />
+              <span
+                v-for="error in v$.areaOfInterest.$errors"
+                :key="error.$uid"
+                class="error-message"
+              >
+                {{ error.$message }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <h2>Address Details</h2>
+        <div class="address-details-section">
+          <div class="field">
+            <input
+              type="text"
+              id="street-name"
+              v-model="formData.streetName"
+              placeholder="Street Name"
+              :class="{ 'error-border': v$.streetName.$errors.length > 0 }"
+            />
+            <span
+              v-for="error in v$.streetName.$errors"
+              :key="error.$uid"
+              class="error-message"
+            >
+              {{ error.$message }}
+            </span>
+          </div>
+
+          <div class="state-and-city-row">
+            <div class="field">
+              <input
+                type="text"
+                id="city"
+                v-model="formData.city"
+                placeholder="City"
+                :class="{ 'error-border': v$.city.$errors.length > 0 }"
+              />
+              <span
+                v-for="error in v$.city.$errors"
+                :key="error.$uid"
+                class="error-message"
+              >
+                {{ error.$message }}
+              </span>
+            </div>
+
+            <div class="field">
+              <select
+                v-model="stateChosen"
+                id="state"
+                :class="v$.state.$errors.length > 0 ? 'error-border' : 'input-valid'"
+                required
+              >
+                <option
+                  v-for="state in stateOptions"
+                  :key="state.value"
+                  :value="state.value"
+                  :disabled="state.placeholder"
+                  :hidden="state.placeholder"
+                >
+                  {{ state.text }}
+                </option>
+              </select>
+              <span
+                v-for="error in v$.state.$errors"
+                :key="error.$uid"
+                class="error-message"
+              >
+                {{ error.$message }}
+              </span>
+            </div>
+          </div>
+
+          <div class="field">
+            <input
+              type="text"
+              id="postcode"
+              v-model="formData.postcode"
+              placeholder="Postcode"
+              :class="{ 'error-border': v$.postcode.$errors.length > 0 }"
+            />
+            <span
+              v-for="error in v$.postcode.$errors"
+              :key="error.$uid"
+              class="error-message"
+            >
+              {{ error.$message }}
+            </span>
+          </div>
+        </div>
+
+        <button id="submitBtn" type="submit">
+          Sign Up
+        </button>
+      </form>
+    </div>
+  </div>
 </template>
+
 
 <style scoped>
    
