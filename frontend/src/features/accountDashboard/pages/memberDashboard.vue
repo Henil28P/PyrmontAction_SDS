@@ -17,6 +17,12 @@ const verification = ref(null);
 const loading = ref(false);
 const error = ref(null);
 
+// === Logout Function ===
+const logout = async () => {
+  userStore.logout();
+  await router.push('/login');
+};
+
 // === Load User Data on Mount ===
 onMounted(async () => {
   try {
@@ -33,13 +39,6 @@ onMounted(async () => {
     console.error('Failed to load member data:', err);
     logout();
   }
-
-  const logout = async () => {
-    const router = useRouter();
-    const userStore = useUserStore();
-    userStore.logout();
-    await router.push('/login');
-  };
 });
 
 // === Fetch Member Info from Database ===
@@ -75,10 +74,14 @@ onMounted(async () => {
           ).toLocaleDateString()}`
         );
 
-        // Refresh member info
+        // Refresh member info after successful payment
         const email = localStorage.getItem('memberEmail');
         const refreshed = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
         member.value = refreshed.data;
+
+        // Clean up URL (remove ?session_id=...)
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
       }
     } catch (err) {
       console.error('Payment verification failed:', err);
@@ -93,21 +96,37 @@ onMounted(async () => {
 async function openRenewForm() {
   try {
     const email = member.value?.email || localStorage.getItem('memberEmail');
+
+    if (!email) {
+      alert('No member email found. Please log in again.');
+      return;
+    }
+
     const res = await axios.post('http://localhost:5000/api/payments/create-checkout-session', {
       email,
     });
-    window.location.href = res.data.url;
+
+    if (res.data.url) {
+      // Redirect to Stripe Checkout
+      window.location.href = res.data.url;
+    } else {
+      alert('Failed to start renewal process.');
+    }
   } catch (err) {
-    alert('Failed to start renewal process.');
+    console.error('Renewal process failed:', err);
+    alert('There was a problem starting your renewal. Please try again later.');
   }
 }
 
-// === Other Handlers ===
+// === Dummy Data: Meeting Minutes ===
 const minutes = ref([
   { id: 1, title: 'AGM Minutes – July 2025', date: 'Jul 28, 2025', url: '#' },
   { id: 2, title: 'Committee Meeting – Aug 2025', date: 'Aug 18, 2025', url: '#' },
   { id: 3, title: 'General Meeting – Sept 2025', date: 'Sep 10, 2025', url: '#' },
 ]);
+
+// === Account Update Handlers ===
+const showEditModal = ref(false);
 
 function handleEditPersonalDetails() {
   showEditModal.value = true;
@@ -122,6 +141,7 @@ function handleUserUpdated(updatedUserData) {
   console.log('User updated successfully:', updatedUserData);
 }
 </script>
+
 
 <template>
   <div class="page">
