@@ -4,52 +4,110 @@ import { useRouter, RouterLink } from 'vue-router';
 import { useUserStore } from '../../../stores/authStore';
 import services from '../accountServices';
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue';
-import { ref, onMounted } from "vue";
-import axios from "axios";
+import axios from 'axios';
 
+// === Refs & Stores ===
 const member = ref(null);
 const router = useRouter();
 const userStore = useUserStore();
-
 const userData = ref(null);
 
-// Run on component mount at startup of webpage
+// === New Refs for Stripe Verification ===
+const verification = ref(null);
+const loading = ref(false);
+const error = ref(null);
+
+// === Load User Data on Mount ===
 onMounted(async () => {
   try {
-    // Check authentication and load data
     if (!userStore.isAuthenticated) {
       console.warn('User not authenticated, redirecting to login.');
       logout();
       return;
     }
 
-    // Use token from store for API calls
     const response = await services.getCurrentUserDetails(userStore.getToken);
-    console.log('API Response:', response); // Debug log
-    
+    console.log('API Response:', response);
     userData.value = response;
-    
-  } catch (error) {
-    console.error('Failed to load member data:', error);
+  } catch (err) {
+    console.error('Failed to load member data:', err);
     logout();
   }
 
   const logout = async () => {
     const router = useRouter();
     const userStore = useUserStore();
-
-    // Clear token from store
     userStore.logout();
     await router.push('/login');
   };
 });
 
-// Change this to fetch real data later
+// === Fetch Member Info from Database ===
+onMounted(async () => {
+  const email = localStorage.getItem('memberEmail');
+  if (email) {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
+      member.value = response.data;
+    } catch (err) {
+      console.error('Failed to fetch member info:', err);
+    }
+  }
+});
+
+// === Verify Stripe Payment if Redirected from Checkout ===
+onMounted(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  if (sessionId) {
+    loading.value = true;
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/payments/verify?session_id=${encodeURIComponent(sessionId)}`
+      );
+      verification.value = response.data;
+
+      if (verification.value.status === 'paid') {
+        alert(
+          `🎉 Payment successful! Membership valid until ${new Date(
+            verification.value.expiresAt
+          ).toLocaleDateString()}`
+        );
+
+        // Refresh member info
+        const email = localStorage.getItem('memberEmail');
+        const refreshed = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
+        member.value = refreshed.data;
+      }
+    } catch (err) {
+      console.error('Payment verification failed:', err);
+      error.value = 'Could not verify payment.';
+    } finally {
+      loading.value = false;
+    }
+  }
+});
+
+// === Renew Membership (Start Stripe Checkout) ===
+async function openRenewForm() {
+  try {
+    const email = member.value?.email || localStorage.getItem('memberEmail');
+    const res = await axios.post('http://localhost:5000/api/payments/create-checkout-session', {
+      email,
+    });
+    window.location.href = res.data.url;
+  } catch (err) {
+    alert('Failed to start renewal process.');
+  }
+}
+
+// === Other Handlers ===
 const minutes = ref([
-  { id: 1, title: "AGM Minutes â€“ July 2025", date: "Jul 28, 2025", url: "#" },
-  { id: 2, title: "Committee Meeting â€“ Aug 2025", date: "Aug 18, 2025", url: "#" },
-  { id: 3, title: "General Meeting â€“ Sept 2025", date: "Sep 10, 2025", url: "#" }
-])
+  { id: 1, title: 'AGM Minutes – July 2025', date: 'Jul 28, 2025', url: '#' },
+  { id: 2, title: 'Committee Meeting – Aug 2025', date: 'Aug 18, 2025', url: '#' },
+  { id: 3, title: 'General Meeting – Sept 2025', date: 'Sep 10, 2025', url: '#' },
+]);
 
 function handleEditPersonalDetails() {
   showEditModal.value = true;
@@ -63,17 +121,6 @@ function handleUserUpdated(updatedUserData) {
   userData.value = updatedUserData;
   console.log('User updated successfully:', updatedUserData);
 }
-
-function openRenewForm() {
-  alert("Open renew membership form")
-}
-
-onMounted(async () => {
-  const email = localStorage.getItem("memberEmail"); // or however you identify logged in user
-  const response = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
-  member.value = response.data;
-});
-
 </script>
 
 <template>
@@ -85,14 +132,26 @@ onMounted(async () => {
           Welcome back, {{ userData?.firstName }}
           <span class="wave">👋</span>
         </h1>
-        <p>Membership expires on: {{ new Date(member?.membershipExpiry).toLocaleDateString() }}</p>
+        <p v-if="member">
+          Membership expires on:
+          {{ new Date(member?.membershipExpiry).toLocaleDateString() }}
+        </p>
       </section>
+
+      <!-- Stripe Verification Banner -->
+      <div v-if="loading" class="banner loading">Verifying your payment...</div>
+
+      <div v-if="verification && verification.status === 'paid'" class="banner success">
+        ✅ Payment successful! Membership valid until
+        {{ new Date(verification.expiresAt).toLocaleDateString() }}.
+      </div>
+
+      <div v-if="error" class="banner error">{{ error }}</div>
 
       <!-- Top Summary Cards -->
       <section class="cards-row">
         <article class="summary-card">
           <div class="summary-head">
-            <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Account Type</span>
           </div>
           <div class="summary-value">{{ userStore?.getRole }}</div>
@@ -100,16 +159,18 @@ onMounted(async () => {
 
         <article class="summary-card">
           <div class="summary-head">
-            <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Payment Expiry</span>
           </div>
-          <div class="summary-value">DD/MM/YY => Add Later</div>
+          <div class="summary-value">
+            {{ member?.membershipExpiry
+              ? new Date(member.membershipExpiry).toLocaleDateString()
+              : 'Not set' }}
+          </div>
           <button class="link-btn" @click="openRenewForm">Renew membership</button>
         </article>
 
         <article class="summary-card">
           <div class="summary-head">
-            <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Status</span>
           </div>
           <div
@@ -117,26 +178,25 @@ onMounted(async () => {
             :class="userData?.isActive ? 'pill--green' : 'pill--red'"
           >
             <span class="dot" :class="userData?.isActive ? 'dot--green' : 'dot--red'"></span>
-            {{ userData?.isActive ? "Active" : "Deactivated" }}
+            {{ userData?.isActive ? 'Active' : 'Deactivated' }}
           </div>
         </article>
       </section>
 
-      <!-- Account Details Component -->
-      <AccountDetailsComponent 
+      <!-- Account Details -->
+      <AccountDetailsComponent
         v-if="userData"
         :userData="userData"
         @userUpdated="handleUserUpdated"
       />
-          <!-- Meeting Minutes -->
+
+      <!-- Meeting Minutes -->
       <section class="minutes-card">
         <div class="minutes-head">
           <div class="minutes-title">
             <h2>Meeting Minutes</h2>
             <p class="muted">Latest published minutes</p>
           </div>
-
-          <!-- View all button (right side) -->
           <RouterLink to="/member/minutes" class="btn-all" aria-label="View all minutes">
             View all
           </RouterLink>
@@ -155,7 +215,7 @@ onMounted(async () => {
               <tr v-for="m in minutes" :key="m.id">
                 <td>
                   <div class="title-cell">
-                    <span class="paper-emoji">O</span>
+                    <span class="paper-emoji">📄</span>
                     <span>{{ m.title }}</span>
                   </div>
                 </td>
@@ -172,8 +232,6 @@ onMounted(async () => {
         </div>
       </section>
     </main>
-
-
   </div>
 </template>
 
