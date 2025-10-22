@@ -7,9 +7,7 @@
     <section class="ec-list">
       <div v-if="groupedByDay.length === 0" class="empty-state">
         <div class="muted">No events yet.</div>
-        <div class="empty-actions">
-          <button class="btn" @click="openEditor('create')">+ Add event</button>
-        </div>
+        <!-- toolbar Add button is enough — removed duplicate here -->
       </div>
 
       <div v-for="group in groupedByDay" :key="group.date" class="day-group">
@@ -243,7 +241,7 @@ function deleteFromEditor(){
   saveEvents()
   editor.value.open = false
 }
-</script>
+</script> 
 
 <style scoped>
 .ec-page { padding:20px; max-width:1100px; margin:0 auto; }

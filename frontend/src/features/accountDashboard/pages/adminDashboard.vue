@@ -9,7 +9,6 @@
             <h1 v-if="userStore.getRole === 'editor'" class="hero__title">Content Manager's Dashboard</h1>
             <p v-if="activeTab === 'account'" class="hero__sub">Manage your Account Details here.</p>
             <p v-if="activeTab === 'minutes'" class="hero__sub">Upload and manage meeting of minutes here.</p>
-            <p v-if="activeTab === 'calendar'" class="hero__sub">View and manage your events here.</p>
             <p v-if="activeTab === 'manager'" class="hero__sub">Manage and create Accounts here.</p>
           </div>
           <button class="editorial-btn" @click="$router.push('/editorial-dashboard')">
@@ -41,17 +40,13 @@
           />
         </div>
 
-      <div v-else-if="activeTab === 'minutes'">
-        <MeetingMinutesAdmin 
-            v-if="meetingsData" 
-            :meetingsData="meetingsData"
-            @meetingsUpdated="handleMeetingsUpdated"
-        />
-      </div>
-
-      <div v-else-if="activeTab === 'calendar'">
-        <EventCalendarAdmin />
-      </div>
+        <div v-else-if="activeTab === 'minutes'">
+          <MeetingMinutesAdmin 
+              v-if="meetingsData" 
+              :meetingsData="meetingsData"
+              @meetingsUpdated="handleMeetingsUpdated"
+          />
+        </div>
 
         <div v-else-if="activeTab === 'manager'">
           <p>This is content for Account Manager tab.</p>
@@ -67,7 +62,6 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../dashboardServices'
 import MeetingMinutesAdmin from '../components/admin/MeetingMinutesAdmin.vue'
-import EventCalendarAdmin from '../components/admin/EventCalendarAdmin.vue'
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue'
 
 const router = useRouter()
@@ -113,7 +107,6 @@ function handleMeetingsUpdated(updatedMeetingsData) {
 const allTabs = [
   { key: 'account', label: 'My Account', roles: ['admin', 'editor'] },
   { key: 'minutes', label: 'Meeting Minutes', roles: ['admin'] }, // Only for admin
-  { key: 'calendar', label: 'Event Calendar', roles: ['admin'] }, // Only for admin
   { key: 'manager', label: 'Account Manager', roles: ['admin'] }, // Only for admin
 ];
 
