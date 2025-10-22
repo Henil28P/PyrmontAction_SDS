@@ -25,7 +25,7 @@
             :event="e"
             @select="openViewer(e)"
             @edit="openEditor('edit', $event)"
-            @delete="handleDelete"
+            @delete="promptDelete"
           />
         </div>
       </div>
@@ -84,6 +84,21 @@
               <div v-else class="imgPh">Image preview</div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div v-if="deleteModalOpen" class="modal" @click.self="cancelDelete">
+      <div class="modalCard small">
+        <h3 class="modalTitle">Confirm delete</h3>
+        <p class="muted" style="margin:12px 0;">
+          Are you sure you want to delete <strong>{{ deleteTargetTitle }}</strong>?
+          This action cannot be undone.
+        </p>
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
+          <button class="btn btn--ghost" @click="cancelDelete">Cancel</button>
+          <button class="btn btn--danger" @click="confirmDelete">Delete</button>
         </div>
       </div>
     </div>
@@ -228,18 +243,36 @@ function saveEditor(){
   editor.value.open = false
 }
 
-function handleDelete(id){
-  if (!confirm('Delete this event?')) return
-  events.value = events.value.filter(e => e.id !== id)
-  saveEvents()
+/* --- Delete confirmation UI state --- */
+const deleteModalOpen = ref(false)
+const deleteTargetId = ref(null)
+const deleteTargetTitle = ref('')
+
+function promptDelete(id) {
+  const ev = events.value.find(x => x.id === id)
+  deleteTargetId.value = id
+  deleteTargetTitle.value = ev ? ev.title : 'this event'
+  deleteModalOpen.value = true
 }
 
-function deleteFromEditor(){
-  if (!confirm('Delete this event?')) return
-  const id = editor.value.form.id
+function cancelDelete() {
+  deleteModalOpen.value = false
+  deleteTargetId.value = null
+  deleteTargetTitle.value = ''
+}
+
+function confirmDelete() {
+  const id = deleteTargetId.value
+  if (id == null) { cancelDelete(); return }
   events.value = events.value.filter(e => e.id !== id)
   saveEvents()
-  editor.value.open = false
+  cancelDelete()
+}
+
+/* --- DEPRECATED: old handleDelete (kept for compatibility if used elsewhere) --- */
+function handleDelete(id){
+  // now uses modal UI — forward to promptDelete
+  promptDelete(id)
 }
 </script> 
 
@@ -259,6 +292,7 @@ function deleteFromEditor(){
 
 .modal { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; z-index:60; }
 .modalCard { background:#fff; padding:24px; border-radius:12px; width:800px; max-width:95%; box-shadow:0 8px 24px rgba(0,0,0,.2); }
+.modalCard.small { width:420px; max-width:92%; padding:18px; }
 .modalTitle { text-align:center; font-size:20px; font-weight:700; margin-bottom:16px; color:#1e293b; }
 .modalContent { display:flex; gap:20px; }
 .modalLeft { flex:1; }
