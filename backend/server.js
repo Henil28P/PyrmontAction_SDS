@@ -5,14 +5,19 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const Role = require('./apps/models/roleModel');
+const paymentsController = require('./apps/controllers/paymentsController'); // Added for webhook route
 
 const app = express();
 app.use(cors());
+
+// IMPORTANT: Stripe webhook must receive the raw body — before express.json()
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentsController.webhook);
+
+// Now parse JSON for all other routes
 app.use(express.json());
 
 // === ROUTES ===
 app.use('/api/payments', require('./apps/routes/paymentsRoutes'));
-
 app.use('/api/users', require('./apps/routes/userRoutes'));
 app.use('/api/projects', require('./apps/routes/projectRoutes'));
 app.use('/api/gallery', require('./apps/routes/galleryRoutes'));
@@ -28,18 +33,18 @@ mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(async () => {
-  console.log('Connected to the database');
-  await seedRoles();
-})
-.catch((err) => {
-  console.error('Database connection error:', err);
-});
+  .then(async () => {
+    console.log('✅ Connected to the database');
+    await seedRoles();
+  })
+  .catch((err) => {
+    console.error('❌ Database connection error:', err);
+  });
 
 // === START SERVER ===
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
+  console.log(`🚀 Server listening at http://localhost:${PORT}`);
 });
 
 // === SEED INITIAL ROLES ===
