@@ -5,7 +5,7 @@ import SERVER_URL from '../config'
 const api = {
     async get(endpoint, token) {
         try {
-            const response = await axios.get(`${server}/${endpoint}`, {
+            const response = await axios.get(`${SERVER_URL}/${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ const api = {
 
     async post(endpoint, data, token) {
         try {
-            const response = await axios.post(`${server}/${endpoint}`, data, {
+            const response = await axios.post(`${SERVER_URL}/${endpoint}`, data, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ const api = {
 
     async put(endpoint, data, token) {
         try {
-            const response = await axios.put(`${server}/${endpoint}`, data, {
+            const response = await axios.put(`${SERVER_URL}/${endpoint}`, data, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ const api = {
 
     async patch(endpoint, data, token) {
         try {
-            const response = await axios.patch(`${server}/${endpoint}`, data, {
+            const response = await axios.patch(`${SERVER_URL}/${endpoint}`, data, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const api = {
 
     async delete(endpoint, token) {
         try {
-            const response = await axios.delete(`${server}/${endpoint}`, {
+            const response = await axios.delete(`${SERVER_URL}/${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ const api = {
 
     async postFormData(endpoint, formData, token) {
         try {
-            const response = await axios.post(`${server}/${endpoint}`, formData, {
+            const response = await axios.post(`${SERVER_URL}/${endpoint}`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
@@ -95,7 +95,7 @@ const api = {
 
     async putFormData(endpoint, formData, token) {
         try {
-            const response = await axios.put(`${server}/${endpoint}`, formData, {
+            const response = await axios.put(`${SERVER_URL}/${endpoint}`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
