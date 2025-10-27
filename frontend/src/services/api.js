@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const server = "http://localhost:5000";
+import SERVER_URL from '../config'
 
 const api = {
     async get(endpoint, token) {
