@@ -1,6 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from './routes'          // the array we just built
 import { useUserStore } from '@/stores/authStore';
+import AdminMembersList from '../features/Admin/AdminMembersList.vue';
+import AdminBlogQueue from '../features/Admin/AdminBlogQueue.vue';
+
+const routes = [
+  // existing routes...
+  { path: '/admin/members', component: AdminMembersList },
+  { path: '/admin/blog-queue', component: AdminBlogQueue },
+];
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
