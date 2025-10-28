@@ -42,6 +42,9 @@ app.use('/api/contact', require('./apps/routes/contactRoutes'));
 app.use('/api/auth', require('./apps/routes/authRoutes'));
 app.use('/api/events', require('./apps/routes/eventRoutes'));
 app.use('/api/minutes', require('./apps/routes/meetingMinuteRoutes'));
+app.use('/api/admin', require('./apps/routes/adminRoutes'));
+app.use('/api/blog', require('./apps/routes/blogAdminRoutes'));
+
 
 // === Health Check Route ===
 app.get('/', (req, res) => {
