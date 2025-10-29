@@ -64,7 +64,8 @@ async function loadEvents() {
   try {
     loading.value = true
     const response = await eventsService.getPublishedEvents()
-    events.value = response
+    // Sort events by startDate (earliest first)
+    events.value = response.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
   } catch (error) {
     console.error('Failed to load events:', error)
     events.value = []

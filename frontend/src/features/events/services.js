@@ -1,27 +1,13 @@
-import axios from 'axios';
+import api from '../../services/api';
 
-const API_URL = 'http://localhost:5000/api/events';
-
-export default {
-  // Get all published events (public access)
-  async getPublishedEvents() {
-    try {
-      const response = await axios.get(`${API_URL}/published`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching published events:', error);
-      throw error;
-    }
+const eventServices = {
+  getPublishedEvents() {
+    return api.get('api/events/published', '');
   },
 
-  // Get single event by ID (public access)
-  async getEventById(id) {
-    try {
-      const response = await axios.get(`${API_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching event:', error);
-      throw error;
-    }
+  getEventById(id) {
+    return api.get(`api/events/${id}`, '');
   }
-}
+};
+
+export default eventServices;

@@ -4,16 +4,30 @@
       <button class="close-btn" @click="$emit('close')" aria-label="Close">×</button>
       
       <div class="event-details">
-        <div class="event-header">
-          <h2 class="event-title">{{ event.title }}</h2>
-          <div class="event-datetime">
-            <span class="date">{{ formattedDate }}</span>
-            <span class="time">{{ formattedTime }}</span>
-          </div>
+        <div class="event-image" v-if="event.imageUrl">
+          <img :src="`${SERVER_URL}${event.imageUrl}`" :alt="event.title" />
         </div>
 
         <div class="event-content">
+          <h2 class="event-title">{{ event.title }}</h2>
+          
           <div class="event-info">
+            <div class="info-item">
+              <span class="info-icon">📅</span>
+              <div>
+                <strong>Date</strong>
+                <p>{{ formattedDate }}</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <span class="info-icon">🕒</span>
+              <div>
+                <strong>Time</strong>
+                <p>{{ formattedTime }}</p>
+              </div>
+            </div>
+
             <div v-if="event.location" class="info-item">
               <span class="info-icon">📍</span>
               <div>
@@ -22,17 +36,13 @@
               </div>
             </div>
 
-            <div class="info-item">
+            <div class="info-item description">
               <span class="info-icon">📝</span>
               <div>
                 <strong>Description</strong>
                 <p>{{ event.description }}</p>
               </div>
             </div>
-          </div>
-
-          <div v-if="event.imageName" class="event-image">
-            <img :src="getImagePath(event.imageName)" :alt="event.title" />
           </div>
         </div>
       </div>
@@ -42,6 +52,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatDate, timeRange } from '../../../utils/dateUtils'
+import SERVER_URL from '../../../config.js'
 
 const props = defineProps({
   event: {
@@ -56,28 +68,13 @@ const props = defineProps({
 
 defineEmits(['close'])
 
-function getImagePath(imageName) {
-  return `http://localhost:5000/uploads/events/${imageName}`;
-}
-
 const formattedDate = computed(() => {
-  if (!props.event?.startDate) return ''
-  const d = new Date(props.event.startDate)
-  return d.toLocaleDateString(undefined, { 
-    weekday: 'long',
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  })
+  return formatDate(props.event?.startDate)
 })
 
 const formattedTime = computed(() => {
   if (!props.event?.startDate || !props.event?.endDate) return ''
-  const start = new Date(props.event.startDate)
-  const end = new Date(props.event.endDate)
-  const startTime = start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-  const endTime = end.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-  return `${startTime} - ${endTime}`
+  return timeRange(props.event.startDate, props.event.endDate)
 })
 </script>
 
@@ -99,7 +96,7 @@ const formattedTime = computed(() => {
 .modal-card {
   background: #fff;
   border-radius: 16px;
-  max-width: 900px;
+  max-width: 700px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -109,96 +106,91 @@ const formattedTime = computed(() => {
 
 .close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: #fff;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.9);
   border: none;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.2s;
   color: #64748b;
+  z-index: 10;
 }
 
 .close-btn:hover {
-  background: #f1f5f9;
+  background: #fff;
   color: #1e293b;
   transform: scale(1.1);
 }
 
 .event-details {
-  padding: 40px;
-}
-
-.event-header {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 2px solid #f1f5f9;
-}
-
-.event-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 16px 0;
-  line-height: 1.2;
-}
-
-.event-datetime {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
-.date,
-.time {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: #fef9f0;
-  color: #EBBD6D;
+.event-image {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+}
+
+.event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .event-content {
-  display: grid;
-  gap: 32px;
+  padding: 32px;
+}
+
+.event-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 24px 0;
+  line-height: 1.2;
 }
 
 .event-info {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .info-item {
   display: flex;
   gap: 16px;
+  align-items: flex-start;
+}
+
+.info-item.description {
+  margin-top: 8px;
 }
 
 .info-icon {
-  font-size: 24px;
+  font-size: 22px;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .info-item strong {
   display: block;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .info-item p {
@@ -208,25 +200,17 @@ const formattedTime = computed(() => {
   color: #1e293b;
 }
 
-.event-image {
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.event-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 @media (max-width: 768px) {
-  .event-details {
+  .event-content {
     padding: 24px;
   }
 
   .event-title {
-    font-size: 24px;
+    font-size: 22px;
+  }
+
+  .event-image {
+    height: 200px;
   }
 
   .close-btn {
