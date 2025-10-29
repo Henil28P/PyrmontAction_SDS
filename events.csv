@@ -1,0 +1,7 @@
+title,description,location,startDate,endDate,imageUrl,imageName,status
+"Past Event 1","Description of past event 1","Location A","2025-10-01T10:00:00","2025-10-10T18:00:00","/uploads/events/past1.jpg","past1.jpg","published"
+"Past Event 2","Description of past event 2","Location B","2025-09-15T09:00:00","2025-09-20T17:00:00","/uploads/events/past2.jpg","past2.jpg","published"
+"Upcoming Event 1","Description of upcoming event 1","Location C","2025-10-20T08:00:00","2025-10-25T16:00:00","/uploads/events/upcoming1.jpg","upcoming1.jpg","published"
+"Upcoming Event 2","Description of upcoming event 2","Location D","2025-10-22T11:00:00","2025-10-30T15:00:00","/uploads/events/upcoming2.jpg","upcoming2.jpg","draft"
+"Upcoming Event 3","Description of upcoming event 3","Location E","2025-10-23T14:00:00","2025-10-28T19:00:00","/uploads/events/upcoming3.jpg","upcoming3.jpg","published"
+"Upcoming Event 4","Description of upcoming event 4","Location F","2025-10-24T09:30:00","2025-10-29T18:30:00","/uploads/events/upcoming4.jpg","upcoming4.jpg","draft"
