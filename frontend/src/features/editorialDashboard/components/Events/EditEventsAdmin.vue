@@ -35,15 +35,12 @@
 
             <div class="row">
                 <label class="lbl">Attach Image</label>
-                <div class="fileZone">
-                    <input ref="fileInput" type="file" accept="image/*" @change="chooseFile" />
-                    <div v-if="editForm.newImage" class="fileList">
-                        <span class="chip-name">{{ editForm.newImage }}</span>
-                        <button class="chip-x" title="Remove" @click="closeFile">×</button>
-                    </div>
-                    <div v-else class="hint">Current: {{ editForm.imageName }}</div>
-                </div>
-                <div v-if="fileError" class="error-message">{{ fileError }}</div>
+                <FileUploadEdit
+                    :current-file-name="editForm.imageName"
+                    v-model:file-name="editForm.newImage"
+                    accept="image/*"
+                    ref="fileUploadRef"
+                />
             </div>
 
             <div class="actions">
@@ -59,6 +56,7 @@
     import { today, getLocalDate, getLocalTime, validTimes, dateTimeStr } from '../../../../utils/dateUtils';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
+    import FileUploadEdit from '../FileUploadEdit.vue';
     // Props
     const props = defineProps({
     eventData: {
@@ -68,7 +66,7 @@
     });
 
     const emits = defineEmits(['editEvent', 'close']);
-    const fileInput = ref(null);
+    const fileUploadRef = ref(null);
     const editForm = ref({ 
         ...props.eventData,
         date: getLocalDate(props.eventData.startDate),
@@ -76,28 +74,6 @@
         endTime: getLocalTime(props.eventData.endDate),
         newImage: '',
     });
-    const fileError = ref('');
-
-    function chooseFile() {
-        fileError.value = '';
-        const file = fileInput.value.files[0];
-        if(!file) {
-            editForm.value.newImage = '';
-            return;
-        }
-        if (file.name === props.eventData.imageName) {
-            fileError.value = 'The selected file is the same as the existing uploaded file.';
-            fileInput.value.value = '';
-            return;
-        }
-        editForm.value.newImage = file.name;
-    }
-
-    function closeFile() {
-        console.log('closeFile:', fileInput.value.value);
-        fileInput.value.value = '';
-        editForm.value.newImage = '';
-    }
 
     function getImagePath(imageName) {
         // Adjust this path based on your backend image serving endpoint
@@ -119,8 +95,8 @@
             formData.append('startDate', startDate);
             formData.append('endDate', endDate);
 
-            if (fileInput.value.files[0]) {
-                formData.append('file', fileInput.value.files[0]);
+            if (fileUploadRef.value?.fileInput?.files[0]) {
+                formData.append('file', fileUploadRef.value.fileInput.files[0]);
             }
 
             const response = await services.updateEvent(useUserStore().token, props.eventData._id, formData);
@@ -248,61 +224,5 @@ textarea.input {
   border-color: #059669;
 }
 
-.fileZone {
-  border: 2px dashed #d1d5db;
-  border-radius: 6px;
-  padding: 14px;
-  background: #f9fafb;
-  transition: all 0.2s ease;
-}
 
-.fileZone:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-}
-
-.fileList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.chip-name {
-  display: inline-block;
-  background: #10b981;
-  color: white;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.chip-x {
-  border: none;
-  background: #ef4444;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.chip-x:hover {
-  background: #dc2626;
-}
-
-.hint {
-  color: #9ca3af;
-  font-size: 13px;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 13px;
-  margin-top: 6px;
-  grid-column: 2;
-}
 </style>

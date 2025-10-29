@@ -16,7 +16,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="event in eventList" :key="event._id" class="event-row">
+                    <tr v-for="event in completedEventList" :key="event._id" class="event-row">
                         <td class="date-cell">{{ formatDate(event.startDate) }}</td>
                         <td class="title-cell">{{ event.title }}</td>
                         <td class="location-cell">{{ event.location }}</td>
@@ -26,7 +26,7 @@
                             </button>
                         </td>
                     </tr>
-                    <tr v-if="!eventList.length">
+                    <tr v-if="!completedEventList.length">
                         <td colspan="4" class="empty-row">
                             <div class="empty-state">
                                 <p class="empty-text">No completed events yet</p>
@@ -47,26 +47,28 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import ViewEvents from './ViewEvents.vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../editorialServices';
 import { formatDate } from '../../../../utils/dateUtils';
+import { mount } from '@vue/test-utils';
 
-const props = defineProps({
-  completed: {
-    type: Array,
-    required: true,
-  }
-});
-
-const eventList = ref([]);
+const completedEventList = ref([]);
 const selectedEvent = ref(null);
 
-watch(() => props.completed, (newData) => {
-    eventList.value = newData;
-    console.log('Received completed events data:', eventList.value);
-}, { immediate: true });
+async function loadCompletedEvents() {
+    try {
+        const response = await services.getCompletedEvents(useUserStore().token);
+        completedEventList.value = response;
+    } catch (error) {
+        console.error('Failed to fetch completed events:', error);
+    }
+}
+
+onMounted(async () => {
+    await loadCompletedEvents();
+});
 
 </script>
 

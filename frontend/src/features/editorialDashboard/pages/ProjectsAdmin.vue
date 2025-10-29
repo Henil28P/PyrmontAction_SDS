@@ -101,7 +101,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices';
-import EditProjectsAdmin from './EditProjectsAdmin.vue';
+import EditProjectsAdmin from '../components/EditProjectsAdmin.vue';
 import { formatDate } from '../../../utils/dateUtils';
 
 const userStore = useUserStore();

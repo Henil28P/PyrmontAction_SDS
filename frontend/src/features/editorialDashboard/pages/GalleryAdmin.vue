@@ -41,7 +41,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useUserStore } from '../../../stores/authStore';
 import services from '../editorialServices';
-import EditGalleryItemAdmin from './EditGalleryItemAdmin.vue';
+import EditGalleryItemAdmin from '../components/EditGalleryItemAdmin.vue';
 
 const props = defineProps({
   galleryData: {

@@ -82,29 +82,30 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted, onMounted } from 'vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../editorialServices';
 import { formatDate, timeRange } from '../../../../utils/dateUtils';
 import AddEvents from './AddEventsAdmin.vue';
 import EditEvents from './EditEventsAdmin.vue';
+import { mount } from '@vue/test-utils';
 
-const props = defineProps({
-  upcoming: {
-    type: Array,
-    required: true,
-  }
-});
-
-const emits = defineEmits(['updateList']);
 const upcomingList = ref([]);
 const addEventModal = ref(false);
 const selectedEvent = ref(null);
 
-watch(() => props.upcoming, (newData) => {
-    upcomingList.value = newData;
-    console.log('Received upcoming events data:', upcomingList.value);
-}, { immediate: true });
+async function loadUpcomingEvents() {
+    try {
+        const response = await services.getUpcomingEvents(useUserStore().token);
+        upcomingList.value = response;
+    } catch (error) {
+        console.error('Failed to fetch upcoming events:', error);
+    }
+}
+
+onMounted(() => {
+    loadUpcomingEvents();
+});
 
 async function handlePublish(event) {
     try {
@@ -119,8 +120,6 @@ async function handlePublish(event) {
             upcomingList.value[index].status = 'published';
         }
         
-        emits('updateList', upcomingList.value);
-        
     } catch (error) {
         console.error('Failed to publish event:', error);
     }
@@ -134,7 +133,6 @@ async function handleDelete(event) {
         }
         await services.deleteEvent(useUserStore().token, event._id);
         upcomingList.value = upcomingList.value.filter(m => m._id !== event._id);
-        emits('updateList', upcomingList.value);
     } catch (error) {
         console.error('Failed to delete event:', error);
     }
@@ -143,7 +141,6 @@ async function handleDelete(event) {
 function addEventToList(newEvent) {
     console.log('Updating upcoming events with:', newEvent);
     upcomingList.value.unshift(newEvent);
-    emits('updateList', newEvent);
 }
 
 function updateEventfromList(updatedEvent) {
@@ -152,9 +149,7 @@ function updateEventfromList(updatedEvent) {
     if (index !== -1) {
         upcomingList.value[index] = updatedEvent;
     }
-    emits('updateList', upcomingList.value);
 }
-
 </script>
 
 
