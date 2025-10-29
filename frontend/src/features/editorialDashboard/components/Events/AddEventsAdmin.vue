@@ -2,48 +2,38 @@
     <div class="modal">
         <div class="modal-content">
             <h3>Add New Event</h3>
-
             <div class="row">
                 <label class="lbl">Event Title</label>
                 <input v-model="eventForm.title" class="input" placeholder="Enter event title" />
             </div>
-
             <div class="row">
                 <label class="lbl">Date</label>
                 <input v-model="eventForm.date" type="date" class="input" :min="today()" />
             </div>
-
             <div class="row">
                 <label class="lbl">Start Time</label>
                 <input v-model="eventForm.startTime" type="time" class="input" />
             </div>
-
             <div class="row">
                 <label class="lbl">End Time</label>
                 <input v-model="eventForm.endTime" type="time" class="input" :disabled="!eventForm.startTime" />
             </div>
-
             <div class="row">
                 <label class="lbl">Location</label>
                 <input v-model="eventForm.location" class="input" placeholder="Enter event location" />
             </div>
-
             <div class="row">
                 <label class="lbl">Description</label>
                 <textarea v-model="eventForm.description" class="input" rows="6" placeholder="Enter event description"></textarea>
             </div>
-
             <div class="row">
                 <label class="lbl">Attach Image</label>
-                <div class="fileZone">
-                    <input ref="fileInput" type="file" accept="image/*" @change="chooseFile" />
-                    <div v-if="eventForm.imageName" class="fileList">
-                        <span class="chip-name">{{ eventForm.imageName }}</span>
-                    </div>
-                    <div v-else class="hint">No image chosen</div>
-                </div>
+                <FileUploadNew
+                    v-model:file-name="eventForm.imageName"
+                    accept="image/*"
+                    ref="fileUploadRef"
+                />
             </div>
-
             <div class="actions">
                 <button class="btn" @click="addEvent('draft')">Save as Draft</button>
                 <button class="btn primary" @click="addEvent('publish')">Publish</button>
@@ -54,19 +44,14 @@
 </template>
 
 <script setup>
-    import { ref, computed, watch } from 'vue';
+    import { ref } from 'vue';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
     import { validTimes, dateTimeStr, today } from '../../../../utils/dateUtils';
-
-    function chooseFile() {
-    const file = fileInput.value.files[0];
-    eventForm.value.imageName = file.name;
-    console.log('File selected:', file);
-    }
+    import FileUploadNew from '../FileUploadNew.vue';
 
     const emits = defineEmits(['addEvent', 'close']);
-    const fileInput = ref(null);
+    const fileUploadRef = ref(null);
     const eventForm = ref({
         _id: null,
         title: '',
@@ -94,8 +79,8 @@
             formData.append('endDate', endDate);
             formData.append('status', status);
 
-            if (fileInput.value.files[0]) {
-                formData.append('file', fileInput.value.files[0]);
+            if (fileUploadRef.value?.fileInput?.files[0]) {
+                formData.append('file', fileUploadRef.value.fileInput.files[0]);
             } else {
                 alert('Please select an image file.');
                 return;
@@ -228,37 +213,5 @@ textarea.input {
   border-color: #059669;
 }
 
-.fileZone {
-  border: 2px dashed #d1d5db;
-  border-radius: 6px;
-  padding: 14px;
-  background: #f9fafb;
-  transition: all 0.2s ease;
-}
 
-.fileZone:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-}
-
-.fileList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip-name {
-  display: inline-block;
-  background: #10b981;
-  color: white;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.hint {
-  color: #9ca3af;
-  font-size: 13px;
-}
 </style>
