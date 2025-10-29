@@ -1,5 +1,6 @@
 // backend/apps/controllers/blogAdminController.js
-const Post = require('../models/postModel');
+const Post = require('../../models/postModel');
+
 
 exports.getPendingPosts = async (req, res) => {
   try {
