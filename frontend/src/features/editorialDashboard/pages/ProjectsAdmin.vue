@@ -55,7 +55,6 @@
             <th style="width:120px;">Date</th>
             <th>Project Name</th>
             <th style="width:120px;">Type</th>
-            <th style="width:140px;">Description</th>
             <th style="width:160px;">Image</th>
             <th style="width:160px;">Actions</th>
           </tr>
@@ -69,7 +68,6 @@
                 {{ project.project_type === 'open' ? 'Open' : 'Closed' }}
               </span>
             </td>
-            <td>{{ project.project_description }}</td>
             <td>
               <template v-if="project.project_image">
                 <span class="fileBadge">{{shortName(project.project_image)}}</span>
