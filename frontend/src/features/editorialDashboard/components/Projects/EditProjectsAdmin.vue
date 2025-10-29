@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showEditModal" class="modal">
+  <div class="modal">
     <div class="modal-content">
       <h3>Edit Project</h3>
 
@@ -23,34 +23,33 @@
 
       <div class="row">
         <label class="lbl">Project Date</label>
-        <input v-model="editForm.project_date" type="date" class="input" />
+        <input v-model="editForm.project_date" type="date" class="input" required />
       </div>
 
       <div class="row">
         <label class="lbl">Attach Image</label>
-        <div class="fileZone">
-          <input ref="fileInput" type="file" accept="image/*" @change="chooseFile" />
-          <div v-if="editForm.project_image" class="fileList">
-            <span class="chip-name">🖼️ {{ editForm.project_image }}</span>
-            <button class="chip-x" title="Remove" @click="removeFile">×</button>
-          </div>
-          <div v-else class="hint">No image chosen</div>
-        </div>
-        <div v-if="fileError" class="error-message">{{ fileError }}</div>
+        <FileUploadEdit
+          :current-file-name="project?.project_image"
+          v-model:file-name="editForm.new_project_image"
+          accept="image/*"
+          ref="fileUploadRef"
+        />
       </div>
 
       <div class="actions">
         <button class="btn primary" @click="saveEdit">Save</button>
-        <button class="btn" @click="closeEditModal">Cancel</button>
+        <button class="btn" @click="$emit('close')">Cancel</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref } from 'vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../editorialServices';
+import FileUploadEdit from '../../../../components/FileUploadEdit.vue';
+import { getLocalDate } from '../../../../utils/dateUtils';
 
 const props = defineProps({
   project: {
@@ -59,56 +58,15 @@ const props = defineProps({
   }
 });
 
-const userStore = useUserStore();
-const fileError = ref('');
-const fileInput = ref(null);
+const fileUploadRef = ref(null);
 
 const editForm = ref({
-  _id: null, project_name: '', project_description: '',
-  project_type: 'open', project_image: '', project_date: ''
+  ...props.project,
+  new_project_image: '',
+  project_date: getLocalDate(props.project.project_date)
 });
 
-const emits = defineEmits(['projectUpdated', 'closeModal']);
-
-const showEditModal = computed(() => !!props.project);
-
-// Watch for project prop changes
-watch(() => props.project, (newProject) => {
-  if (newProject) {
-    editForm.value._id = newProject._id;
-    editForm.value.project_name = newProject.project_name;
-    editForm.value.project_description = newProject.project_description;
-    editForm.value.project_type = newProject.project_type;
-    editForm.value.project_image = newProject.project_image;
-    editForm.value.project_date = new Date(newProject.project_date).toISOString().split('T')[0];
-  }
-}, { immediate: true });
-
-function closeEditModal() {
-  editForm.value = { 
-    _id: null, project_name: '', project_description: '', 
-    project_type: 'open', project_image: '', project_date: '' };
-  fileInput.value.value = '';
-  fileError.value = '';
-  emits('closeModal');
-}
-
-function chooseFile() {
-  fileError.value = '';
-  const file = fileInput.value.files[0];
-  if (file.name === props.project.project_image) {
-    fileError.value = 'The selected file is the same as the existing uploaded file.';
-    fileInput.value.value = '';
-    return; // No change in file
-  }
-  editForm.value.project_image = file.name
-  console.log('File selected:', file);
-}
-
-function removeFile() {
-  fileInput.value.value = '';
-  editForm.value.project_image = '';
-}
+const emits = defineEmits(['updateProject', 'close']);
 
 async function saveEdit() {
   try {
@@ -118,13 +76,13 @@ async function saveEdit() {
     formData.append('project_type', editForm.value.project_type);
     formData.append('project_date', editForm.value.project_date);
     
-    if (editForm.value.project_image != props.project.project_image && fileInput.value.files[0]) {
-      formData.append('file', fileInput.value.files[0]);
+    if (fileUploadRef.value?.fileInput?.files[0]) {
+        formData.append('file', fileUploadRef.value.fileInput.files[0]);
     }
 
-    const response = await services.updateProjectWithFile(userStore.getToken, editForm.value._id, formData);
-    emits('projectUpdated', { ...response });
-    closeEditModal();
+    const response = await services.updateProjectWithFile(useUserStore().getToken, editForm.value._id, formData);
+    emits('updateProject', response);
+    emits('close');
   } catch (error) {
     console.error('Failed to save edit:', error);
   }

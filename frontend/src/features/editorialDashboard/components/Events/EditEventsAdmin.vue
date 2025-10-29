@@ -56,7 +56,7 @@
     import { today, getLocalDate, getLocalTime, validTimes, dateTimeStr } from '../../../../utils/dateUtils';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
-    import FileUploadEdit from '../FileUploadEdit.vue';
+    import FileUploadEdit from '../../../../components/FileUploadEdit.vue';
     // Props
     const props = defineProps({
     eventData: {

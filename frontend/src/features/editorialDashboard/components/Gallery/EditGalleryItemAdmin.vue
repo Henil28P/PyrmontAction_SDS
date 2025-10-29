@@ -36,7 +36,7 @@
     import { ref } from 'vue';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
-    import FileUploadEdit from '../FileUploadEdit.vue';
+    import FileUploadEdit from '../../../../components/FileUploadEdit.vue';
     const props = defineProps({
         item: {
             type: Object,

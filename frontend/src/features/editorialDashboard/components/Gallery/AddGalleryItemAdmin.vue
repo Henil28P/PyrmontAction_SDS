@@ -21,7 +21,7 @@
     import { ref } from 'vue';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
-    import FileUploadNew from '../FileUploadNew.vue';
+    import FileUploadNew from '../../../../components/FileUploadNew.vue';
 
     const emits = defineEmits(['addItem', 'close']);
     const fileUploadRef = ref(null);

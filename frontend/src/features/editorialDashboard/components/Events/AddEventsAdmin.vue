@@ -48,7 +48,7 @@
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
     import { validTimes, dateTimeStr, today } from '../../../../utils/dateUtils';
-    import FileUploadNew from '../FileUploadNew.vue';
+    import FileUploadNew from '../../../../components/FileUploadNew.vue';
 
     const emits = defineEmits(['addEvent', 'close']);
     const fileUploadRef = ref(null);

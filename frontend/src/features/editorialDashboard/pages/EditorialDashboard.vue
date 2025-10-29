@@ -17,12 +17,8 @@
       <main class="main-content">
         <h2 class="page-title">Edit {{ currentTab }}</h2>
         <div class="card">
-          <!-- Projects Tab -->
           <div v-if="currentTab === 'Projects'">
-            <ProjectsAdmin 
-              :projectsData="projects" 
-              @projectsUpdated="handleProjectsUpdated" 
-            />
+            <ProjectsAdmin/>
           </div>
           <div v-else-if="currentTab === 'Events'">
             <EventsAdmin/>
@@ -40,44 +36,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useUserStore } from '../../../stores/authStore'
-import services from '../editorialServices'
+import { ref } from 'vue'
 import ProjectsAdmin from './ProjectsAdmin.vue'
 import GalleryAdmin from './GalleryAdmin.vue'
 import EventsAdmin from './EventsAdmin.vue'
 
-const userStore = useUserStore()
 
 const tabs = [
   { name: 'Projects', label: 'Projects', icon: '📁', color: '#fbbf24' },
-  // Removed News tab
   { name: 'Events', label: 'Events', icon: '📅', color: '#38bdf8' },
   { name: 'Gallery', label: 'Gallery', icon: '🖼️', color: '#f472b6' }
 ]
 const currentTab = ref('Projects')
 
-// Dynamic projects data from database
-const projects = ref([])
-
-// Load projects data
-async function loadProjects() {
-  try {
-    const response = await services.getAllProjects(userStore.getToken)
-    projects.value = response
-  } catch (error) {
-    console.error('Failed to load projects:', error)
-  }
-}
-
-function handleProjectsUpdated(updatedProjects) {
-  projects.value = updatedProjects
-}
-
-
-onMounted(() => {
-  loadProjects();
-})
 </script>
 
 <style scoped>
