@@ -129,7 +129,8 @@ import { ref, computed } from 'vue'
 /* ====== ASSETS: map files that exist in frontend/src/assets/Events ====== */
 const assetMap = import.meta.glob('../assets/Events/*.{png,jpg,jpeg,webp}', {
   eager: true,
-  as: 'url'
+  query: '?url',
+  import: 'default'
 })
 const assetOptions = Object.keys(assetMap).map(p => ({ name: p.split('/').pop(), url: assetMap[p] }))
 

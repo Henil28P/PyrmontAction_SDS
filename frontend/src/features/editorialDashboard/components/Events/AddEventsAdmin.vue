@@ -1,32 +1,53 @@
 <template>
     <div class="modal">
         <div class="modal-content">
-            <h2>Add New Event</h2>
-            <label>Event Title:
-                <input v-model="eventForm.title" type="text" :placeholder="'Enter event title'" required/>
-            </label>
-            <label>Date:
-                <input v-model="eventForm.date" type="date" :min="today()" required/>
-            </label>
-            <label>Start Time:
-                <input v-model="eventForm.startTime" type="time" />
-            </label>
-            <label>End Time:
-                <input v-model="eventForm.endTime" type="time" :disabled="!eventForm.startTime" required/>
-            </label>
-            <label>Location:
-                <input v-model="eventForm.location" type="text" placeholder="Enter event location" required/>
-            </label>
-            <label>Description:
-                <textarea v-model="eventForm.description" placeholder="Enter event description" required></textarea>
-            </label>
-            <label>Attach Image:
-                <input type="file" accept="image/*" @change="chooseFile" ref="fileInput" required />
-            </label>
-            <div>
-                <button @click="addEvent('draft')">Draft</button>
-                <button @click="addEvent('publish')">Publish</button>
-                <button @click="$emit('close')">Cancel</button>
+            <h3>Add New Event</h3>
+
+            <div class="row">
+                <label class="lbl">Event Title</label>
+                <input v-model="eventForm.title" class="input" placeholder="Enter event title" />
+            </div>
+
+            <div class="row">
+                <label class="lbl">Date</label>
+                <input v-model="eventForm.date" type="date" class="input" :min="today()" />
+            </div>
+
+            <div class="row">
+                <label class="lbl">Start Time</label>
+                <input v-model="eventForm.startTime" type="time" class="input" />
+            </div>
+
+            <div class="row">
+                <label class="lbl">End Time</label>
+                <input v-model="eventForm.endTime" type="time" class="input" :disabled="!eventForm.startTime" />
+            </div>
+
+            <div class="row">
+                <label class="lbl">Location</label>
+                <input v-model="eventForm.location" class="input" placeholder="Enter event location" />
+            </div>
+
+            <div class="row">
+                <label class="lbl">Description</label>
+                <textarea v-model="eventForm.description" class="input" rows="6" placeholder="Enter event description"></textarea>
+            </div>
+
+            <div class="row">
+                <label class="lbl">Attach Image</label>
+                <div class="fileZone">
+                    <input ref="fileInput" type="file" accept="image/*" @change="chooseFile" />
+                    <div v-if="eventForm.imageName" class="fileList">
+                        <span class="chip-name">{{ eventForm.imageName }}</span>
+                    </div>
+                    <div v-else class="hint">No image chosen</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn" @click="addEvent('draft')">Save as Draft</button>
+                <button class="btn primary" @click="addEvent('publish')">Publish</button>
+                <button class="btn" @click="$emit('close')">Cancel</button>
             </div>
         </div>
     </div>
@@ -93,23 +114,151 @@
 
 <style scoped>
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    min-width: 300px;
+  background: white;
+  padding: 28px;
+  border-radius: 8px;
+  width: 560px;
+  max-width: 92vw;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h3 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 14px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.lbl {
+  font-size: 14px;
+  color: #374151;
+  padding-top: 10px;
+  font-weight: 600;
+}
+
+.input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 14px;
+  width: 100%;
+  background: white;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn {
+  border: 1px solid #d1d5db;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #f9fafb;
+}
+
+.btn.primary {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.btn.primary:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+.fileZone {
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+  padding: 14px;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.fileZone:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.fileList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-name {
+  display: inline-block;
+  background: #10b981;
+  color: white;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hint {
+  color: #9ca3af;
+  font-size: 13px;
 }
 </style>

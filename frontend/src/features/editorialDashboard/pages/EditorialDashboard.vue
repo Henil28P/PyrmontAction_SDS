@@ -80,6 +80,8 @@ async function loadProjects() {
     console.error('Failed to load projects:', error)
   }
 }
+
+// Load events data
 async function loadGallery() {
   try {
     const response = await services.getGalleryItems(userStore.getToken)
@@ -121,76 +123,85 @@ onMounted(() => {
 
 <style scoped>
 .editorial-dashboard-bg {
-  background: #f7f8fa;
-  min-height: calc(100vh - 70px); /* adjust if your header is taller */
-  padding-top: 32px;
+  background: white;
+  min-height: calc(100vh - 70px);
+  padding: 0;
+  margin: 0;
 }
 .editorial-dashboard {
   display: flex;
   align-items: flex-start;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   min-height: 700px;
 }
 .sidebar {
-  width: 180px;
-  background: transparent;
-  padding-top: 16px;
+  width: 200px;
+  background: #fafafa;
+  padding: 20px 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
+  border-right: 1px solid #e5e7eb;
 }
 .sidebar nav {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
+  padding: 0 12px;
 }
 .sidebar button {
-  width: 90%;
+  width: 100%;
   background: none;
   border: none;
   text-align: left;
-  padding: 12px 18px;
-  font-size: 1rem;
-  color: #888;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #6b7280;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: background 0.2s, color 0.2s;
+  transition: all 0.2s;
 }
 .sidebar button.active {
-  background: #fff;
-  color: #222;
+  background: white;
+  color: #111827;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(60,60,90,0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 .icon {
-  font-size: 1.3em;
+  font-size: 1.2em;
 }
 .main-content {
   flex: 1;
-  padding: 0 0 0 32px;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 100%;
 }
 .page-title {
-  font-size: 1.2rem;
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 32px;
-  margin-top: 0;
+  margin: 0;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
+  width: 100%;
+  background: white;
 }
 .card {
-  /* Remove max-width and width! */
   background: none;
   border-radius: 0;
   box-shadow: none;
   padding: 0;
+  margin: 0;
   max-width: none;
-  width: auto;
+  width: 100%;
 }
 .editor-projects-editor {
   width: 100%;
