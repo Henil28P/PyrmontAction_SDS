@@ -17,7 +17,7 @@
             <div>
                 <label>Change Image:</label>
                 <FileUploadEdit
-                    :current-file-name="editForm.image_file_name"
+                    :current-file-name="item?.image_file_name"
                     v-model:file-name="editForm.newImage"
                     accept="image/*"
                     ref="fileUploadRef"
@@ -26,7 +26,7 @@
             <div v-if="fileError" class="error-message">{{ fileError }}</div>
             <div>
                 <button class="btn primary" @click="handleSave">Save</button>
-                <button class="btn" @click="emits('close')">Cancel</button>
+                <button class="btn" @click="$emit('close')">Cancel</button>
             </div>
         </div>
     </div>

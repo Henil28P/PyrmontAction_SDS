@@ -1,12 +1,7 @@
 <template>
     <div>
         <h1>Gallery Admin</h1>
-        <div style="display: flex; flex-direction: column;">
-            <input type="file" ref="fileInput" accept="image/*" @change="chooseFile" required/>
-            <input v-model="newItem.caption" type="text" placeholder="Caption" required/>
-            <input v-model="newItem.alt" type="text" placeholder="Alt. Text" required/>
-            <button @click="addNewItem">Add New Image</button>
-        </div>
+        <button @click="addItemModal = true">Add New Image</button>
         <table>
             <thead>
                 <tr>
@@ -29,6 +24,12 @@
             </tbody>
         </table>
 
+        <AddGalleryItemAdmin
+            v-if="addItemModal"
+            @addItem="addNewItem"
+            @close="addItemModal = false"
+        />
+
         <EditGalleryItemAdmin
             v-if="selectedItem"
             :item="selectedItem"
@@ -39,89 +40,57 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useUserStore } from '../../../stores/authStore';
-import services from '../editorialServices';
-import EditGalleryItemAdmin from '../components/Gallery/EditGalleryItemAdmin.vue';
+    import { ref, onMounted } from 'vue';
+    import { useUserStore } from '../../../stores/authStore';
+    import services from '../editorialServices';
+    import EditGalleryItemAdmin from '../components/Gallery/EditGalleryItemAdmin.vue';
+    import AddGalleryItemAdmin from '../components/Gallery/AddGalleryItemAdmin.vue';
 
-const imageList = ref([]);
-const selectedItem = ref(null);
-const fileInput = ref(null);
-const newItem = ref({ caption: '', alt: '', image_file_name: '' });
+    const imageList = ref([]);
+    const selectedItem = ref(null);
+    const addItemModal = ref(false);
 
-async function loadGallery() {
-    try {
-        const response = await services.getGalleryItems(useUserStore().token);
-        imageList.value = response;
-    } catch (error) {
-        console.error('Failed to load gallery:', error);
-    }
-}
 
-onMounted(() => {
-    loadGallery();
-});
-
-// MOVE ===============================
-async function addNewItem() {
-    try {
-        const formData = new FormData();
-        formData.append('caption', newItem.value.caption);
-        formData.append('alt', newItem.value.alt);
-        
-        if (fileInput.value.files[0]) {
-            formData.append('file', fileInput.value.files[0]);
-        } else {
-            alert('Please select an image file.');
-            return;
+    async function loadGallery() {
+        try {
+            const response = await services.getGalleryItems(useUserStore().token);
+            imageList.value = response;
+        } catch (error) {
+            console.error('Failed to load gallery:', error);
         }
-
-        const response = await services.uploadGalleryImage(useUserStore().token, formData);
-        imageList.value.unshift(response);
-        clearItem();
-    } catch (error) {
-        console.error('Failed to add new gallery item:', error);
     }
-        
-}
-// MOVE ===============================
-async function deleteItem(id) {
-    try {
-        if (!confirm('Are you sure you want to delete this image?')) {
-            return;
+
+    onMounted(() => {
+        loadGallery();
+    });
+
+    async function deleteItem(id) {
+        try {
+            if (!confirm('Are you sure you want to delete this image?')) {
+                return;
+            }
+            await services.deleteGalleryImage(useUserStore().token, id);
+            imageList.value = imageList.value.filter(item => item._id !== id);
+        } catch (error) {
+            console.error('Failed to delete gallery item:', error);
         }
-        await services.deleteGalleryImage(useUserStore().token, id);
-        imageList.value = imageList.value.filter(item => item._id !== id);
-    } catch (error) {
-        console.error('Failed to delete gallery item:', error);
     }
-}
 
-function clearItem() {
-    newItem.value = { caption: '', alt: '', image_file_name: '' };
-    if (fileInput.value) {
-        fileInput.value.value = '';
+    function addNewItem(item) {
+        console.log('Adding new gallery item:', item);
+        imageList.value.unshift(item);
     }
-}
 
-function chooseFile() {
-    const file = fileInput.value?.files[0];
-    if (file) {
-        newItem.value.image_file_name = file.name;
+    // Used by the emit in the editing component to update the item in the list
+    function updateGalleryItem(updatedItem) {
+        const index = imageList.value.findIndex(i => i._id === updatedItem._id);
+        if (index !== -1) {
+            imageList.value[index] = { ...imageList.value[index], ...updatedItem };
+        }
     }
-}
-
-
-// Used by the emit in the editing component to update the item in the list
-function updateGalleryItem(updatedItem) {
-    const index = imageList.value.findIndex(i => i._id === updatedItem._id);
-    if (index !== -1) {
-        imageList.value[index] = { ...imageList.value[index], ...updatedItem };
-    }
-}
 </script>
 
 
 <style scoped>
-/* Add your styles here */
+
 </style>

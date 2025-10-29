@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../editorialServices';
 import { formatDate, timeRange } from '../../../../utils/dateUtils';
