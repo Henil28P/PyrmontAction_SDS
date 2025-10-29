@@ -28,7 +28,7 @@
             <div class="column">
                 <h1>Gallery</h1>
                 <div class="gallery">
-                    <img  v-for="image in images" :key="image.image_id" :src="`/src/assets/Gallery/${image.image_file_name}`" :alt="image.caption">
+                    <img  v-for="image in images" :key="image.image_id" :src="`${SERVER_URL}${image.imageUrl}`" :alt="image.caption">
                 </div>
             </div>
             <div class="column">
@@ -52,7 +52,7 @@
 <script setup>
 import { ref } from 'vue'
 import galleryService from '../features/gallery/services/galleryServices'
-
+import SERVER_URL from '@/config';
 const images = ref([])
 
 try{

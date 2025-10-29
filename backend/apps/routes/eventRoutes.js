@@ -1,27 +1,52 @@
 const router = require('express').Router();
-const ctrl = require('../controllers/eventController');
+const controller = require('../controllers/eventController');
 const jwtAuth = require('../middlewares/jwtMiddleware');
 const { upload } = require('../middlewares/fileUpload');
 
-// Public
-router.get('/', ctrl.getPublishedEvents);
-
-// Protected - Create event (with optional file upload)
 router.post('/', 
     jwtAuth.verifyToken, 
-    jwtAuth.verifyRole(['admin']), 
-    upload.eventImage,
-    ctrl.createEvent
+    jwtAuth.verifyRole(['admin', 'editor']), 
+    upload.eventImage, 
+    controller.createEvent
 );
 
-// Upload file to existing event
-router.post('/:id/upload', 
-    jwtAuth.verifyToken, 
-    jwtAuth.verifyRole(['admin']), 
-    upload.eventImage,
-    ctrl.uploadEventFile
+router.get('/upcoming', 
+    jwtAuth.verifyToken,
+    jwtAuth.verifyRole(['admin', 'editor']),
+    controller.getUpcomingEvents
 );
-router.put('/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), ctrl.updateEvent);
-router.delete('/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), ctrl.deleteEvent);
+
+router.get('/published',
+    controller.getPublishedEvents
+);
+
+router.get('/completed',
+    jwtAuth.verifyToken,
+    jwtAuth.verifyRole(['admin', 'editor']),
+    controller.getCompletedEvents
+);
+
+router.get('/:id',
+    controller.getEvent
+);
+
+router.put('/:id',
+    jwtAuth.verifyToken,
+    jwtAuth.verifyRole(['admin', 'editor']),
+    upload.eventImage,
+    controller.updateEvent
+);
+
+router.put('/:id/publish',
+    jwtAuth.verifyToken,
+    jwtAuth.verifyRole(['admin', 'editor']),
+    controller.publishEvent
+);
+
+router.delete('/:id',
+    jwtAuth.verifyToken,
+    jwtAuth.verifyRole(['admin', 'editor']),
+    controller.deleteEvent
+);
 
 module.exports = router;

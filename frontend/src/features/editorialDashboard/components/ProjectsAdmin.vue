@@ -102,6 +102,7 @@ import { ref, computed, watch, onUnmounted } from 'vue'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices';
 import EditProjectsAdmin from './EditProjectsAdmin.vue';
+import { formatDate } from '../../../utils/dateUtils';
 
 const userStore = useUserStore();
 
@@ -229,15 +230,6 @@ async function deleteItem(id) {
 
 function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' : name }
 
-function formatDate(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-AU', { 
-    day: '2-digit', 
-    month: 'short', 
-    year: 'numeric' 
-  });
-}
 </script>
 
 <style scoped>

@@ -1,26 +1,13 @@
-<!-- src/features/gallery/components/GalleryCollage.vue -->
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 import placeholder from '@/assets/placeholder.png'   // single fallback
+import SERVER_URL from '@/config.js'
 
-/* ---------- props / emit ---------- */
 const props = defineProps({ images: { type: Array, required: true } })
 const emit  = defineEmits(['select-image'])
 
-/* ---------- 1. build‑time image map ---------- */
-const modules = import.meta.glob('@/assets/Gallery/*',
-    { eager: true, import: 'default' })
-
-const urls = Object.fromEntries(
-    Object.entries(modules).map(([path, url]) => [
-      (path.match(/[^/\\]+$/)[0]), 
-      url
-    ])
-)
-
-/* ---------- 2. events ---------- */
 function handleImageClick(img) {
-  emit('select-image', { ...img, src: urls[img.image_file_name] ?? placeholder })
+  emit('select-image', { ...img, src: `${SERVER_URL}${img.imageUrl}` ?? placeholder })
 }
 
 function handleImageError(e) {
@@ -43,7 +30,7 @@ function handleImageError(e) {
         :aria-label="image.alt"
     >
       <img
-          :src="urls[image.image_file_name] ?? placeholder"
+          :src="`${SERVER_URL}${image.imageUrl}` ?? placeholder"
           :alt="image.alt"
           class="collage-image"
           loading="lazy"

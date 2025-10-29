@@ -11,21 +11,14 @@ router.post('/',
     controller.uploadGalleryImage
 );
 
-// Upload multiple gallery images
-// router.post('/',
-//     jwtAuth.verifyToken,
-//     jwtAuth.verifyRole(['admin', 'editor']),
-//     upload.galleryImages,
-//     controller.uploadGalleryImages
-// );
-
 // Read
-router.get('/', controller.getAllGalleryImage);
+router.get('/', controller.getGalleryImages);
 
 // Update
 router.put('/:id',
     jwtAuth.verifyToken,
     jwtAuth.verifyRole(['admin', 'editor']),
+    upload.galleryImage,
     controller.updateGalleryImage
 );
 

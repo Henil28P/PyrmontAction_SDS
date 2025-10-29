@@ -5,55 +5,52 @@ module.exports = {
     async uploadGalleryImage(req, res) {
         try {
             const { caption, alt } = req.body;
-            
-            if (!req.file) {
-                return res.status(400).json({ error: 'No image uploaded' });
+            const imageData = { caption, alt };
+        
+            if (req.file) {
+                // Add file info to gallery image
+                imageData.imageUrl = `/uploads/gallery/${req.file.filename}`;
+                imageData.image_file_name = req.file.originalname;
             }
 
-            // Create gallery image record
-            const galleryImage = new Gallery({
-                image_file_name: req.file.filename,
-                image_type: 'uploaded',
-                caption: caption || '',
-                alt: alt || req.file.originalname
-            });
+            const newGalleryImage = new Gallery(imageData);
+            await newGalleryImage.save();
 
-            await galleryImage.save();
-
-            res.status(201).json({
-                message: 'Image uploaded successfully',
-                image: galleryImage
-            });
-        } catch (error) {
-            console.error('Error uploading gallery image:', error);
-            return res.status(400).json({ error: 'Error uploading image' });
+            res.status(201).json(newGalleryImage);
+        } catch (err) {
+        res.status(500).json({ message: err.message });
         }
     },
 
     // Read
-
-    async getAllGalleryImage(req, res){
+    async getGalleryImages(req, res){
         try{
             const images = await Gallery.find().sort({createdAt: -1});
+            console.log("Fetched gallery images:", images);
             res.status(200).json(images);
         }
         catch(error){
             return res.status(400).json({error: 'Error with the Image page'});
         }
 
-    },     
-
-    // Update    
-    async updateGalleryImage(req, res){
+    },
+    
+    async updateGalleryImage(req, res) {
         try {
-            const updatedImage = await Gallery.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!updatedImage) return res.status(404).json({ error: 'Image not found' });
+            const { caption, alt } = req.body;
+            const imageData = { caption, alt };
+            if (req.file) {
+                // Update file info if new file uploaded
+                imageData.imageUrl = `/uploads/gallery/${req.file.filename}`;
+                imageData.image_file_name = req.file.originalname;
+            }
+
+            const updatedImage = await Gallery.findByIdAndUpdate(req.params.id, imageData, { new: true });
             res.status(200).json(updatedImage);
         } catch (error) {
-            return res.status(400).json({ error: 'Error updating image' });
+            return res.status(500).json({ error: 'Error updating image' });
         }
     },
-
 
     // Delete
     async deleteGalleryImage(req, res){

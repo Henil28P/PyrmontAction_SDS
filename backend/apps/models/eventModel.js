@@ -9,10 +9,12 @@ const eventSchema = new mongoose.Schema(
     endDate: Date,
     imageUrl: String, // URL or filename for the event image/file
     imageName: String, // Store original filename for display
-    status: { type: String, enum: ['draft', 'upcoming', 'cancelled', 'completed'], default: 'draft' },
+    status: { type: String, enum: ['draft', 'published'], default: 'draft' },
   },
   { timestamps: true }
 );
+
+eventSchema.index({ endDate: 1, status: 1 }); // Added index for endDate and status
 
 eventSchema.pre('save', function (next) {
   if (this.endDate && this.startDate > this.endDate) {
@@ -20,6 +22,7 @@ eventSchema.pre('save', function (next) {
   }
   next();
 });
+
 
 const Event = mongoose.model('Event', eventSchema);
 module.exports = Event;

@@ -24,18 +24,16 @@ router.beforeEach((to, from, next) => {
   
   // Routes that require admin role
   const adminRoutes = [
-    'adminDashboard',
-    'editorialDashboard', // <-- add here
     // Add other admin route names here
   ];
 
   const editorRoutes = [
-    'editorDashboard',
     // Add other editor route names here
   ];
 
   const managerRoutes = [
-    'editorialDashboard',
+    'adminDashboard',
+    'editorDashboard',
     // Add other manager route names here
   ];
 

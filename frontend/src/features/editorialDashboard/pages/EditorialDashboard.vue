@@ -24,10 +24,16 @@
               @projectsUpdated="handleProjectsUpdated" 
             />
           </div>
+          <div v-if="currentTab === 'Events'">
+            <EventsAdmin 
+              :eventsData="events" 
+              @eventsUpdated="handleEventsUpdated" 
+            />
+          </div>
           <div v-if="currentTab === 'Gallery'">
-            <ProjectsAdmin 
-              :projectsData="gallery" 
-              @projectsUpdated="handleGalleryUpdated" 
+            <GalleryAdmin 
+              :galleryData="galleryItems" 
+              @galleryUpdated="handleGalleryUpdated" 
             />
           </div>
           <div v-else class="placeholder">
@@ -44,6 +50,8 @@ import { ref, onMounted } from 'vue'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices'
 import ProjectsAdmin from '../components/ProjectsAdmin.vue'
+import GalleryAdmin from '../components/GalleryAdmin.vue'
+import EventsAdmin from '../components/Events/EventsAdmin.vue'
 
 const userStore = useUserStore()
 
@@ -57,37 +65,59 @@ const currentTab = ref('Projects')
 
 // Dynamic projects data from database
 const projects = ref([])
+const galleryItems = ref([]);
+const events = ref({
+  upcoming: [],
+  completed: []
+});
 
 // Load projects data
 async function loadProjects() {
   try {
     const response = await services.getAllProjects(userStore.getToken)
     projects.value = response
-    console.log('Loaded projects:', response)
   } catch (error) {
     console.error('Failed to load projects:', error)
   }
 }
+
+// Load events data
 async function loadGallery() {
   try {
-    const response = await services.getGallery(userStore.getToken)
-    gallery.value = response
-    console.log('Loaded gallery:', response)
+    const response = await services.getGalleryItems(userStore.getToken)
+    galleryItems.value = response
   } catch (error) {
     console.error('Failed to load gallery:', error)
+  }
+}
+async function loadEvents() {
+  try {
+    const upcoming = await services.getUpcomingEvents(userStore.getToken)
+    const completed = await services.getCompletedEvents(userStore.getToken)
+    events.value.upcoming = upcoming
+    events.value.completed = completed
+    console.log('Loaded events:', events.value)
+  } catch (error) {
+    console.error('Failed to load events:', error)
   }
 }
 
 function handleProjectsUpdated(updatedProjects) {
   projects.value = updatedProjects
 }
+
 function handleGalleryUpdated(updatedGallery) {
-  gallery.value = updatedGallery
+  galleryItems.value = updatedGallery
+}
+
+function handleEventsUpdated(updatedEvents) {
+  events.value.upcoming = updatedEvents.upcoming
 }
 
 onMounted(() => {
   loadProjects();
   loadGallery();
+  loadEvents();
 })
 </script>
 

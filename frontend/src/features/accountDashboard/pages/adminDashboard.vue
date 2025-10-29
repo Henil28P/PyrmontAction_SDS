@@ -86,9 +86,10 @@ onMounted(async () => {
 
     const fetchUserData = await services.getCurrentUserDetails(userStore.getToken)
     userData.value = fetchUserData
-
-    const fetchMeetingsData = await services.getAllMeetingMinutes(userStore.getToken)
-    meetingsData.value = fetchMeetingsData
+    if (userStore.getRole === 'admin') {
+      const fetchMeetingsData = await services.getAllMeetingMinutes(userStore.getToken)
+      meetingsData.value = fetchMeetingsData
+    }
   } catch (error) {
     console.error('Failed to load admin data:', error)
     logout()

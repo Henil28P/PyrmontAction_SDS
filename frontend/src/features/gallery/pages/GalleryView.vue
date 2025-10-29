@@ -29,8 +29,9 @@ try{
 
   async function fetchData(){
       const response = await galleryService.getAllImages();
+      console.log("fetched response:", response)
       galleryImages.value = response;
-      console.log(galleryImages.value)
+      console.log("fetched galleryImages.value:", galleryImages.value)
   }
   fetchData();
 
