@@ -2,7 +2,7 @@
     <div class="completed-wrapper">
         <div class="action-header">
             <h3 class="section-title">Completed Events</h3>
-            <p class="section-desc">View your past event history</p>
+            <p class="section-desc">View past event history</p>
         </div>
 
         <div class="events-table-container">
@@ -52,7 +52,6 @@ import ViewEvents from './ViewEvents.vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../editorialServices';
 import { formatDate } from '../../../../utils/dateUtils';
-import { mount } from '@vue/test-utils';
 
 const completedEventList = ref([]);
 const selectedEvent = ref(null);
@@ -66,8 +65,8 @@ async function loadCompletedEvents() {
     }
 }
 
-onMounted(async () => {
-    await loadCompletedEvents();
+onMounted(() => {
+    loadCompletedEvents();
 });
 
 </script>

@@ -49,8 +49,8 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { useUserStore } from '../../../stores/authStore';
-import services from '../editorialServices';
+import { useUserStore } from '../../../../stores/authStore';
+import services from '../../editorialServices';
 
 const props = defineProps({
   project: {

@@ -22,48 +22,47 @@
                     <td>{{ item.caption }}</td>
                     <td>{{ item.alt }}</td>
                     <td>
-                        <button @click="editItem(item)">Edit</button>
+                        <button @click="selectedItem = item">Edit</button>
                         <button @click="deleteItem(item._id)">Delete</button>
                     </td>
                 </tr>
             </tbody>
         </table>
 
-        <EditGalleryItemAdmin 
-            :item="selectedGalleryItem" 
-            @itemUpdated="updateGalleryItem" 
-            @close="closeEditModalItem"
+        <EditGalleryItemAdmin
+            v-if="selectedItem"
+            :item="selectedItem"
+            @updateItem="updateGalleryItem" 
+            @close="selectedItem = null"
         />
     </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useUserStore } from '../../../stores/authStore';
 import services from '../editorialServices';
-import EditGalleryItemAdmin from '../components/EditGalleryItemAdmin.vue';
+import EditGalleryItemAdmin from '../components/Gallery/EditGalleryItemAdmin.vue';
 
-const props = defineProps({
-  galleryData: {
-    type: Array,
-    required: true,
-  }
-});
-
-const emits = defineEmits(['galleryUpdated']);
 const imageList = ref([]);
-const newItem = ref({ _id: null, caption: '', alt: '', image_file_name: '' });
-const selectedGalleryItem = ref(null);
+const selectedItem = ref(null);
 const fileInput = ref(null);
+const newItem = ref({ caption: '', alt: '', image_file_name: '' });
 
-watch(() => props.galleryData, (newData) => {
-    imageList.value = newData;
-}, { immediate: true });
+async function loadGallery() {
+    try {
+        const response = await services.getGalleryItems(useUserStore().token);
+        imageList.value = response;
+    } catch (error) {
+        console.error('Failed to load gallery:', error);
+    }
+}
 
-onUnmounted(() => {
-  imageList.value = [];
+onMounted(() => {
+    loadGallery();
 });
 
+// MOVE ===============================
 async function addNewItem() {
     try {
         const formData = new FormData();
@@ -77,66 +76,49 @@ async function addNewItem() {
             return;
         }
 
-        const response = await services.uploadGalleryImage(useUserStore().getToken, formData);
-
-        const newGalleryItem = {
-            ... newItem.value,
-            _id: response._id,
-            image_file_name: response.image_file_name,
-        };
-
-        imageList.value.unshift(newGalleryItem);
-        emits('galleryUpdated', imageList.value);
+        const response = await services.uploadGalleryImage(useUserStore().token, formData);
+        imageList.value.unshift(response);
         clearItem();
     } catch (error) {
         console.error('Failed to add new gallery item:', error);
     }
         
 }
-
-
+// MOVE ===============================
 async function deleteItem(id) {
     try {
-        if (confirm('Are you sure you want to delete this project?')) {
-            await services.deleteGalleryImage(useUserStore().getToken, id);
-      imageList.value = imageList.value.filter(p => p._id !== id);
-      emits('galleryUpdated', imageList.value);
+        if (!confirm('Are you sure you want to delete this image?')) {
+            return;
+        }
+        await services.deleteGalleryImage(useUserStore().token, id);
+        imageList.value = imageList.value.filter(item => item._id !== id);
+    } catch (error) {
+        console.error('Failed to delete gallery item:', error);
     }
-  } catch (error) {
-    console.error('Failed to delete gallery item:', error);
-  };
 }
 
 function clearItem() {
-    newItem.value = { _id: null, caption: '', alt: '', image_file_name: '' };
-    fileInput.value.value = '';
-    console.log('Cleared new item form.');
+    newItem.value = { caption: '', alt: '', image_file_name: '' };
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
 }
 
-// File Selection Handlers
 function chooseFile() {
-    const file = fileInput.value.files[0];
-    newItem.value.image_file_name = file.name;
+    const file = fileInput.value?.files[0];
+    if (file) {
+        newItem.value.image_file_name = file.name;
+    }
 }
 
-// Edit Modal Functions
 
-function editItem(item) {
-    selectedGalleryItem.value = item;
-    console.log('Editing item:', selectedGalleryItem.value);
-}
-function closeEditModalItem(item) {
-    selectedGalleryItem.value = null;
-}
 // Used by the emit in the editing component to update the item in the list
 function updateGalleryItem(updatedItem) {
     const index = imageList.value.findIndex(i => i._id === updatedItem._id);
     if (index !== -1) {
         imageList.value[index] = { ...imageList.value[index], ...updatedItem };
     }
-    emits('galleryUpdated', imageList.value);
 }
-
 </script>
 
 
