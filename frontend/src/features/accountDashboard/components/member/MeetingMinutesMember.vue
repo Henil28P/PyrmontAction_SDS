@@ -98,7 +98,7 @@ const demo = ref([
   { id: 3, date: '2025-04-10', title: 'Working Group', body: 'Infrastructure proposals and motions.', status: 'draft', files: [{ name: 'proposal-apr.pdf' }] },
 ])
 
-const pdfMap = import.meta.glob('../assets/minutes/**/*.pdf', { eager: true, as: 'url' })
+const pdfMap = import.meta.glob('../assets/minutes/**/*.pdf', { eager: true, query: '?url', import: 'default' })
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
 
 const list = computed(() => (props.items.length ? props.items : demo.value))

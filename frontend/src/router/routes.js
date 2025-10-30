@@ -1,6 +1,7 @@
 import { homeRoutes }     from '~features/home/routes'
 import { aboutRoutes }    from '~features/about/routes'
 import { contactRoutes }  from '~features/contact/routes'
+import { eventsRoutes }   from '~features/events/routes'
 import { galleryRoutes }  from '~features/gallery/routes'
 import { projectsRoutes } from '~features/projects/routes'
 import { joinusRoutes }   from '~features/JoinUs/routes'
@@ -12,6 +13,7 @@ export const routes = [
     ...homeRoutes,
     ...aboutRoutes,
     ...contactRoutes,
+    ...eventsRoutes,
     ...galleryRoutes,
     ...projectsRoutes,
     ...joinusRoutes,

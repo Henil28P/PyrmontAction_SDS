@@ -7,7 +7,7 @@ module.exports = {
       const { title, description, location, startDate, endDate, status } = req.body;
 
       // Create event data
-      const eventData = { title, description, location };
+      const eventData = { title, description, location, status };
       eventData.startDate = new Date(startDate);
       eventData.endDate = new Date(endDate);
 
