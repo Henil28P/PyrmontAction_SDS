@@ -23,7 +23,6 @@
                     ref="fileUploadRef"
                 />
             </div>
-            <div v-if="fileError" class="error-message">{{ fileError }}</div>
             <div>
                 <button class="btn primary" @click="handleSave">Save</button>
                 <button class="btn" @click="$emit('close')">Cancel</button>
@@ -45,7 +44,6 @@
     });
 
     const fileUploadRef = ref(null);
-    const fileError = ref('');
     const emits = defineEmits(['updateItem', 'close']);
     const editForm = ref({
         ...props.item,
