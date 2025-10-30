@@ -90,43 +90,14 @@ async function saveEdit() {
   width: 400px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+.row{display:grid;grid-template-columns:140px 1fr;gap:10px 12px;align-items:start;margin-bottom:10px}
+.lbl{font-size:14px;color:#374151;padding-top:8px}
+.input{border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;width:100%;background:#fff;font:inherit}
 .actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
 }
-.hidden-input {
-  display: none;
-}
-.fileZone {
-  border: 1px dashed #d1d5db;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fff;
-}
-.fileList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-.chip-name {
-  display: inline-block;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  padding: 2px 8px;
-  margin-right: 6px;
-  font-size: 12px;
-}
-.chip-x {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-}
-.hint {
-  color: #6b7280;
-}
+.btn{border:1px solid #e5e7eb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
+.btn.primary{background:#111;color:#fff;border-color:#111}
 </style>
