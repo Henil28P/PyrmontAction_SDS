@@ -5,11 +5,11 @@
       <section class="hero">
         <div class="hero-header">
           <div>
-            <h1 v-if="userStore.getRole === 'admin'" class="hero__title">Administrator's Dashboard</h1>
-            <h1 v-if="userStore.getRole === 'editor'" class="hero__title">Content Manager's Dashboard</h1>
+            <h1 v-if="useUserStore().getRole === 'admin'" class="hero__title">Administrator's Dashboard</h1>
+            <h1 v-if="useUserStore().getRole === 'editor'" class="hero__title">Content Manager's Dashboard</h1>
             <p v-if="activeTab === 'account'" class="hero__sub">Manage your Account Details here.</p>
             <p v-if="activeTab === 'minutes'" class="hero__sub">Upload and manage meeting of minutes here.</p>
-            <p v-if="activeTab === 'calendar'" class="hero__sub">View and manage your events here.</p>
+            <p v-if="activeTab === 'members-list'" class="hero__sub">View the members list here.</p>
             <p v-if="activeTab === 'manager'" class="hero__sub">Manage and create Accounts here.</p>
           </div>
           <button class="editorial-btn" @click="$router.push('/editorial-dashboard')">
@@ -42,15 +42,11 @@
         </div>
 
       <div v-else-if="activeTab === 'minutes'">
-        <MeetingMinutesAdmin 
-            v-if="meetingsData" 
-            :meetingsData="meetingsData"
-            @meetingsUpdated="handleMeetingsUpdated"
-        />
+        <MeetingMinutesAdmin/>
       </div>
 
-      <div v-else-if="activeTab === 'calendar'">
-        <EventCalendarAdmin />
+      <div v-else-if="activeTab === 'members-list'">
+        <MembersListAdmin/>
       </div>
 
         <div v-else-if="activeTab === 'manager'">
@@ -67,37 +63,33 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../dashboardServices'
 import MeetingMinutesAdmin from '../components/admin/MeetingMinutesAdmin.vue'
-import EventCalendarAdmin from '../components/admin/EventCalendarAdmin.vue'
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue'
+import MembersListAdmin from '../components/admin/MembersListAdmin.vue'
 
 const router = useRouter()
-const userStore = useUserStore()
 const userData = ref(null)
 const meetingsData = ref([])
 
-// Load user data on mount
-onMounted(async () => {
-  try {
-    if (!userStore.isAuthenticated) {
-      console.warn('User not authenticated, redirecting to login.')
-      logout()
-      return
-    }
-
-    const fetchUserData = await services.getCurrentUserDetails(userStore.getToken)
+async function loadUserData() {
+  try {    
+    const fetchUserData = await services.getCurrentUserDetails(useUserStore().getToken)
     userData.value = fetchUserData
-    if (userStore.getRole === 'admin') {
-      const fetchMeetingsData = await services.getAllMeetingMinutes(userStore.getToken)
-      meetingsData.value = fetchMeetingsData
-    }
   } catch (error) {
     console.error('Failed to load admin data:', error)
-    logout()
   }
+}
+
+onMounted(() => {
+  if (!useUserStore().isAuthenticated) {
+    console.warn('User not authenticated, redirecting to login.')
+    logout()
+    return
+  }
+  loadUserData()
 })
 
 const logout = async () => {
-  userStore.logout()
+  useUserStore().logout()
   await router.push('/login')
 }
 
@@ -114,13 +106,13 @@ function handleMeetingsUpdated(updatedMeetingsData) {
 const allTabs = [
   { key: 'account', label: 'My Account', roles: ['admin', 'editor'] },
   { key: 'minutes', label: 'Meeting Minutes', roles: ['admin'] }, // Only for admin
-  { key: 'calendar', label: 'Event Calendar', roles: ['admin'] }, // Only for admin
+  { key: 'members-list', label: 'Members List', roles: ['admin'] }, // Only for admin
   { key: 'manager', label: 'Account Manager', roles: ['admin'] }, // Only for admin
 ];
 
 // Filter tabs based on user role
 const filteredTabs = computed(() => {
-  return allTabs.filter(tab => tab.roles.includes(userStore.getRole));
+  return allTabs.filter(tab => tab.roles.includes(useUserStore().getRole));
 });
 
 // Change default tab here if you want:

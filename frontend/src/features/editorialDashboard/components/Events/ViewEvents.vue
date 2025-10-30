@@ -42,8 +42,6 @@
 
 <script setup>
     import { ref, computed, watch } from 'vue';
-    import { useUserStore } from '../../../../stores/authStore';
-    import services from '../../editorialServices';
     import { formatDate, timeRange } from '../../../../utils/dateUtils';
 
     const props = defineProps({
