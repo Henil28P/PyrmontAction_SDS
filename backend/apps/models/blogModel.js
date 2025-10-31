@@ -5,7 +5,7 @@ const blogSchema = new mongoose.Schema(
     title: { type: String, required: true },
     content: { type: String, required: true },
     author: { type: String, default: 'Anonymous' },
-    status: { type: String, enum: ['pending', 'approved'], default: 'draft' }
+    status: { type: String, enum: ['pending', 'approved'], default: 'pending' }
   },
   { timestamps: true }
 );
