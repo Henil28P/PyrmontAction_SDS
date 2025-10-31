@@ -24,73 +24,61 @@ const logout = async () => {
 };
 
 // === Load User Data on Mount ===
-onMounted(async () => {
-  try {
-    if (!userStore.isAuthenticated) {
-      console.warn('User not authenticated, redirecting to login.');
-      logout();
-      return;
-    }
-
+async function loadUserData() {
+  try { 
     const response = await services.getCurrentUserDetails(userStore.getToken);
-    console.log('API Response:', response);
     userData.value = response;
-  } catch (err) {
-    console.error('Failed to load member data:', err);
+  } catch (error) {
+    console.error('Failed to load user data:', error);
+  }
+};
+
+onMounted(() => {
+  if (!userStore.isAuthenticated) {
+    console.warn('User not authenticated, redirecting to login.');
     logout();
+    return;
   }
+  loadUserData();   
 });
 
-// === Fetch Member Info from Database ===
-onMounted(async () => {
-  const email = localStorage.getItem('memberEmail');
-  if (email) {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
-      member.value = response.data;
-    } catch (err) {
-      console.error('Failed to fetch member info:', err);
-    }
-  }
-});
+// // === Verify Stripe Payment if Redirected from Checkout ===
+// onMounted(() => {
+//   const params = new URLSearchParams(window.location.search);
+//   const sessionId = params.get('session_id');
 
-// === Verify Stripe Payment if Redirected from Checkout ===
-onMounted(async () => {
-  const params = new URLSearchParams(window.location.search);
-  const sessionId = params.get('session_id');
+//   if (sessionId) {
+//     loading.value = true;
+//     try {
+//       const response = await axios.get(
+//         `http://localhost:5000/api/payments/verify?session_id=${encodeURIComponent(sessionId)}`
+//       );
+//       verification.value = response.data;
 
-  if (sessionId) {
-    loading.value = true;
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/payments/verify?session_id=${encodeURIComponent(sessionId)}`
-      );
-      verification.value = response.data;
+//       if (verification.value.status === 'paid') {
+//         alert(
+//           `🎉 Payment successful! Membership valid until ${new Date(
+//             verification.value.expiresAt
+//           ).toLocaleDateString()}`
+//         );
 
-      if (verification.value.status === 'paid') {
-        alert(
-          `🎉 Payment successful! Membership valid until ${new Date(
-            verification.value.expiresAt
-          ).toLocaleDateString()}`
-        );
+//         // Refresh member info after successful payment
+//         const email = localStorage.getItem('memberEmail');
+//         const refreshed = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
+//         member.value = refreshed.data;
 
-        // Refresh member info after successful payment
-        const email = localStorage.getItem('memberEmail');
-        const refreshed = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
-        member.value = refreshed.data;
-
-        // Clean up URL (remove ?session_id=...)
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-    } catch (err) {
-      console.error('Payment verification failed:', err);
-      error.value = 'Could not verify payment.';
-    } finally {
-      loading.value = false;
-    }
-  }
-});
+//         // Clean up URL (remove ?session_id=...)
+//         const cleanUrl = window.location.origin + window.location.pathname;
+//         window.history.replaceState({}, document.title, cleanUrl);
+//       }
+//     } catch (err) {
+//       console.error('Payment verification failed:', err);
+//       error.value = 'Could not verify payment.';
+//     } finally {
+//       loading.value = false;
+//     }
+//   }
+// });
 
 // === Renew Membership (Start Stripe Checkout) ===
 async function openRenewForm() {

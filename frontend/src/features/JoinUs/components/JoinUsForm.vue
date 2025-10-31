@@ -130,6 +130,7 @@ const handleSubmit = async () => {
     if (response.data.url) {
       window.location.href = response.data.url;
     }
+    
   } catch (error) {
     console.error('Error during signup/payment:', error);
     alert('Something went wrong while creating your payment session. Please try again.');

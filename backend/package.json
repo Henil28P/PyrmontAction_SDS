@@ -16,7 +16,8 @@
     "mongoose": "^7.3.4",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.3",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "stripe": "^19.2.0"
   },
   "keywords": [],
   "author": "",
