@@ -4,63 +4,125 @@ import { useRouter, RouterLink } from 'vue-router';
 import { useUserStore } from '../../../stores/authStore';
 import services from '../dashboardServices';
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue';
+import axios from 'axios';
 
+// === Refs & Stores ===
+const member = ref(null);
 const router = useRouter();
 const userStore = useUserStore();
-
 const userData = ref(null);
 
-// Run on component mount at startup of webpage
-onMounted(async () => {
+// === New Refs for Stripe Verification ===
+const verification = ref(null);
+const loading = ref(false);
+const error = ref(null);
+
+// === Logout Function ===
+const logout = async () => {
+  userStore.logout();
+  await router.push('/login');
+};
+
+// === Load User Data on Mount ===
+async function loadUserData() {
+  try { 
+    const response = await services.getCurrentUserDetails(userStore.getToken);
+    userData.value = response;
+  } catch (error) {
+    console.error('Failed to load user data:', error);
+  }
+};
+
+onMounted(() => {
+  if (!userStore.isAuthenticated) {
+    console.warn('User not authenticated, redirecting to login.');
+    logout();
+    return;
+  }
+  loadUserData();   
+});
+
+// // === Verify Stripe Payment if Redirected from Checkout ===
+// onMounted(() => {
+//   const params = new URLSearchParams(window.location.search);
+//   const sessionId = params.get('session_id');
+
+//   if (sessionId) {
+//     loading.value = true;
+//     try {
+//       const response = await axios.get(
+//         `http://localhost:5000/api/payments/verify?session_id=${encodeURIComponent(sessionId)}`
+//       );
+//       verification.value = response.data;
+
+//       if (verification.value.status === 'paid') {
+//         alert(
+//           `🎉 Payment successful! Membership valid until ${new Date(
+//             verification.value.expiresAt
+//           ).toLocaleDateString()}`
+//         );
+
+//         // Refresh member info after successful payment
+//         const email = localStorage.getItem('memberEmail');
+//         const refreshed = await axios.get(`http://localhost:5000/api/members/by-email/${email}`);
+//         member.value = refreshed.data;
+
+//         // Clean up URL (remove ?session_id=...)
+//         const cleanUrl = window.location.origin + window.location.pathname;
+//         window.history.replaceState({}, document.title, cleanUrl);
+//       }
+//     } catch (err) {
+//       console.error('Payment verification failed:', err);
+//       error.value = 'Could not verify payment.';
+//     } finally {
+//       loading.value = false;
+//     }
+//   }
+// });
+
+// === Renew Membership (Start Stripe Checkout) ===
+async function openRenewForm() {
   try {
-    // Check authentication and load data
-    if (!userStore.isAuthenticated) {
-      console.warn('User not authenticated, redirecting to login.');
-      logout();
+    const email = member.value?.email || localStorage.getItem('memberEmail');
+
+    if (!email) {
+      alert('No member email found. Please log in again.');
       return;
     }
 
-    // Use token from store for API calls
-    const response = await services.getCurrentUserDetails(userStore.getToken);
-    console.log('API Response:', response); // Debug log
-    
-    userData.value = response;
-    
-  } catch (error) {
-    console.error('Failed to load member data:', error);
-    logout();
+    const res = await axios.post('http://localhost:5000/api/payments/create-checkout-session', {
+      email,
+    });
+
+    if (res.data.url) {
+      // Redirect to Stripe Checkout
+      window.location.href = res.data.url;
+    } else {
+      alert('Failed to start renewal process.');
+    }
+  } catch (err) {
+    console.error('Renewal process failed:', err);
+    alert('There was a problem starting your renewal. Please try again later.');
   }
+}
 
-  const logout = async () => {
-    const router = useRouter();
-    const userStore = useUserStore();
-
-    // Clear token from store
-    userStore.logout();
-    await router.push('/login');
-  };
-});
-
-// Change this to fetch real data later
+// === Dummy Data: Meeting Minutes ===
 const minutes = ref([
-  { id: 1, title: "AGM Minutes â€“ July 2025", date: "Jul 28, 2025", url: "#" },
-  { id: 2, title: "Committee Meeting â€“ Aug 2025", date: "Aug 18, 2025", url: "#" },
-  { id: 3, title: "General Meeting â€“ Sept 2025", date: "Sep 10, 2025", url: "#" }
-])
+  { id: 1, title: 'AGM Minutes – July 2025', date: 'Jul 28, 2025', url: '#' },
+  { id: 2, title: 'Committee Meeting – Aug 2025', date: 'Aug 18, 2025', url: '#' },
+  { id: 3, title: 'General Meeting – Sept 2025', date: 'Sep 10, 2025', url: '#' },
+]);
+
+// === Account Update Handlers ===
+const showEditModal = ref(false);
 
 
 function handleUserUpdated(updatedUserData) {
   userData.value = updatedUserData;
   console.log('User updated successfully:', updatedUserData);
 }
-
-function openRenewForm() {
-  alert("Open renew membership form")
-}
-
-
-
 </script>
+
 
 <template>
   <div class="page">
@@ -71,14 +133,26 @@ function openRenewForm() {
           Welcome back, {{ userData?.firstName }}
           <span class="wave">👋</span>
         </h1>
-        <p class="hero__sub">Here's a quick snapshot of your membership.</p>
+        <p v-if="member">
+          Membership expires on:
+          {{ new Date(member?.membershipExpiry).toLocaleDateString() }}
+        </p>
       </section>
+
+      <!-- Stripe Verification Banner -->
+      <div v-if="loading" class="banner loading">Verifying your payment...</div>
+
+      <div v-if="verification && verification.status === 'paid'" class="banner success">
+        ✅ Payment successful! Membership valid until
+        {{ new Date(verification.expiresAt).toLocaleDateString() }}.
+      </div>
+
+      <div v-if="error" class="banner error">{{ error }}</div>
 
       <!-- Top Summary Cards -->
       <section class="cards-row">
         <article class="summary-card">
           <div class="summary-head">
-            <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Account Type</span>
           </div>
           <div class="summary-value">{{ userStore?.getRole }}</div>
@@ -86,16 +160,18 @@ function openRenewForm() {
 
         <article class="summary-card">
           <div class="summary-head">
-            <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Payment Expiry</span>
           </div>
-          <div class="summary-value">DD/MM/YY => Add Later</div>
+          <div class="summary-value">
+            {{ member?.membershipExpiry
+              ? new Date(member.membershipExpiry).toLocaleDateString()
+              : 'Not set' }}
+          </div>
           <button class="link-btn" @click="openRenewForm">Renew membership</button>
         </article>
 
         <article class="summary-card">
           <div class="summary-head">
-            <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Status</span>
           </div>
           <div
@@ -103,26 +179,25 @@ function openRenewForm() {
             :class="userData?.isActive ? 'pill--green' : 'pill--red'"
           >
             <span class="dot" :class="userData?.isActive ? 'dot--green' : 'dot--red'"></span>
-            {{ userData?.isActive ? "Active" : "Deactivated" }}
+            {{ userData?.isActive ? 'Active' : 'Deactivated' }}
           </div>
         </article>
       </section>
 
-      <!-- Account Details Component -->
-      <AccountDetailsComponent 
+      <!-- Account Details -->
+      <AccountDetailsComponent
         v-if="userData"
         :userData="userData"
         @userUpdated="handleUserUpdated"
       />
-          <!-- Meeting Minutes -->
+
+      <!-- Meeting Minutes -->
       <section class="minutes-card">
         <div class="minutes-head">
           <div class="minutes-title">
             <h2>Meeting Minutes</h2>
             <p class="muted">Latest published minutes</p>
           </div>
-
-          <!-- View all button (right side) -->
           <RouterLink to="/member/minutes" class="btn-all" aria-label="View all minutes">
             View all
           </RouterLink>
@@ -141,7 +216,7 @@ function openRenewForm() {
               <tr v-for="m in minutes" :key="m.id">
                 <td>
                   <div class="title-cell">
-                    <span class="paper-emoji">O</span>
+                    <span class="paper-emoji">📄</span>
                     <span>{{ m.title }}</span>
                   </div>
                 </td>
@@ -158,8 +233,6 @@ function openRenewForm() {
         </div>
       </section>
     </main>
-
-
   </div>
 </template>
 
