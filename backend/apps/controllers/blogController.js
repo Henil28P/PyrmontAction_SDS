@@ -34,7 +34,7 @@ module.exports = {
         }
     },
     // Get blog by ID
-    async getBlogById (req, res) {
+    async getBlogByID (req, res) {
         try {
             const blog = await Blog.findById(req.params.id);
             if (!blog) {
@@ -47,6 +47,20 @@ module.exports = {
     },
 
     /* UPDATE  */
+    // Update blog (for editorial review)
+    async updateBlog (req, res) {
+        try {
+            const { id } = req.params;
+            const updates = req.body;
+            const updatedBlog = await Blog.findByIdAndUpdate(id, updates, { new: true });
+            if (!updatedBlog) {
+                return res.status(404).json({ message: 'Blog not found' });
+            }
+            res.status(200).json({ message: 'Blog updated successfully', blog: updatedBlog });
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating blog', error });
+        }
+    },
     // Approve blog (for editorial review)
     async approveBlog (req, res) {
         try {
@@ -58,34 +72,6 @@ module.exports = {
             res.status(200).json({ message: 'Blog approved successfully', blog: updatedBlog });
         } catch (error) {
             res.status(500).json({ message: 'Error approving blog', error });
-        }
-    },
-    // Update blog (for editorial review)
-    async updateBlog (req, res) {
-        try {
-            const { id } = req.params;
-            const updates = req.body;
-            const updatedBlog = await Blog.findByIdAndUpdate(id, updates, { new: true });
-            if (!updatedBlog) {
-                return res.status(404).json({ message: 'Blog not found' });
-            }
-            res.status(200).json({ message: 'Blog updated successfully', blog: updatedBlog });
-        } catch (error) {
-            res.status(500).json({ message: 'Error updating blog', error });
-        }
-    },
-    // Update blog (for editorial review)
-    async updateBlog (req, res) {
-        try {
-            const { id } = req.params;
-            const updates = req.body;
-            const updatedBlog = await Blog.findByIdAndUpdate(id, updates, { new: true });
-            if (!updatedBlog) {
-                return res.status(404).json({ message: 'Blog not found' });
-            }
-            res.status(200).json({ message: 'Blog updated successfully', blog: updatedBlog });
-        } catch (error) {
-            res.status(500).json({ message: 'Error updating blog', error });
         }
     },
 
