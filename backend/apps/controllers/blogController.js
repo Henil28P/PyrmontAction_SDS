@@ -8,7 +8,7 @@ module.exports = {
             const { title, content, author, status } = req.body;
             const newBlog = new Blog({ title, content, author, status });
             await newBlog.save();
-            res.status(201).json({ message: 'Blog created successfully', blog: newBlog });
+            res.status(201).json(newBlog);
         } catch (error) {
             res.status(500).json({ message: 'Error creating blog', error });
         }
@@ -56,7 +56,7 @@ module.exports = {
             if (!updatedBlog) {
                 return res.status(404).json({ message: 'Blog not found' });
             }
-            res.status(200).json({ message: 'Blog updated successfully', blog: updatedBlog });
+            res.status(200).json(updatedBlog);
         } catch (error) {
             res.status(500).json({ message: 'Error updating blog', error });
         }
@@ -69,7 +69,7 @@ module.exports = {
             if (!updatedBlog) {
                 return res.status(404).json({ message: 'Blog not found' });
             }
-            res.status(200).json({ message: 'Blog approved successfully', blog: updatedBlog });
+            res.status(200).json(updatedBlog);
         } catch (error) {
             res.status(500).json({ message: 'Error approving blog', error });
         }
@@ -84,7 +84,7 @@ module.exports = {
             if (!deletedBlog) {
                 return res.status(404).json({ message: 'Blog not found' });
             }
-            res.status(200).json({ message: 'Blog deleted successfully', blog: deletedBlog });
+            res.status(200).json({ message: 'Blog deleted successfully' });
         } catch (error) {
             res.status(500).json({ message: 'Error deleting blog', error });
         }
