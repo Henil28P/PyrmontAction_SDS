@@ -1,4 +1,4 @@
-import Blog from '../models/blogModel.js';
+const Blog = require('../models/blogModel.js');
 
 module.exports = {
     /*  CREATE  */
@@ -89,5 +89,4 @@ module.exports = {
             res.status(500).json({ message: 'Error deleting blog', error });
         }
     }
-
 };

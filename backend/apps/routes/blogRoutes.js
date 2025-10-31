@@ -3,7 +3,7 @@ const controller = require('../controllers/blogController');
 const jwtAuth = require('../middlewares/jwtMiddleware');
 
 /* CREATE */
-router.post('/', controller.createBlog);
+router.post('/', controller.submitBlog);
 
 /* READ */
 router.get('/', controller.getAllBlogs);
