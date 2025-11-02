@@ -1,38 +1,26 @@
 const User = require('../models/userModel');
 const Role = require('../models/roleModel');
+const JoinSession = require('../models/joinSessionModel');
 const jwt = require('jsonwebtoken'); // Import JWT library
 const bcrypt = require('bcrypt');
 
 module.exports = {
     async join(req, res) {
         try {
-            const user = new User({
-                email: req.body.email,
-                password: req.body.password,
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                mobilePhone: req.body.mobilePhone,
-                areaOfInterest: req.body.areaOfInterest,
-                streetName: req.body.streetName,
-                city: req.body.city,
-                state: req.body.state,
-                postcode: req.body.postcode,
+            const joinSessionID = await this.createJoinSession(req.body);
+            
+            return res.status(201).json({ 
+                message: "User was registered successfully.", 
+                joinSessionID, 
+                email: req.body.email
             });
-    
-            if (req.body.role) { // If role is provided, find and assign it 
-                const role = await Role.findOne({ name: req.body.role });
-                user.role = role._id;
-            } else {
-                const defaultRole = await Role.findOne({ name: "member" });
-                user.role = defaultRole._id;
-            }
-            console.log("User before saving:", user);
-            await user.save(); // Save the user to the database
-            console.log("User saved successfully");
-            return res.status(201).json({ message: "User was registered successfully." });
+
         } catch (error) {
             console.log("req.body:", req.body);
             console.error("Error during user registration:", error);
+            if (error.message === "Email already exists") {
+                return res.status(409).json({ message: "Email already exists. Please use a different email." });
+            }
             return res.status(400).json({ message: 'Registration failed. Please try again.', errors: error.message });
         }
     },
@@ -71,4 +59,28 @@ module.exports = {
         }
     },
 
-};
+    // Create join Session that lives for 1 hour
+    async createJoinSession(body) {
+        try {
+            if (await JoinSession.getEmailExists(body.email)) {
+                throw new Error("Email already exists");
+            }
+            const newJoinSession = new JoinSession({
+                email: body.email,
+                password: body.password,
+                firstName: body.firstName,
+                lastName: body.lastName,
+                mobilePhone: body.mobilePhone,
+                areaOfInterest: body.areaOfInterest,
+                streetName: body.streetName,
+                city: body.city,
+                state: body.state,
+                postcode: body.postcode,
+            });
+            await newJoinSession.save();
+            return newJoinSession._id; // Return just the ID for Stripe
+        } catch (error) {
+            console.error("Error creating join session:", error);
+            throw error; // Let join() handle the response
+        }
+    },

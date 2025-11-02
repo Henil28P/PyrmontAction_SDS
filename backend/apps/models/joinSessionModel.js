@@ -58,4 +58,10 @@ joinSessionSchema.methods.extendExpiry = function(additionalMinutes = 60) {
     return this.save();
 };
 
+joinSessionSchema.statics.getEmailExists = async function (email) {
+    const session = await this.findOne({ email });
+    if (!session) return false;
+    return true;
+};
+
 module.exports = mongoose.model('JoinSession', joinSessionSchema);
