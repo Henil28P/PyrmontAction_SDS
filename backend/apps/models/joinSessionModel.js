@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const User = require('./userModel');
 
 const joinSessionSchema = new mongoose.Schema({
     email: { type: String, required: true, lowercase: true, trim: true },
@@ -25,7 +26,7 @@ const joinSessionSchema = new mongoose.Schema({
 joinSessionSchema.pre('save', async function(next) {
     try {
         // Set expiration if not provided
-        if (this.isNew && !this.expiresAt) {
+        if (this.isNew && (!this.expiresAt || this.expiresAt === undefined)) {
             this.expiresAt = new Date(Date.now() + 60 * 60 * 1000); // Default to 60 minutes from now
         }
         
@@ -59,9 +60,9 @@ joinSessionSchema.methods.extendExpiry = function(additionalMinutes = 60) {
 };
 
 joinSessionSchema.statics.getEmailExists = async function (email) {
-    const session = await this.findOne({ email });
-    if (!session) return false;
-    return true;
+    const userHasEmail = await User.getEmailExists(email);
+    const sessionHasEmail = await this.findOne({ email });
+    return !!userHasEmail || !!sessionHasEmail;
 };
 
 module.exports = mongoose.model('JoinSession', joinSessionSchema);

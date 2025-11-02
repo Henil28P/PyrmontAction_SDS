@@ -4,10 +4,10 @@ const JoinSession = require('../models/joinSessionModel');
 const jwt = require('jsonwebtoken'); // Import JWT library
 const bcrypt = require('bcrypt');
 
-module.exports = {
+const authController = {
     async join(req, res) {
         try {
-            const joinSessionID = await this.createJoinSession(req.body);
+            const joinSessionID = await createJoinSession(req.body);
             
             return res.status(201).json({ 
                 message: "User was registered successfully.", 
@@ -58,29 +58,35 @@ module.exports = {
             return res.status(500).json({ message: 'Login failed. Please try again.', errors: error.message });
         }
     },
+};
 
-    // Create join Session that lives for 1 hour
-    async createJoinSession(body) {
-        try {
-            if (await JoinSession.getEmailExists(body.email)) {
-                throw new Error("Email already exists");
-            }
-            const newJoinSession = new JoinSession({
-                email: body.email,
-                password: body.password,
-                firstName: body.firstName,
-                lastName: body.lastName,
-                mobilePhone: body.mobilePhone,
-                areaOfInterest: body.areaOfInterest,
-                streetName: body.streetName,
-                city: body.city,
-                state: body.state,
-                postcode: body.postcode,
-            });
-            await newJoinSession.save();
-            return newJoinSession._id; // Return just the ID for Stripe
-        } catch (error) {
-            console.error("Error creating join session:", error);
-            throw error; // Let join() handle the response
+module.exports = authController;
+
+// Create join Session that lives for 1 hour
+const createJoinSession = async (body) => {
+    try {
+        if (await JoinSession.getEmailExists(body.email)) {
+            throw new Error("Email already exists");
         }
-    },
+        
+        const sessionData = {
+            email: body.email,
+            password: body.password,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            mobilePhone: body.mobilePhone,
+            areaOfInterest: body.areaOfInterest,
+            streetName: body.streetName,
+            city: body.city,
+            state: body.state,
+            postcode: body.postcode,
+        };
+        
+        // Use the static createSession method which handles TTL automatically
+        const newJoinSession = await JoinSession.createSession(sessionData, 60); // 60 minutes TTL
+        return newJoinSession._id; // Return just the ID for Stripe
+    } catch (error) {
+        console.error("Error creating join session:", error);
+        throw error; // Let join() handle the response
+    }
+};
