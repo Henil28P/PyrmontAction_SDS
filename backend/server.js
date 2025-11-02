@@ -2,12 +2,11 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const path = require('path');
 const Role = require('./apps/models/roleModel'); 
-require('dotenv').config();
-
-const Role = require('./apps/models/roleModel');
 const paymentsController = require('./apps/controllers/paymentsController'); // Added for webhook route
+
 
 const app = express();
 app.use(cors());
