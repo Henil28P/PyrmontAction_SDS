@@ -18,7 +18,6 @@ module.exports = {
                 mode: 'payment',
                 payment_method_types: ['card'],
                 customer_email: joinSession.email,
-                customer_creation: 'always',
                 line_items: [{
                     price_data: {
                         currency: 'aud',
@@ -71,7 +70,7 @@ module.exports = {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
             const joinSessionID = session.metadata.joinSessionID;
-            
+
             try {
                 // Find the temporary join session
                 const joinSession = await JoinSession.findById(joinSessionID);
@@ -83,9 +82,12 @@ module.exports = {
                     console.error('Session ID mismatch for join session:', joinSessionID);
                     return res.status(400).send('Session ID mismatch');
                 }
-                console.log(session);
+                const customer = await stripe.customers.create({
+                    email: joinSession.email,
+                    name: `${joinSession.firstName} ${joinSession.lastName}`,
+                });
 
-                userController.createMember(joinSession, session.customer);
+                userController.createMember(joinSession, customer.id);
 
                 // Delete the temporary join session
                 await joinSession.deleteOne();
@@ -96,7 +98,24 @@ module.exports = {
                 console.error('Error processing successful payment:', error);
                 return res.status(500).send('Error processing payment');
             }
-        } 
+        } else if (event.type === 'checkout.session.expired') {
+            const session = event.data.object;
+            const joinSessionID = session.metadata.joinSessionID;
+            
+            try {
+                // Find and delete the temporary join session since checkout was cancelled/expired
+                const joinSession = await JoinSession.findById(joinSessionID);
+                if (joinSession) {
+                    await joinSession.deleteOne();
+                    console.log('Cleaned up expired join session for:', joinSession.email);
+                } else {
+                    console.log('Join session already cleaned up or not found:', joinSessionID);
+                }
+            } catch (error) {
+                console.error('Error cleaning up expired join session:', error);
+                return res.status(500).send('Error cleaning up session');
+            }
+        }
 
         res.status(200).send('Webhook handled');
     }
