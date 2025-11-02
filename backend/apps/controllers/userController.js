@@ -1,7 +1,36 @@
-
 const User = require('../models/userModel');
+const Role = require('../models/roleModel');
 
 module.exports = {
+    // Create a new user
+    async createMember(joinSession, stripeCustomerID) {
+        try {
+            // Map incoming joinSession fields to the User model fields.
+            // joinSession was created in the registration flow and uses `firstName` / `lastName`.
+            const newUser = new User({
+                email: joinSession.email,
+                password: joinSession.password,
+                firstName: joinSession.firstName,
+                lastName: joinSession.lastName,
+                mobilePhone: joinSession.mobilePhone,
+                areaOfInterest: joinSession.areaOfInterest,
+                streetName: joinSession.streetName,
+                city: joinSession.city,
+                state: joinSession.state,
+                postcode: joinSession.postcode,
+                stripeCustomerID: stripeCustomerID
+            });
+
+            newUser.memberExpiryDate = this.calculateMemberExpiryDate();
+            newUser.role = await Role.findOne({ name: 'member' }).exec();
+            await newUser.save();
+            return newUser;
+        } catch (error) {
+            console.error("Error creating user:", error);
+            throw error;
+        }
+    },
+
     // Get current user's profile (using ID from JWT token)
     async getCurrentUser(req, res) {
         try {
@@ -65,5 +94,10 @@ module.exports = {
         }
     },
 
+    calculateMemberExpiryDate() {
+        const oneYearFromNow = new Date();
+        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+        return oneYearFromNow;
+    }
 };
 

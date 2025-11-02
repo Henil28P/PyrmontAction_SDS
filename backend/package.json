@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "stripe:login": ".\\stripe-cli\\stripe.exe login",
-    "stripe:listen": ".\\stripe-cli\\stripe.exe listen --forward-to localhost:5000/api/payment/webhook",
+    "stripe:listen": ".\\stripe-cli\\stripe.exe listen --forward-to localhost:5000/api/payments/stripe/webhook",
     "dev:with-stripe": "concurrently \"npm run dev\" \"npm run stripe:listen\"",
     "start:with-stripe": "concurrently \"npm start\" \"npm run stripe:listen\"",
     "test": "echo \"Error: no test specified\" && exit 1"

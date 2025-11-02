@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const paymentController = require('../controllers/paymentContoller');
+const controller = require('../controllers/paymentContoller');
 
 // Route for creating checkout session
-router.post('/create-checkout', paymentController.createCheckout);
+router.post('/create-checkout', controller.createCheckout);
 
-// Route for Stripe webhook (raw body needed)
-router.post('/webhook/stripe', express.raw({type: 'application/json'}), paymentController.handleWebhook);
+// Note: Stripe webhook route is handled directly in server.js before express.json() middleware
 
 module.exports = router;

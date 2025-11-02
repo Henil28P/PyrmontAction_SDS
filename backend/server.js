@@ -7,6 +7,10 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors());
+
+// Stripe webhook route MUST come before express.json() middleware
+app.use('/api/payments/stripe/webhook', express.raw({type: 'application/json'}), require('./apps/controllers/paymentContoller').handleWebhook);
+
 app.use(express.json());
 
 // Serve static files from uploads directory

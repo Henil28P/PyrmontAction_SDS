@@ -13,25 +13,26 @@ const userSchema = new mongoose.Schema({
     city: { type: String, default: '' },
     state: { type: String, default: '' },
     postcode: { type: String, default: '' },
-    isActive: { type: Boolean, default: true },
+    stripeCustomerID: { type: String, default: '' },
+    memberExpiryDate: { type: Date, default: null },
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
 }, { timestamps: true });
 
-// Pre-save middleware to hash password
-userSchema.pre('save', async function (next) {
-    // Only hash the password if it has been modified (or is new)
-    if (!this.isModified('password')) return next();
+// // Pre-save middleware to hash password
+// userSchema.pre('save', async function (next) {
+//     // Only hash the password if it has been modified (or is new)
+//     if (!this.isModified('password')) return next();
     
-    try {
-        const salt = 12;
-        this.password = await bcrypt.hash(this.password, salt);
-        console.log("1", await bcrypt.hash("1", salt));
-        console.log("admin", await bcrypt.hash("admin", salt));
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
+//     try {
+//         const salt = 12;
+//         this.password = await bcrypt.hash(this.password, salt);
+//         console.log("1", await bcrypt.hash("1", salt));
+//         console.log("admin", await bcrypt.hash("admin", salt));
+//         next();
+//     } catch (error) {
+//         next(error);
+//     }
+// });
 
 // Pre-update middleware to hash password
 userSchema.pre('findOneAndUpdate', async function (next) {

@@ -1,5 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const JoinSession = require('../models/joinSessionModel');
+const userController = require('./userController');
 
 module.exports = {
     async createCheckout(req, res) {
@@ -17,6 +18,7 @@ module.exports = {
                 mode: 'payment',
                 payment_method_types: ['card'],
                 customer_email: joinSession.email,
+                customer_creation: 'always',
                 line_items: [{
                     price_data: {
                         currency: 'aud',
@@ -34,11 +36,14 @@ module.exports = {
                 success_url: `${process.env.FRONTEND_BASE_URL}/login`,
                 cancel_url: `${process.env.FRONTEND_BASE_URL}/join`,
             });
+
+            joinSession.sessionID = checkoutSession.id;
+            await joinSession.save();
             
             return res.status(200).json({
                 message: 'Checkout session created successfully.',
                 checkoutUrl: checkoutSession.url,
-                sessionId: checkoutSession.id
+                sessionID: checkoutSession.id
             });
             
         } catch (error) {
@@ -74,17 +79,24 @@ module.exports = {
                     console.error('Join session not found:', joinSessionID);
                     return res.status(404).send('Join session not found');
                 }
-                
-                // TODO: Create permanent User account from joinSession data
+                if (joinSession.sessionID !== session.id) {
+                    console.error('Session ID mismatch for join session:', joinSessionID);
+                    return res.status(400).send('Session ID mismatch');
+                }
+                console.log(session);
+
+                userController.createMember(joinSession, session.customer);
+
+                // Delete the temporary join session
+                await joinSession.deleteOne();
                 // TODO: Send welcome email
-                // TODO: Delete the temporary join session
                 
                 console.log('Payment successful for:', joinSession.email);
             } catch (error) {
                 console.error('Error processing successful payment:', error);
                 return res.status(500).send('Error processing payment');
             }
-        }
+        } 
 
         res.status(200).send('Webhook handled');
     }

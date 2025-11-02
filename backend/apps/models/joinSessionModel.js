@@ -13,6 +13,7 @@ const joinSessionSchema = new mongoose.Schema({
     city: { type: String, default: '' },
     state: { type: String, default: '' },
     postcode: { type: String, default: '' },
+    sessionID: { type: String, default: '' },
     expiresAt: {
         type: Date,
         required: true,
