@@ -25,6 +25,11 @@ const { passwordValidator, validatePassword } = usePasswordValidation();
 onMounted (() => {
     const queryParams = new URLSearchParams(window.location.search);
      const status = queryParams.get('status');
+     const sessionID = queryParams.get('sessionID');
+    if (status === 'cancelled' && sessionID) {
+        alert('Payment was cancelled. Please try again to complete your membership registration.');
+        service.deleteJoinSession(sessionID);
+    }
 });
 
 

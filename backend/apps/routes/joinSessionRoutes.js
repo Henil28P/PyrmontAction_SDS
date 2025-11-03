@@ -5,8 +5,10 @@ const validation = require('../validations/userValidation');
 
 router.post('/',
     validation.inputValidatorJoinUs, 
-    controller.join
+    controller.createJoinSession
 );
+
+router.delete('/:id', controller.deleteJoinSession);
 
 
 module.exports = router;

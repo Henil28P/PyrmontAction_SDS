@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken'); // Import JWT library
 const bcrypt = require('bcrypt');
 
 module.exports = {
-    async join(req, res) {
+    async createJoinSession(req, res) {
         try {
             // Check if the email already exists
             if (await JoinSession.getEmailExists(req.body.email)) {
@@ -41,6 +41,15 @@ module.exports = {
             return res.status(400).json({ message: 'Registration failed. Please try again.', errors: error.message });
         }
     },
+
+    async deleteJoinSession(req, res) {
+        try {
+            const { id } = req.params;
+            await JoinSession.findByIdAndDelete(id);
+            return res.status(204).send();
+        } catch (error) {
+            console.error("Error during session deletion:", error);
+            return res.status(400).json({ message: 'Session deletion failed. Please try again.', errors: error.message });
+        }
+    },
 };
-
-
