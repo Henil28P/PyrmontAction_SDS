@@ -56,7 +56,7 @@ module.exports = {
                 stripeCustomerID: stripeCustomerID
             });
 
-            newUser.memberExpiryDate = this.calculateMemberExpiryDate();
+            newUser.memberExpiryDate = this.calculateMemberExpiryDate(new Date());
             newUser.role = await Role.findOne({ name: 'member' }).exec();
             await newUser.save();
             return newUser;
@@ -129,8 +129,8 @@ module.exports = {
         }
     },
 
-    calculateMemberExpiryDate() {
-        const oneYearFromNow = new Date();
+    calculateMemberExpiryDate(date) {
+        const oneYearFromNow = new Date(date);
         oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
         return oneYearFromNow;
     }
