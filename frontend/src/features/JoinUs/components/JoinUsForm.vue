@@ -1,113 +1,50 @@
 <script setup>
-    import joinUsService from '../services/joinUsAuthService';
-    import { computed, ref} from 'vue';
-    import { useRouter } from 'vue-router';
-    import useVuelidate from '@vuelidate/core';
-    import { required, helpers, email, minLength, maxLength, numeric } from '@vuelidate/validators';
+import joinUsService from '../services/joinUsAuthService';
+import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { useFormValidation } from '../composables/useFormValidation';
+import { usePasswordValidation } from '../composables/usePasswordValidation';
 
-    const stateChosen = ref('Default');
-    const stateOptions = ref([
-        {text: 'State', value: "Default", placeholder: true},
-        {text: 'NSW', value: "NSW", placeholder: false},
-        {text: 'SA', value: "SA", placeholder: false},
-        {text: 'WA', value: "WA", placeholder: false},
-        {text: 'NT', value: "NT", placeholder: false},
-        {text: 'QLD', value: "QLD", placeholder: false},
-        {text: 'VIC', value: "VIC", placeholder: false},
-        {text: 'TAS', value: "TAS", placeholder: false}
-    ]);
+// State options
+const stateOptions = ref([
+  { text: 'State', value: 'Default', placeholder: true },
+  { text: 'NSW', value: 'NSW', placeholder: false },
+  { text: 'SA', value: 'SA', placeholder: false },
+  { text: 'WA', value: 'WA', placeholder: false },
+  { text: 'NT', value: 'NT', placeholder: false },
+  { text: 'QLD', value: 'QLD', placeholder: false },
+  { text: 'VIC', value: 'VIC', placeholder: false },
+  { text: 'TAS', value: 'TAS', placeholder: false },
+]);
 
-    // Form Data Structure
-    const formData = ref({
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: '',
-        mobilePhone: '',
-        areaOfInterest: '',
-        streetName: '',
-        city: '',
-        state: '',
-        postcode: ''
-    });
+// Composables
+const { formData, stateChosen, v$ } = useFormValidation();
+const { passwordValidator, validatePassword } = usePasswordValidation();
 
-    function passwordCheck(){
-        passwordValidator.value.minlength = formData.value.password.length >= 10;
-        passwordValidator.value.uppercase = /[A-Z]/.test(formData.value.password);
-        passwordValidator.value.lowercase = /[a-z]/.test(formData.value.password);
-        passwordValidator.value.number = /[0-9]/.test(formData.value.password);
-        passwordValidator.value.symbols = /[!@#$%^&*()/?]/.test(formData.value.password);
+// Router
+const router = useRouter();
+
+// Methods
+const handlePasswordInput = () => {
+  validatePassword(formData.value.password);
+};
+
+const handleSubmit = async () => {
+  try {
+    formData.value.state = stateChosen.value;
+
+    const result = await v$.value.$validate();
+    console.log('Validation result:', result);
+    console.log('Validation state:', v$.value);
+
+    if (result) {
+      await joinUsService.joinus(formData.value);
+      await router.push('/login');
     }
-
-    // Custom validator for vuelidator module
-    const validNumber = helpers.withMessage(
-      'Must be exactly 10 digits, start with 04',
-      (value) => /^[0-9]{10}$/.test(value) && value.startsWith('04')
-    );
-    
-    const stateValidator = helpers.withMessage(
-      'State is required',
-      (value) => value !== 'Default'
-    );
-
-    // Update the rules object
-    const rules = computed(() => {
-        return {
-            email: { 
-                required: helpers.withMessage('Email is required', required), 
-                email: helpers.withMessage('Please enter a valid email address', email) 
-            },
-            password: {required: helpers.withMessage('Password is required', required)},
-            firstName: { required: helpers.withMessage('First name is required', required) },
-            lastName: { required: helpers.withMessage('Last name is required', required) },
-            mobilePhone: { 
-              validNumber: validNumber
-            },
-            areaOfInterest: { required: helpers.withMessage('Area of interest is required', required) },
-            streetName: { required: helpers.withMessage('Street name is required', required) },
-            city: { required: helpers.withMessage('City name is required', required) },
-            state: { stateValidator: stateValidator },
-            postcode: { 
-                required: helpers.withMessage('Postcode is required', required),
-                numeric: numeric,
-                minLength: minLength(4),
-                maxLength: maxLength(4)
-             },
-        };
-    });
-
-    // Vuelidate Variables
-    const v$ = useVuelidate(rules, formData);
-
-    const passwordValidator = ref({
-        minlength: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        symbols: false,
-    });
-
-
-
-    const router = useRouter();
-
-    const handleSubmit = async () => {
-        try {
-            formData.value.state = stateChosen.value;
-
-            const result = await v$.value.$validate();
-            console.log("Validation result:", result);
-            console.log("Validation state:", v$.value);
-
-            if (result) {
-                await joinUsService.joinus(formData.value); // Create user
-                await router.push('/login'); //redirect to login page
-            }
-
-        } catch (error) {
-            console.error(error);
-        }
-    };
+  } catch (error) {
+    console.error(error);
+  }
+};
 </script>
 
 <template>
@@ -125,7 +62,7 @@
                         </div>
 
                         <div class="field">
-                            <input type="password" id="password" @input="passwordCheck" placeholder="Password" v-model="formData.password" :class="{'error-border': v$.password.$errors.length > 0}" />
+                            <input type="password" id="password" @input="handlePasswordInput" placeholder="Password" v-model="formData.password" :class="{'error-border': v$.password.$errors.length > 0}" />
                             <span v-for="error in v$.password.$errors" class="error-message password-border">{{ error.$message }}</span>
                             <ul class="password-requirement-section">
                                 <li :class="{'password-accept': passwordValidator.minlength}">At least 10 characters</li>
@@ -178,7 +115,13 @@
 
                             <div class="field">
                                 <select v-model="stateChosen" id="state" :class="v$.state.$errors.length > 0 ? 'error-border' : 'input-valid'" required>
-                                    <option v-for="state in stateOptions" :value="state.value" :disabled="state.placeholder" :hidden="state.placeholder">
+                                    <option 
+                                      v-for="state in stateOptions" 
+                                      :key="state.value"
+                                      :value="state.value" 
+                                      :disabled="state.placeholder" 
+                                      :hidden="state.placeholder"
+                                    >
                                         {{ state.text }}
                                     </option>
                                 </select>
