@@ -13,6 +13,16 @@ const userData = ref(null);
 
 // Run on component mount at startup of webpage
 onMounted(async () => {
+  // Make alerts based on Payment events  
+  const queryParams = new URLSearchParams(window.location.search);
+  const status = queryParams.get('status');
+  if (status === 'cancelled') {
+      alert('Payment was cancelled. Please try again to renew your membership.');
+  } else if (status === 'success') {
+      alert('Payment successful! Your membership has been renewed.');
+  }
+
+
   try {
     // Check authentication and load data
     if (!userStore.isAuthenticated) {
