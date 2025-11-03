@@ -5,40 +5,36 @@ const jwt = require('jsonwebtoken'); // Import JWT library
 const bcrypt = require('bcrypt');
 
 module.exports = {
-    async createJoinSession(req, res) {
+    async createJoinSession(body) {
         try {
             // Check if the email already exists
-            if (await JoinSession.getEmailExists(req.body.email)) {
-                return res.status(409).json({ message: "Email already exists. Please use a different email." });
+            if (await JoinSession.getEmailExists(body.email)) {
+                return { status: 409, message: "Email already exists. Please use a different email." };
             }
 
             // Prepare session data
             const sessionData = {
-                email: req.body.email,
-                password: req.body.password,
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                mobilePhone: req.body.mobilePhone,
-                areaOfInterest: req.body.areaOfInterest,
-                streetName: req.body.streetName,
-                city: req.body.city,
-                state: req.body.state,
-                postcode: req.body.postcode,
+                email: body.email,
+                password: body.password,
+                firstName: body.firstName,
+                lastName: body.lastName,
+                mobilePhone: body.mobilePhone,
+                areaOfInterest: body.areaOfInterest,
+                streetName: body.streetName,
+                city: body.city,
+                state: body.state,
+                postcode: body.postcode,
             };
 
             // Create a new join session with a TTL of 60 minutes
             const newJoinSession = await JoinSession.createSession(sessionData, 60); // 60 minutes TTL
 
             // Respond with success message
-            return res.status(201).json({ 
-                message: "User was registered successfully.", 
-                joinSessionID: newJoinSession._id, 
-                email: req.body.email
-            });
+            return newJoinSession;
 
         } catch (error) {
             console.error("Error during user registration:", error);
-            return res.status(400).json({ message: 'Registration failed. Please try again.', errors: error.message });
+            return { message: 'Registration failed. Please try again.', errors: error.message };
         }
     },
 

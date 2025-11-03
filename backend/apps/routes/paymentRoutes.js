@@ -2,9 +2,14 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/paymentContoller');
 const jwtAuth = require('../middlewares/jwtMiddleware');
+const validation = require('../validations/userValidation');
 
 // Route for creating checkout session
-router.post('/join-checkout', controller.createJoinCheckout);
+router.post(
+    '/join-checkout', 
+    validation.inputValidatorJoinUs,
+    controller.createJoinCheckout
+);
 
 // Route for creating renew checkout session
 // Requires authentication for user identification

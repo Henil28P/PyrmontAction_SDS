@@ -2,23 +2,25 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const JoinSession = require('../models/joinSessionModel');
 const User = require('../models/userModel');
 const userController = require('./userController');
+const joinSessionController = require('./joinSessionController');
 
 module.exports = {
     async createJoinCheckout(req, res) {
+        const joinSession = await joinSessionController.createJoinSession(req.body);
+
+        // Check if createJoinSession returned an error
+        if (joinSession.status && joinSession.message) {
+            return res.status(joinSession.status).json({ message: joinSession.message });
+        }
+
         try {
-            const { joinSessionID } = req.body;
-            
-            // Verify the join session exists
-            const joinSession = await JoinSession.findById(joinSessionID);
-            if (!joinSession) {
-                return res.status(404).json({ message: 'Session not found or expired.' });
-            }
-            
+            // Call createJoinSession to handle session creation and validation
+
             // Create Stripe checkout session
             const checkoutSession = await stripe.checkout.sessions.create({
                 mode: 'payment',
                 payment_method_types: ['card'],
-                customer_email: joinSession.email,
+                customer_email: req.body.email,
                 line_items: [{
                     price_data: {
                         currency: 'aud',
@@ -32,22 +34,24 @@ module.exports = {
                 }],
                 metadata: {
                     type: 'join',
-                    joinSessionID: joinSessionID.toString(),
+                    joinSessionID: joinSession._id.toString(),
                 },
                 success_url: `${process.env.FRONTEND_BASE_URL}/login?status=success`,
-                cancel_url: `${process.env.FRONTEND_BASE_URL}/joinus?status=cancelled&sessionID=${joinSessionID}`,
+                cancel_url: `${process.env.FRONTEND_BASE_URL}/joinus?status=cancelled&sessionID=${joinSession._id}`,
             });
 
+            // Save the Stripe session ID to the join session
             joinSession.sessionID = checkoutSession.id;
             await joinSession.save();
-            
+
             return res.status(200).json({
                 message: 'Checkout session created successfully.',
                 checkoutUrl: checkoutSession.url
             });
-            
+
         } catch (error) {
             console.error('Error creating checkout session:', error);
+            await joinSession.deleteOne();
             return res.status(500).json({ 
                 message: 'Failed to create checkout session.', 
                 error: error.message 
