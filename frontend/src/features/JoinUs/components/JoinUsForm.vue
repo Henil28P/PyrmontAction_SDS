@@ -45,8 +45,7 @@ const handleSubmit = async () => {
         const result = await v$.value.$validate();
 
         if (result) {
-            const joinSessionID = await service.createJoinSession(formData.value);
-            const response = await service.createJoinCheckout(joinSessionID);
+            const response = await service.createJoinCheckout(formData.value);
             if (response.checkoutUrl) {
                 window.location.href = response.checkoutUrl; // Redirect to Stripe Checkout
             } else {
