@@ -59,10 +59,13 @@ module.exports = {
         try {
             const { _id } = req.body;
             
-            // Verify the join session exists
+            // Verify the user session exists
             const user = await User.findById(_id);
             if (!user) {
                 return res.status(404).json({ message: 'User not found or expired.' });
+            }
+            if (!user.stripeCustomerID) {
+                return res.status(400).json({ message: 'User does not have a Stripe customer ID.' });
             }
             
             // Create Stripe checkout session
@@ -70,13 +73,12 @@ module.exports = {
                 mode: 'payment',
                 payment_method_types: ['card'],
                 customer: user.stripeCustomerID,
-                customer_email: user.email,
                 line_items: [{
                     price_data: {
                         currency: 'aud',
                         product_data: {
-                            name: 'Membership Registration',
-                            description: 'Annual membership fee',
+                            name: 'Annual Membership Renewal',
+                            description: 'Current Membership expires on '+ (new Date(user.memberExpiryDate)).toLocaleDateString('en-AU'),
                         },
                         unit_amount: 25 * 100, // $25.00 in cents
                     },
@@ -89,10 +91,7 @@ module.exports = {
                 success_url: `${process.env.FRONTEND_BASE_URL}/dashboard/member?status=success`,
                 cancel_url: `${process.env.FRONTEND_BASE_URL}/dashboard/member?status=cancelled`,
             });
-
-            joinSession.sessionID = checkoutSession.id;
-            await joinSession.save();
-            
+      
             return res.status(200).json({
                 message: 'Checkout session created successfully.',
                 checkoutUrl: checkoutSession.url
@@ -152,22 +151,22 @@ module.exports = {
         } else if (event.type === 'checkout.session.completed' && session.metadata.type === 'renew') {
             const userID = session.metadata.userID;
             try {
-                // Find the temporary join session
+                // Find the user
                 const user = await User.findById(userID);
                 if (!user) {
                     console.error('User not found:', userID);
                     return res.status(404).send('User not found');
                 }
                 if (user.stripeCustomerID !== session.customer) {
-                    console.error('Session ID mismatch for user:', userID);
-                    return res.status(400).send('Session ID mismatch');
+                    console.error('Customer ID mismatch for user:', userID);
+                    return res.status(400).send('Customer ID mismatch');
                 }
-                await User.findByIdAndUpdate(userID, {
-                    $set: {
-                        memberExpiryDate: userController.calculateMemberExpiryDate()
-                    }
-                });
-                console.log('Payment successful for:', user.email);
+
+                // Calculate new expiry date and update user object
+                user.memberExpiryDate = userController.calculateMemberExpiryDate(user.memberExpiryDate);
+                await user.save();
+
+                console.log('Renewal successful for:', user.email);
             } catch (error) {
                 console.error('Error processing successful payment:', error);
                 return res.status(500).send('Error processing payment');
