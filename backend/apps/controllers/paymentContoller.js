@@ -33,7 +33,7 @@ module.exports = {
                     joinSessionID: joinSessionID.toString(),
                 },
                 success_url: `${process.env.FRONTEND_BASE_URL}/login?status=success`,
-                cancel_url: `${process.env.FRONTEND_BASE_URL}/join?status=cancelled&sessionID=${checkoutSession.id}`,
+                cancel_url: `${process.env.FRONTEND_BASE_URL}/join?status=cancelled&sessionID=${joinSessionID}`,
             });
 
             joinSession.sessionID = checkoutSession.id;

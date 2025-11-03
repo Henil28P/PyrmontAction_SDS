@@ -1,7 +1,42 @@
 const User = require('../models/userModel');
 const Role = require('../models/roleModel');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 module.exports = {
+    async login(req, res) {
+        try {
+            // Step 1: Find the user by email
+            const user = await User.findOne({ email: req.body.email }).populate('role');
+            if (!user) {
+                return res.status(401).json({ message: 'Invalid email or password.' });
+            }
+
+            // Step 2: Compare passwords
+            const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: 'Invalid email or password.' });
+            }
+
+            // Step 3: Generate a token
+            const token = jwt.sign(
+                { id: user._id },
+                process.env.ACCESS_TOKEN || 'your_jwt_secret', // Use a secure secret in production
+                { expiresIn: '24h' }
+            );
+
+            // Step 4: Send a response
+            return res.status(200).json({
+                message: 'Login successful.',
+                token,
+                role: user.role.name,
+            });
+            
+        } catch (error) {
+            console.error('Error during login:', error);
+            return res.status(500).json({ message: 'Login failed. Please try again.', errors: error.message });
+        }
+    },
     // Create a new user
     async createMember(joinSession, stripeCustomerID) {
         try {

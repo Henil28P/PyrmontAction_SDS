@@ -93,7 +93,7 @@ module.exports = {
             }
             errorCount++;
         }
-
+        
         // Password validation
         if (!module.exports.passwordRegex(req.body.password)) {
             if(req.body.password.length <= 0) {
