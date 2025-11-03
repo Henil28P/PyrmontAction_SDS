@@ -96,6 +96,23 @@ module.exports = {
                 console.error('Error processing successful payment:', error);
                 return res.status(500).send('Error processing payment');
             }
+        } else if (event.type === 'checkout.session.expired') {
+            const session = event.data.object;
+            const joinSessionID = session.metadata.joinSessionID;
+            
+            try {
+                // Find and delete the temporary join session since checkout was cancelled/expired
+                const joinSession = await JoinSession.findById(joinSessionID);
+                if (joinSession) {
+                    await joinSession.deleteOne();
+                    console.log('Cleaned up expired join session for:', joinSession.email);
+                } else {
+                    console.log('Join session already cleaned up or not found:', joinSessionID);
+                }
+            } catch (error) {
+                console.error('Error cleaning up expired join session:', error);
+                return res.status(500).send('Error cleaning up session');
+            }
         }
 
         res.status(200).send('Webhook handled');
