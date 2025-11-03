@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, RouterLink } from 'vue-router';
 import { useUserStore } from '../../../stores/authStore';
 import services from '../dashboardServices';
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue';
+import { formatDate } from '@/utils/dateUtils';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -41,6 +42,17 @@ onMounted(async () => {
   };
 });
 
+const isActive = computed(() => {
+  if (!userData.value || !userData.value.memberExpiryDate) {
+    return false; // Default to inactive if data is not loaded
+  }
+
+  const todayDate = new Date();
+  const expiryDate = new Date(userData.value.memberExpiryDate);
+
+  return expiryDate >= todayDate;
+});
+
 // Change this to fetch real data later
 const minutes = ref([
   { id: 1, title: "AGM Minutes â€“ July 2025", date: "Jul 28, 2025", url: "#" },
@@ -57,16 +69,13 @@ function handleUserUpdated(updatedUserData) {
 function openRenewForm() {
   alert("Open renew membership form")
 }
-
-
-
 </script>
 
 <template>
   <div class="page">
     <main class="container content">
       <!-- Hero -->
-      <section class="hero">
+      <section class="hero" v-if="userData">
         <h1 class="hero__title">
           Welcome back, {{ userData?.firstName }}
           <span class="wave">👋</span>
@@ -75,7 +84,7 @@ function openRenewForm() {
       </section>
 
       <!-- Top Summary Cards -->
-      <section class="cards-row">
+      <section class="cards-row" v-if="userData">
         <article class="summary-card">
           <div class="summary-head">
             <!-- <span class="summary-icon">O</span> -->
@@ -89,7 +98,7 @@ function openRenewForm() {
             <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Payment Expiry</span>
           </div>
-          <div class="summary-value">DD/MM/YY => Add Later</div>
+          <div class="summary-value">{{ formatDate(userData?.memberExpiryDate) }}</div>
           <button class="link-btn" @click="openRenewForm">Renew membership</button>
         </article>
 
@@ -100,10 +109,10 @@ function openRenewForm() {
           </div>
           <div
             class="summary-value pill"
-            :class="userData?.isActive ? 'pill--green' : 'pill--red'"
+            :class="isActive ? 'pill--green' : 'pill--red'"
           >
-            <span class="dot" :class="userData?.isActive ? 'dot--green' : 'dot--red'"></span>
-            {{ userData?.isActive ? "Active" : "Deactivated" }}
+            <span class="dot" :class="isActive ? 'dot--green' : 'dot--red'"></span>
+            {{ isActive ? "Active" : "Deactivated" }}
           </div>
         </article>
       </section>
@@ -114,8 +123,9 @@ function openRenewForm() {
         :userData="userData"
         @userUpdated="handleUserUpdated"
       />
-          <!-- Meeting Minutes -->
-      <section class="minutes-card">
+
+      <!-- Meeting Minutes -->
+      <section class="minutes-card" v-if="userData">
         <div class="minutes-head">
           <div class="minutes-title">
             <h2>Meeting Minutes</h2>
@@ -158,8 +168,6 @@ function openRenewForm() {
         </div>
       </section>
     </main>
-
-
   </div>
 </template>
 
