@@ -1,5 +1,5 @@
 <script setup>
-import joinUsService from '../services/joinUsAuthService';
+import service from '../services/joinUsAuthService';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { useFormValidation } from '../composables/useFormValidation';
@@ -30,20 +30,23 @@ const handlePasswordInput = () => {
 };
 
 const handleSubmit = async () => {
-  try {
-    formData.value.state = stateChosen.value;
+    try {
+        formData.value.state = stateChosen.value;
 
-    const result = await v$.value.$validate();
-    console.log('Validation result:', result);
-    console.log('Validation state:', v$.value);
+        const result = await v$.value.$validate();
 
-    if (result) {
-      await joinUsService.joinus(formData.value);
-      await router.push('/login');
+        if (result) {
+            const joinSessionID = await service.createJoinSession(formData.value);
+            const response = await service.createCheckoutSession(joinSessionID);
+            if (response.checkoutUrl) {
+                window.location.href = response.checkoutUrl; // Redirect to Stripe Checkout
+            } else {
+                console.error("Checkout URL not provided in response.");
+            }
+        }
+    } catch (error) {
+        console.error(error);
     }
-  } catch (error) {
-    console.error(error);
-  }
 };
 </script>
 

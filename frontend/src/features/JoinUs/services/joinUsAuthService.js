@@ -2,8 +2,11 @@ import api from "../../../services/api"
 
 
 const joinUsAuthenticationService = {
-    joinus(userDetails){
-        return api.post("api/auth/join", userDetails, "")
+    createJoinSession(userDetails){
+        return api.post("api/join/", userDetails, "")
+    },
+    createCheckoutSession(joinSessionID) {
+        return api.post(`api/payments/create-checkout`, joinSessionID, "")
     }
 }
 

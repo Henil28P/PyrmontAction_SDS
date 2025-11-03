@@ -41,8 +41,7 @@ module.exports = {
             
             return res.status(200).json({
                 message: 'Checkout session created successfully.',
-                checkoutUrl: checkoutSession.url,
-                sessionID: checkoutSession.id
+                checkoutUrl: checkoutSession.url
             });
             
         } catch (error) {
