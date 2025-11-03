@@ -1,16 +1,27 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '../../../stores/authStore';
-import service from '../services/loginAuthServices'
+    import { onMounted } from 'vue';
+    import { ref } from 'vue';
+    import { useRouter } from 'vue-router';
+    import { useUserStore } from '../../../stores/authStore';
+    import service from '../services/loginAuthServices';
 
     const loginInput = {
         email: '',
         password: ''
     }
+
     const router = useRouter();
     const userStore = useUserStore();
     const loginErrors = ref(false);
+
+    onMounted(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const status = queryParams.get('status');
+
+        if (status === 'success') {
+            alert('Registration was successful!');
+        }
+    });
 
     const handleSubmit = async() => {
         try{
@@ -34,9 +45,6 @@ import service from '../services/loginAuthServices'
             loginErrors.value = true;
         }
     }
-
-    
-
 </script>
 
 <template>

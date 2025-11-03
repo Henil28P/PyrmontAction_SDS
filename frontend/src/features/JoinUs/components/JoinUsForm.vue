@@ -1,7 +1,7 @@
 <script setup>
 import service from '../services/joinUsAuthService';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useFormValidation } from '../composables/useFormValidation';
 import { usePasswordValidation } from '../composables/usePasswordValidation';
 
@@ -21,8 +21,12 @@ const stateOptions = ref([
 const { formData, stateChosen, v$ } = useFormValidation();
 const { passwordValidator, validatePassword } = usePasswordValidation();
 
-// Router
-const router = useRouter();
+
+onMounted (() => {
+    const queryParams = new URLSearchParams(window.location.search);
+     const status = queryParams.get('status');
+});
+
 
 // Methods
 const handlePasswordInput = () => {
