@@ -57,10 +57,10 @@ module.exports = {
 
     async createRenewCheckout(req, res) {
         try {
-            const { _id } = req.body;
+            console.log('Renew checkout request body:', req.user);
             
             // Verify the user session exists
-            const user = await User.findById(_id);
+            const user = await User.findById(req.user._id);
             if (!user) {
                 return res.status(404).json({ message: 'User not found or expired.' });
             }

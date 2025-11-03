@@ -66,8 +66,16 @@ function handleUserUpdated(updatedUserData) {
   console.log('User updated successfully:', updatedUserData);
 }
 
-function openRenewForm() {
-  alert("Open renew membership form")
+async function openRenewCheckout() {
+  try {
+    const response = await services.createRenewCheckout(userStore.getToken); // Fixed reference to `services`
+    if (response.checkoutUrl) {
+      window.location.href = response.checkoutUrl; // Redirect to Stripe Checkout
+    } 
+  } catch (error) {
+    console.error('Error during renewal checkout:', error);
+    alert('Failed to initiate renewal checkout. Please try again later.');
+  }
 }
 </script>
 
@@ -99,7 +107,7 @@ function openRenewForm() {
             <span class="summary-label">Payment Expiry</span>
           </div>
           <div class="summary-value">{{ formatDate(userData?.memberExpiryDate) }}</div>
-          <button class="link-btn" @click="openRenewForm">Renew membership</button>
+          <button class="link-btn" @click="openRenewCheckout">Renew membership</button>
         </article>
 
         <article class="summary-card">

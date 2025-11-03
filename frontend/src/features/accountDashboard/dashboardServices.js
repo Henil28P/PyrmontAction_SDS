@@ -3,6 +3,7 @@ import api from "../../services/api"
 const dashboardServices = {    
     getCurrentUserDetails(token){ return api.get("api/users/me", token);},
     updateCurrentUser(token, userData){ return api.put("api/users/me", userData, token);},
+    createRenewCheckout(token) { return api.get(`api/payments/renew-checkout/`, token);},
     
     // Meeting Minutes Management
     getAllMeetingMinutes(token){ return api.get("api/minutes/", token);},

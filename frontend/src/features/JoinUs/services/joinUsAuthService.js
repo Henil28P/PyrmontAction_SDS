@@ -8,7 +8,7 @@ const joinUsAuthenticationService = {
     deleteJoinSession(id){
         return api.delete(`api/join/${id}`)
     },
-    createCheckoutSession(joinSessionID) {
+    createJoinCheckout(joinSessionID) {
         return api.post(`api/payments/join-checkout`, joinSessionID, "")
     }
 
