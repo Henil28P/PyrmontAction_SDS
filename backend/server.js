@@ -36,6 +36,7 @@ app.use('/api/contact', require('./apps/routes/contactRoutes'));
 app.use('/api/join', require('./apps/routes/joinSessionRoutes')); 
 app.use('/api/events', require('./apps/routes/eventRoutes')); 
 app.use('/api/minutes', require('./apps/routes/meetingMinuteRoutes'));
+app.use('/api/blogs', require('./apps/routes/blogRoutes'));
 app.use('/api/payments', require('./apps/routes/paymentRoutes'));
 
 const PORT = process.env.PORT || 5000;
