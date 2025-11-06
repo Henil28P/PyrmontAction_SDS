@@ -11,7 +11,7 @@ module.exports = {
       eventData.startDate = new Date(startDate);
       eventData.endDate = new Date(endDate);
 
-      if (req.file) { // Uploa
+      if (req.file) { // Upload image if provided
         eventData.imageUrl = `/uploads/events/${req.file.filename}`;
         eventData.imageName = req.file.originalname;
       }
