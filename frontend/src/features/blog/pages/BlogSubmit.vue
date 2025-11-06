@@ -282,7 +282,7 @@ const goBack = () => {
 
 .back-button:hover {
   background: #f8fafc;
-  border-color: #EBBD6D;
+  border-color: #10b981;
   color: #1e293b;
 }
 

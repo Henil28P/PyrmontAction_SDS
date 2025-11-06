@@ -106,9 +106,9 @@ const readTime = computed(() => {
 }
 
 .blog-card:hover {
-  border-color: #EBBD6D;
+  border-color: #10b981;
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.15);
 }
 
 .blog-card__image-wrapper {
@@ -139,7 +139,7 @@ const readTime = computed(() => {
   align-items: center;
   justify-content: center;
   color: rgba(255, 255, 255, 0.9);
-  background: linear-gradient(135deg, #EBBD6D 0%, #D08927 100%);
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
   transition: transform 0.4s ease;
 }
 

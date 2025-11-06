@@ -213,7 +213,7 @@ onMounted(() => {
   height: 300px;
   overflow: hidden;
   margin-bottom: 3rem;
-  background-color: #EBBD6D;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%); /* green to cyan gradient */
 }
 
 .blogs-hero::before {
@@ -238,7 +238,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(235, 189, 109, 0.3), rgba(235, 189, 109, 0.2)),
+  background: linear-gradient(rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.3)),
               radial-gradient(circle at center, rgba(255, 255, 255, 0.08), transparent 80%);
   pointer-events: none;
   z-index: 2;
@@ -251,7 +251,7 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   width: 40%;
-  background: linear-gradient(135deg, rgba(235, 189, 109, 0.9), rgba(208, 137, 39, 0.9));
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(6, 182, 212, 0.9));
   clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
   display: flex;
   align-items: center;
@@ -273,7 +273,7 @@ onMounted(() => {
   line-height: 1.1;
   letter-spacing: 1.5px;
   color: #fff;
-  text-shadow: 3px 3px 8px rgba(140, 75, 0, 0.4);
+  text-shadow: 3px 3px 8px rgba(0, 70, 60, 0.4);
   animation: fadeIn 1.2s ease-out 0.6s backwards;
   transition: transform 0.4s ease-out;
 }
@@ -283,7 +283,7 @@ onMounted(() => {
 }
 
 .blogs-hero:hover::after {
-  background: linear-gradient(rgba(235, 189, 109, 0.2), rgba(235, 189, 109, 0.1)),
+  background: linear-gradient(rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2)),
               radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 85%);
 }
 
@@ -318,8 +318,8 @@ onMounted(() => {
 }
 
 .tab-button.active {
-  color: #EBBD6D;
-  border-bottom-color: #EBBD6D;
+  color: #10b981;
+  border-bottom-color: #10b981;
 }
 
 .loading,
@@ -344,7 +344,7 @@ onMounted(() => {
 }
 
 .retry-button:hover {
-  border-color: #EBBD6D;
+  border-color: #10b981;
 }
 
 .blogs-grid {
