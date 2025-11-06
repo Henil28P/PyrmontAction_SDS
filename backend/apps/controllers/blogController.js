@@ -6,10 +6,6 @@ module.exports = {
     async submitBlog (req, res) {
         try {
             const { title, content, author, status } = req.body;
-            if (await Blog.existsTitle(title)) {
-                return  res.status(400).json({ message: 'Blog title already exists' });
-            }
-
             const blogData = {title, content, author, status};
             if (req.file) {
                 blogData.imageUrl = `/uploads/blogs/${req.file.filename}`;
