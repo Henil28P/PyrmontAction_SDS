@@ -55,6 +55,18 @@ module.exports = {
             res.status(500).json({ message: 'Error fetching blog', error });
         }
     },
+    // Get blog by edit code for visitors
+    async getBlogByCode (req, res) {
+        try {
+            const blog = await Blog.findOne({ editCode: req.params.id });
+            if (!blog) {
+                return res.status(404).json({ message: 'Blog has either been approved or removed.' });
+            }
+            res.status(200).json(blog);
+        } catch (error) {
+            res.status(500).json({ message: 'Error fetching blog', error });
+        }
+    },
 
     /* UPDATE  */
     // Update blog (for editorial review)

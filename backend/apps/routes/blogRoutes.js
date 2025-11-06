@@ -18,6 +18,8 @@ router.get('/',
 router.get('/approved', controller.getApprovedBlogs);
 // Anyone: Get blog by ID
 router.get('/:id', controller.getBlogByID);
+// Visitor: Get blog by edit code
+router.get('/code/:id', controller.getBlogByCode);
 
 /* UPDATE */
 // Admin: Approve a blog post
