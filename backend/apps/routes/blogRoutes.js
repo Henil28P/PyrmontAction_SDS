@@ -19,7 +19,7 @@ router.get('/approved', controller.getApprovedBlogs);
 // Anyone: Get blog by ID
 router.get('/:id', controller.getBlogByID);
 // Visitor: Get blog by edit code
-router.get('/code/:id', controller.getBlogByCode);
+router.get('/visitor/:id', controller.getBlogViaCode);
 
 /* UPDATE */
 // Admin: Approve a blog post
@@ -28,11 +28,17 @@ router.put('/:id/approve',
     jwtAuth.verifyRole(['admin', 'editor']),
     controller.approveBlog
 );
-// Admin: Update a blog post
+// Admin: Update a blog post (image is not to be touched)
 router.put('/:id',
     jwtAuth.verifyToken,
     jwtAuth.verifyRole(['admin', 'editor']),
     controller.updateBlog
+);
+
+// Visitor: Update a blog post
+router.put('/visitor/:id',
+    upload.blogImage,
+    controller.updateBlogViaCode
 );
 
 /* DELETE */

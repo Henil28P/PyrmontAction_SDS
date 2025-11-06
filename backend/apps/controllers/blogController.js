@@ -56,7 +56,7 @@ module.exports = {
         }
     },
     // Get blog by edit code for visitors
-    async getBlogByCode (req, res) {
+    async getBlogViaCode (req, res) {
         try {
             const blog = await Blog.findOne({ editCode: req.params.id });
             if (!blog) {
@@ -69,6 +69,26 @@ module.exports = {
     },
 
     /* UPDATE  */
+    // Update for visitor via edit code
+    async updateBlogViaCode (req, res) {
+        try {
+            const { id } = req.params;
+            const { title, content, author, status } = req.body;
+            const blogData = { title, content, author, status };
+            if (req.file) {
+                blogData.imageUrl = `/uploads/blogs/${req.file.filename}`;
+                blogData.imageName = req.file.originalname;
+            }
+            const updatedBlog = await Blog.findByIdAndUpdate(id, blogData, { new: true });
+            if (!updatedBlog) {
+                return res.status(404).json({ message: 'Blog not found or invalid edit code' });
+            }
+            res.status(200).json(updatedBlog);
+        } catch (error) {
+            res.status(500).json({ message: 'Error updating blog', error });
+        }
+    },
+
     // Update blog (for editorial review)
     async updateBlog (req, res) {
         try {
