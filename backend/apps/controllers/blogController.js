@@ -103,7 +103,9 @@ module.exports = {
     async approveBlog (req, res) {
         try {
             const { id } = req.params;
-            const updatedBlog = await Blog.findByIdAndUpdate(id, { status: 'approved' }, { new: true });
+            const updatedBlog = await Blog.findByIdAndUpdate(id, 
+                { $set: { status: 'approved' }, $unset: { editCode: "" } }, 
+                { new: true });
             if (!updatedBlog) {
                 return res.status(404).json({ message: 'Blog not found' });
             }
