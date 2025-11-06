@@ -24,5 +24,10 @@ blogSchema.statics.generateEditCode = async function () {
   return editCode;
 };
 
+blogSchema.statics.existsTitle = async function (title) {
+  const blog = await this.findOne({ title });
+  return !!blog;
+};
+
 const Blog = mongoose.model('Blog', blogSchema);
 module.exports = Blog;
