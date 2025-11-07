@@ -8,6 +8,7 @@ router.post('/login', validation.login, controller.login); // User login
 /* CREATE */
 router.post('/manager', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.createManager); // User registration
 /* READ */
+router.get('/active-members', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.getActiveMembers); // Get active members list
 router.get('/password/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.setRandomPassword); // Generate a random password
 router.get('/me', jwtAuth.verifyToken, controller.getCurrentUser); // Get current user's profile
 router.get('/', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.getAllUsers); // Get all users (admin only)

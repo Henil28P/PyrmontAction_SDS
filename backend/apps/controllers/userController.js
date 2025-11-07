@@ -67,7 +67,7 @@ module.exports = {
             throw error;
         }
     },
-
+    // Create a new manager (admin/editor) by admin
     async createManager(req, res) {
         try {
             const {firstName, lastName, email, role} = req.body;
@@ -93,6 +93,22 @@ module.exports = {
     },
 
     /* READ  */
+    // Admin view of Active Member's list
+    async getActiveMembers(req, res) {
+        try {
+            const today = new Date();
+            const activeMembers = await User.find({ memberExpiryDate: { $gte: today } })
+                // Populate role to match only 'member' roles
+                .populate({ path: 'role', match: { name: 'member' }, select: '-_id name' })
+                .select('firstName lastName email mobilePhone -_id')
+                .lean();
+            return res.status(200).json(activeMembers);
+        } catch (error) {
+            console.error("Error fetching active members:", error);
+            return res.status(500).json({ message: 'Failed to fetch active members.', errors: error.message });
+        }
+    },
+
     // Get current user's profile (using ID from JWT token)
     async setRandomPassword(req, res) {
         const { id } = req.params;
@@ -126,7 +142,7 @@ module.exports = {
             return res.status(500).json({ message: 'Failed to fetch user.', errors: error.message });
         }
     },
-    
+
     // Get all users (admin only)
     async getAllUsers(req, res) {
         try {
