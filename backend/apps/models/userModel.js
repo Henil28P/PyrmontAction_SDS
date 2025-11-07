@@ -35,6 +35,12 @@ userSchema.pre('findOneAndUpdate', async function (next) {
     next();
 });
 
+// Alias findByIdAndUpdate to trigger the same middleware
+userSchema.pre('findByIdAndUpdate', async function (next) {
+    this.setQuery({ _id: this.getQuery()._id }); // Ensure the query is consistent
+    next();
+});
+
 // Adding static methods to the schema
 userSchema.statics.getEmailExists = async function (email) {
     const user = await this.findOne({ email });

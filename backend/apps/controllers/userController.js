@@ -117,7 +117,28 @@ module.exports = {
         }
     },
 
-    async generateRandomPassword(req, res) {
+    async setRandomPassword(req, res) {
+        const { id } = req.params;
+        const password = module.exports.generateRandomPassword();
+        try {
+            const user = await User.findByIdAndUpdate(
+                id,
+                { password: password },
+                { new: true }
+            );
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found.' });
+            }
+
+            return res.status(200).json(password);
+        } catch (error) {
+            console.error("Error resetting password:", error);
+            return res.status(500).json({ message: 'Failed to reset password.', errors: error.message });
+        }
+    },
+
+    generateRandomPassword() {
         const length = 12; // Desired password length
         const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
         let password = "";
@@ -129,7 +150,7 @@ module.exports = {
             password += charset[randomIndex];
         }
 
-        return res.status(200).json({ password });
+        return password;
     },
 
     /* DELETE  */
