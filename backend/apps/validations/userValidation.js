@@ -1,3 +1,4 @@
+const { verify } = require('jsonwebtoken');
 const User = require('../models/userModel');
 module.exports = {
 
@@ -146,5 +147,5 @@ module.exports = {
         }
 
         next();
-    }
-}
+    },
+};

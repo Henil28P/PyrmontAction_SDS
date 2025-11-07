@@ -37,7 +37,8 @@ module.exports = {
             return res.status(500).json({ message: 'Login failed. Please try again.', errors: error.message });
         }
     },
-    // Create a new user
+    /*  CREATE  */
+    // Create a new user by joining
     async createMember(joinSession, stripeCustomerID) {
         try {
             // Map incoming joinSession fields to the User model fields.
@@ -66,6 +67,8 @@ module.exports = {
         }
     },
 
+
+    /* READ  */
     // Get current user's profile (using ID from JWT token)
     async getCurrentUser(req, res) {
         try {
@@ -92,26 +95,10 @@ module.exports = {
             return res.status(500).json({ message: 'Failed to fetch user.', errors: error.message });
         }
     },
-
+    /* UPDATE  */
     // Update current user's profile
     async updateCurrentUser(req, res) {
         try {
-            // const userId = req.user._id;
-            // const allowedUpdates = ['firstName', 'lastName', 'mobilePhone', 'streetName', 'city', 'state', 'postalCode', 'postcode'];
-            
-            // // Filter only allowed fields from request body
-            // const updateData = {};
-            // allowedUpdates.forEach(field => {
-            //     if (req.body[field] !== undefined) {
-            //         updateData[field] = req.body[field];
-            //     }
-            // });
-
-            // // Handle both postalCode and postcode field names
-            // if (req.body.postalCode) {
-            //     updateData.postcode = req.body.postalCode;
-            // }
-
             const updatedUser = await User.findByIdAndUpdate(
                 req.user._id,
                 req.body,
@@ -126,6 +113,29 @@ module.exports = {
         } catch (error) {
             console.error("Error updating user:", error);
             return res.status(500).json({ message: 'Failed to update user.', errors: error.message });
+        }
+    },
+
+    /* DELETE  */
+    // Delete user by ID (admin only)
+    async deleteUser(req, res) {
+        try {
+            const user = await User.findByIdAndDelete(req.params.id);
+            if (!user) return res.status(404).json({ message: 'User not found' });
+            res.status(200).json({ message: 'User deleted successfully' });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    },
+
+    // Delete current user's account
+    async deleteCurrentUser(req, res) {
+        try {
+            const user = await User.findByIdAndDelete(req.user._id);
+            if (!user) return res.status(404).json({ message: 'User not found' });
+            res.status(200).json({ message: 'Your account has been deleted successfully' });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
         }
     },
 
