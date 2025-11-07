@@ -103,14 +103,28 @@ module.exports = {
         }
     },
     
-    // Get user by specific ID (admin only)
-    async getUser(req, res) {
+    // Get all users (admin only)
+    async getAllUsers(req, res) {
         try {
-            const user = await User.findById(req.params.id).select('-password');
-            if (!user) {
-                return res.status(404).json({ message: 'User not found.' });
+            const users = await User.aggregate([
+                { $lookup: { // Join with roles collection
+                    from: 'roles',
+                    localField: 'role',
+                    foreignField: '_id',
+                    as: 'roleDetails' }
+                },
+                { $unwind: '$roleDetails'},
+                { $project: {
+                    firstName: 1,
+                    lastName: 1,
+                    email: 1,
+                    role: '$roleDetails.name' } // Only return role name
+            }]);
+
+            if (!users || users.length === 0) {
+                return res.status(404).json({ message: 'No users found.' });
             }
-            return res.status(200).json(user);
+            return res.status(200).json(users);
         } catch (error) {
             console.error("Error fetching user:", error);
             return res.status(500).json({ message: 'Failed to fetch user.', errors: error.message });
