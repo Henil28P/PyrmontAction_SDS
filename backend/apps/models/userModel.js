@@ -44,8 +44,7 @@ userSchema.pre('findByIdAndUpdate', async function (next) {
 // Adding static methods to the schema
 userSchema.statics.getEmailExists = async function (email) {
     const user = await this.findOne({ email });
-    if (!user) return false;
-    return true;
+    return user;
 };
 
 module.exports = mongoose.model('User', userSchema);

@@ -7,7 +7,7 @@ const validation = require('../validations/userValidation');
 // Route for creating checkout session
 router.post(
     '/join-checkout', 
-    validation.inputValidatorJoinUs,
+    validation.joinUs,
     controller.createJoinCheckout
 );
 
