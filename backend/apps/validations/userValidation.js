@@ -1,3 +1,4 @@
+const { createManager } = require('../controllers/userController');
 const User = require('../models/userModel');
 const Joi = require('joi');
 
@@ -108,7 +109,17 @@ const schemas = {
         state: fields.state.required(),
         postcode: fields.postcode.required(),
     }),
-    
+
+    // Create account by admin: email, firstName, lastName, role
+    createManager: Joi.object({
+        email: fields.email.required(),
+        firstName: fields.firstName.required(),
+        lastName: fields.lastName.required(),
+        role: Joi.string().valid('admin', 'editor').required().messages({
+            'any.only': 'Role must be either admin or editor',
+            'string.empty': 'Role is required',
+        }),
+    }),
     // Update account details: email and password (optional password for updating)
     updating: Joi.object({
         email: fields.email.optional(),
@@ -172,6 +183,10 @@ module.exports = {
     login: createValidator(schemas.login),
 
     joinUs: createValidator(schemas.joinUs, {
+        checkEmailExists: true
+    }),
+
+    createManager: createValidator(schemas.createManager, {
         checkEmailExists: true
     }),
 
