@@ -11,6 +11,7 @@ router.get('/password/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), 
 router.get('/me', jwtAuth.verifyToken, controller.getCurrentUser); // Get current user's profile
 /* UPDATE */
 router.put('/me', jwtAuth.verifyToken, validation.updateAccount, controller.updateCurrentUser); // Update current user's profile
+router.put('/role/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.changeManagerRole); // Change user role
 /* DELETE */
 router.delete('/me', jwtAuth.verifyToken, controller.deleteCurrentUser); // Delete current user's profile
 router.delete('/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.deleteUser); // Delete user by ID

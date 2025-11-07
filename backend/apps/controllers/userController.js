@@ -57,8 +57,8 @@ module.exports = {
                 postcode: joinSession.postcode,
                 stripeCustomerID: stripeCustomerID
             });
-
-            newUser.memberExpiryDate = this.calculateMemberExpiryDate(new Date());
+            
+            newUser.memberExpiryDate = module.exports.calculateMemberExpiryDate(new Date());
             newUser.role = await Role.findOne({ name: 'member' }).exec();
             await newUser.save();
             return newUser;
@@ -68,6 +68,26 @@ module.exports = {
         }
     },
 
+    async setRandomPassword(req, res) {
+        const { id } = req.params;
+        const password = module.exports.generateRandomPassword();
+        try {
+            const user = await User.findByIdAndUpdate(
+                id,
+                { password: password },
+                { new: true }
+            );
+    
+            if (!user) {
+                return res.status(404).json({ message: 'User not found.' });
+            }
+    
+            return res.status(200).json(password);
+        } catch (error) {
+            console.error("Error resetting password:", error);
+            return res.status(500).json({ message: 'Failed to reset password.', errors: error.message });
+        }
+    },
 
     /* READ  */
     // Get current user's profile (using ID from JWT token)
@@ -75,14 +95,14 @@ module.exports = {
         try {
             // Use object destructuring to exclude sensitive fields
             const { password, _id, __v, createdAt, updatedAt, role, ...userData } = req.user.toObject();
-
+            
             return res.status(200).json(userData);
         } catch (error) {
             console.error("Error fetching user:", error);
             return res.status(500).json({ message: 'Failed to fetch user.', errors: error.message });
         }
     },
-
+    
     // Get user by specific ID (admin only)
     async getUser(req, res) {
         try {
@@ -96,6 +116,7 @@ module.exports = {
             return res.status(500).json({ message: 'Failed to fetch user.', errors: error.message });
         }
     },
+
     /* UPDATE  */
     // Update current user's profile
     async updateCurrentUser(req, res) {
@@ -110,47 +131,36 @@ module.exports = {
                 return res.status(404).json({ message: 'User not found.' });
             }
 
-            return res.status(200).json(updatedUser);
+            return res.status(200).json({ message: 'User updated successfully.' });
         } catch (error) {
             console.error("Error updating user:", error);
             return res.status(500).json({ message: 'Failed to update user.', errors: error.message });
         }
     },
 
-    async setRandomPassword(req, res) {
-        const { id } = req.params;
-        const password = module.exports.generateRandomPassword();
+    async changeManagerRole(req, res) {
         try {
-            const user = await User.findByIdAndUpdate(
-                id,
-                { password: password },
-                { new: true }
-            );
-
+            const { id } = req.params;
+            const user = await User.findById(id).populate('role');
             if (!user) {
                 return res.status(404).json({ message: 'User not found.' });
             }
-
-            return res.status(200).json(password);
+            if (user.email === process.env.MASTER_ADMIN) {
+                return res.status(403).json({ message: 'Cannot change role of the master admin account.' });
+            }
+            if (user.role.name === 'editor') {
+                user.role = await Role.findOne({ name: 'admin' }).exec();
+            } else if (user.role.name === 'admin') {
+                user.role = await Role.findOne({ name: 'editor' }).exec();
+            } else {
+                return res.status(400).json({ message: 'User role cannot be changed.' });
+            }
+            await user.save();
+            return res.status(200).json({ message: 'User role updated successfully.', role: user.role.name });
         } catch (error) {
-            console.error("Error resetting password:", error);
-            return res.status(500).json({ message: 'Failed to reset password.', errors: error.message });
+            console.error("Error changing user role:", error);
+            return res.status(500).json({ message: 'Failed to change user role.', errors: error.message });
         }
-    },
-
-    generateRandomPassword() {
-        const length = 12; // Desired password length
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-        let password = "";
-
-        // Generate a secure random password
-        const randomBytes = crypto.randomBytes(length);
-        for (let i = 0; i < length; i++) {
-            const randomIndex = randomBytes[i] % charset.length;
-            password += charset[randomIndex];
-        }
-
-        return password;
     },
 
     /* DELETE  */
@@ -171,7 +181,7 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
-
+    
     // Delete current user's account
     async deleteCurrentUser(req, res) {
         try {
@@ -185,7 +195,22 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
-
+    
+    generateRandomPassword() {
+        const length = 12; // Desired password length
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let password = "";
+        
+        // Generate a secure random password
+        const randomBytes = crypto.randomBytes(length);
+        for (let i = 0; i < length; i++) {
+            const randomIndex = randomBytes[i] % charset.length;
+            password += charset[randomIndex];
+        }
+    
+        return password;
+    },
+    
     calculateMemberExpiryDate(date) {
         const oneYearFromNow = new Date(date);
         oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
