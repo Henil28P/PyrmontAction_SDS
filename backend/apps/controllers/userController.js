@@ -131,6 +131,10 @@ module.exports = {
     async getAllUsers(req, res) {
         try {
             const users = await User.aggregate([
+                { $match: { // Exclude master admin and current user
+                    email: { $ne: process.env.MASTER_ADMIN },
+                    _id: { $ne: req.user._id }
+                }},
                 { $lookup: { // Join with roles collection
                     from: 'roles',
                     localField: 'role',
