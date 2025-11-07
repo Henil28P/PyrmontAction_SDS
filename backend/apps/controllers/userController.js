@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const Role = require('../models/roleModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 module.exports = {
     async login(req, res) {
@@ -114,6 +115,21 @@ module.exports = {
             console.error("Error updating user:", error);
             return res.status(500).json({ message: 'Failed to update user.', errors: error.message });
         }
+    },
+
+    async generateRandomPassword(req, res) {
+        const length = 12; // Desired password length
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let password = "";
+
+        // Generate a secure random password
+        const randomBytes = crypto.randomBytes(length);
+        for (let i = 0; i < length; i++) {
+            const randomIndex = randomBytes[i] % charset.length;
+            password += charset[randomIndex];
+        }
+
+        return res.status(200).json({ password });
     },
 
     /* DELETE  */
