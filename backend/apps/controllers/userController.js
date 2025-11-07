@@ -120,8 +120,15 @@ module.exports = {
     // Delete user by ID (admin only)
     async deleteUser(req, res) {
         try {
-            const user = await User.findByIdAndDelete(req.params.id);
+            if (req.user._id.toString() === req.params.id) {
+                return res.status(400).json({ message: 'Admins cannot delete their own accounts via this route.' });
+            }
+            const user = await User.findById(req.params.id);
+            if (user.email === process.env.MASTER_ADMIN) {
+                return res.status(403).json({ message: 'Cannot delete the master admin account.' });
+            }
             if (!user) return res.status(404).json({ message: 'User not found' });
+            await User.findByIdAndDelete(user._id);
             res.status(200).json({ message: 'User deleted successfully' });
         } catch (err) {
             res.status(500).json({ message: err.message });
@@ -131,6 +138,9 @@ module.exports = {
     // Delete current user's account
     async deleteCurrentUser(req, res) {
         try {
+            if (req.user.email === process.env.MASTER_ADMIN) {
+                return res.status(403).json({ message: 'Cannot delete the master admin account.' });
+            }
             const user = await User.findByIdAndDelete(req.user._id);
             if (!user) return res.status(404).json({ message: 'User not found' });
             res.status(200).json({ message: 'Your account has been deleted successfully' });
