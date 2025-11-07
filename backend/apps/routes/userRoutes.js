@@ -6,7 +6,7 @@ const validation = require('../validations/userValidation');
 // router.post('/login', validation.inputValidatorLogin, controller.login); // User login
 router.post('/login', validation.login, controller.login); // User login
 /* CREATE */
-
+router.post('/manager', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.createManager); // User registration
 /* READ */
 router.get('/password/:id', jwtAuth.verifyToken, jwtAuth.verifyRole(['admin']), controller.setRandomPassword); // Generate a random password
 router.get('/me', jwtAuth.verifyToken, controller.getCurrentUser); // Get current user's profile

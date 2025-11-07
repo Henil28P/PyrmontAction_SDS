@@ -68,6 +68,32 @@ module.exports = {
         }
     },
 
+    async createManager(req, res) {
+        try {
+            const {firstName, lastName, email, role} = req.body;
+            const password = module.exports.generateRandomPassword();
+            const newUser = new User({
+                firstName,
+                lastName,
+                email,
+                password : password,
+                role: await Role.findOne({ name: role }).exec()
+            });
+            await newUser.save();
+            await User.findByIdAndUpdate(
+                newUser._id,
+                { password: password },
+                { new: true }
+            );
+            return res.status(201).json(password);
+        } catch (error) {
+            console.error("Error creating user:", error);
+            return res.status(500).json({ message: 'Failed to create user.', errors: error.message });
+        }
+    },
+
+    /* READ  */
+    // Get current user's profile (using ID from JWT token)
     async setRandomPassword(req, res) {
         const { id } = req.params;
         const password = module.exports.generateRandomPassword();
@@ -89,8 +115,6 @@ module.exports = {
         }
     },
 
-    /* READ  */
-    // Get current user's profile (using ID from JWT token)
     async getCurrentUser(req, res) {
         try {
             // Use object destructuring to exclude sensitive fields
