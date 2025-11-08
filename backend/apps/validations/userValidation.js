@@ -1,4 +1,3 @@
-const { createManager } = require('../controllers/userController');
 const User = require('../models/userModel');
 const Joi = require('joi');
 

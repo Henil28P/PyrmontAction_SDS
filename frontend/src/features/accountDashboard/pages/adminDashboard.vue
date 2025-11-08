@@ -42,15 +42,15 @@
         </div>
 
       <div v-else-if="activeTab === 'minutes'">
-        <MeetingMinutesAdmin/>
+        <MeetingMinutes/>
       </div>
 
       <div v-else-if="activeTab === 'members-list'">
-        <MembersListAdmin/>
+        <MembersList/>
       </div>
 
         <div v-else-if="activeTab === 'manager'">
-          <p>This is content for Account Manager tab.</p>
+          <AccountManager/>
         </div>
       </div>
     </main>
@@ -58,65 +58,66 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '../../../stores/authStore'
-import services from '../dashboardServices'
-import MeetingMinutesAdmin from '../components/admin/MeetingMinutesAdmin.vue'
-import AccountDetailsComponent from '../components/AccountDetailsComponent.vue'
-import MembersListAdmin from '../components/admin/MembersListAdmin.vue'
+  import { ref, onMounted, computed } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useUserStore } from '../../../stores/authStore'
+  import services from '../dashboardServices'
+  import MeetingMinutes from '../components/admin/MeetingMinutesAdmin.vue'
+  import AccountDetailsComponent from '../components/AccountDetailsComponent.vue'
+  import MembersList from '../components/admin/MembersListAdmin.vue'
+  import AccountManager from '../components/admin/AccountManagerAdmin.vue'
 
-const router = useRouter()
-const userData = ref(null)
-const meetingsData = ref([])
+  const router = useRouter()
+  const userData = ref(null)
+  const meetingsData = ref([])
 
-async function loadUserData() {
-  try {    
-    const fetchUserData = await services.getCurrentUserDetails(useUserStore().getToken)
-    userData.value = fetchUserData
-  } catch (error) {
-    console.error('Failed to load admin data:', error)
+  async function loadUserData() {
+    try {    
+      const fetchUserData = await services.getCurrentUserDetails(useUserStore().getToken)
+      userData.value = fetchUserData
+    } catch (error) {
+      console.error('Failed to load admin data:', error)
+    }
   }
-}
 
-onMounted(() => {
-  if (!useUserStore().isAuthenticated) {
-    console.warn('User not authenticated, redirecting to login.')
-    logout()
-    return
+  onMounted(() => {
+    if (!useUserStore().isAuthenticated) {
+      console.warn('User not authenticated, redirecting to login.')
+      logout()
+      return
+    }
+    loadUserData()
+  })
+
+  const logout = async () => {
+    useUserStore().logout()
+    await router.push('/login')
   }
-  loadUserData()
-})
 
-const logout = async () => {
-  useUserStore().logout()
-  await router.push('/login')
-}
+  function handleUserUpdated(updatedUserData) {
+    userData.value = updatedUserData
+    console.log('User updated successfully:', updatedUserData)
+  }
 
-function handleUserUpdated(updatedUserData) {
-  userData.value = updatedUserData
-  console.log('User updated successfully:', updatedUserData)
-}
+  function handleMeetingsUpdated(updatedMeetingsData) {
+      meetingsData.value = updatedMeetingsData
+      console.log('Meetings updated successfully:', updatedMeetingsData)
+  }
 
-function handleMeetingsUpdated(updatedMeetingsData) {
-    meetingsData.value = updatedMeetingsData
-    console.log('Meetings updated successfully:', updatedMeetingsData)
-}
+  const allTabs = [
+    { key: 'account', label: 'My Account', roles: ['admin', 'editor'] },
+    { key: 'minutes', label: 'Meeting Minutes', roles: ['admin'] }, // Only for admin
+    { key: 'members-list', label: 'Members List', roles: ['admin'] }, // Only for admin
+    { key: 'manager', label: 'Account Manager', roles: ['admin'] }, // Only for admin
+  ];
 
-const allTabs = [
-  { key: 'account', label: 'My Account', roles: ['admin', 'editor'] },
-  { key: 'minutes', label: 'Meeting Minutes', roles: ['admin'] }, // Only for admin
-  { key: 'members-list', label: 'Members List', roles: ['admin'] }, // Only for admin
-  { key: 'manager', label: 'Account Manager', roles: ['admin'] }, // Only for admin
-];
+  // Filter tabs based on user role
+  const filteredTabs = computed(() => {
+    return allTabs.filter(tab => tab.roles.includes(useUserStore().getRole));
+  });
 
-// Filter tabs based on user role
-const filteredTabs = computed(() => {
-  return allTabs.filter(tab => tab.roles.includes(useUserStore().getRole));
-});
-
-// Change default tab here if you want:
-const activeTab = ref('account') // e.g. 'minutes' to open Minutes by default
+  // Change default tab here if you want:
+  const activeTab = ref('account') // e.g. 'minutes' to open Minutes by default
 </script>
 
 <style scoped>

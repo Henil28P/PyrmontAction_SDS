@@ -4,6 +4,7 @@ const dashboardServices = {
     getCurrentUserDetails(token){ return api.get("api/users/me", token);},
     updateCurrentUser(token, userData){ return api.put("api/users/me", userData, token);},
     createRenewCheckout(token) { return api.get(`api/payments/renew-checkout/`, token);},
+    deleteCurrentUser(token){ return api.delete("api/users/me", token);},
     
     // Meeting Minutes Management
     getAllMeetingMinutes(token){ return api.get("api/minutes/", token);},
@@ -13,13 +14,16 @@ const dashboardServices = {
     updateMeetingWithFile(token, id, formData){ return api.putFormData(`api/minutes/${id}/upload`, formData, token);},
     publishMeetingMinute(token, id, data){ return api.patch(`api/minutes/${id}/publish`, data, token);},
     deleteMeetingMinute(token, id){ return api.delete(`api/minutes/${id}`, token);},
+    
+    // Members List View
+    getActiveMembers(token){ return api.get("api/users/active-members", token);},
 
-    // Project Management (following meeting minutes pattern)
-    getAllProjects(token){ return api.get("api/projects/", token);},
-    createProject(token, formData){ return api.postFormData("api/projects/", formData, token);},
-    updateProject(token, id, data){ return api.put(`api/projects/${id}`, data, token);},
-    updateProjectWithFile(token, id, formData){ return api.putFormData(`api/projects/${id}/upload`, formData, token);},
-    deleteProject(token, id){ return api.delete(`api/projects/${id}`, token);}
+    // Account Manager 
+    createManager(token, managerData){ return api.post("api/users/manager", managerData, token);},
+    generateRandomPassword(token, id){ return api.get(`api/users/password/${id}`, token);},
+    getAllUsers(token){ return api.get("api/users/", token);},
+    changeManagerRole(token, id){ return api.put(`api/users/role/${id}`, {}, token);},
+    deleteUserById(token, id){ return api.delete(`api/users/${id}`, token);}
 }
 
 export default dashboardServices;

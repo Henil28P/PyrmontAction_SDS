@@ -157,13 +157,16 @@ module.exports = {
                     foreignField: '_id',
                     as: 'roleDetails' }
                 },
-                { $unwind: '$roleDetails'},
+                { $unwind: '$roleDetails' },
                 { $project: {
                     firstName: 1,
                     lastName: 1,
                     email: 1,
-                    role: '$roleDetails.name' } // Only return role name
-            }]);
+                    role: '$roleDetails.name',
+                    createdAt: 1 // Include createdAt for sorting
+                }},
+                { $sort: { createdAt: -1 } } // Sort by createdAt in descending order
+            ]);
 
             if (!users || users.length === 0) {
                 return res.status(404).json({ message: 'No users found.' });
