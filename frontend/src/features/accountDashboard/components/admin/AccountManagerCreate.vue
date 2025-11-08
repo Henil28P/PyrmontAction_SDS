@@ -1,11 +1,14 @@
 <template>
     <div>
-        <button @click="showCreateForm = true" class="create-btn">Create Account</button>
+        <div class="header">
+            <h4><strong>Account Manager</strong></h4>
+            <button @click="showCreateForm = true" class="create-btn">Create Account</button>
+        </div>
         
         <!-- Create Account Form Popup -->
         <div v-if="showCreateForm" class="popup-overlay">
             <div class="popup-content" @click.stop>
-                <h3>Create New Account</h3>
+                <h3>Create New Manager Account</h3>
                 <form @submit.prevent="createAccount">
                     <div class="form-group">
                         <label for="firstName">First Name</label>
@@ -44,8 +47,8 @@
                         <label for="role">Role</label>
                         <select id="role" v-model="formData.role" required>
                             <option value="">Select Role</option>
-                            <option value="admin">admin</option>
-                            <option value="editor">editor</option>
+                            <option value="admin">Administrator</option>
+                            <option value="editor">Content Manager</option>
                         </select>
                     </div>
                     
@@ -153,6 +156,11 @@ async function copyPassword() {
     }
 }
 
+function closeCreateForm() {
+    showCreateForm.value = false;
+    resetForm();
+}
+
 function closeSuccessPopup() {
     createdAccount.value = null;
     isCopied.value = false;
@@ -160,19 +168,29 @@ function closeSuccessPopup() {
 </script>
 
 <style scoped>
+.header {
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensure header and button are on the same line */
+    margin-bottom: 40px;
+}
+
 .create-btn {
-    padding: 10px 20px;
-    background-color: #4caf50;
+    background: #10b981;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 16px;
-    margin-bottom: 16px;
+    transition: all 0.2s ease;
+    margin-left: auto; /* Align to the right */
 }
 
 .create-btn:hover {
-    background-color: #45a049;
+    background: #059669;
 }
 
 .popup-overlay {
@@ -190,70 +208,84 @@ function closeSuccessPopup() {
 
 .popup-content {
     background: white;
-    padding: 24px;
+    padding: 32px;
     border-radius: 8px;
     max-width: 500px;
     width: 90%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .popup-content h3 {
     margin-top: 0;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     font-weight: 500;
+    font-size: 14px;
+    color: #333;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
     box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #2196f3;
 }
 
 .button-group {
     display: flex;
     gap: 12px;
-    margin-top: 20px;
+    margin-top: 24px;
 }
 
 .submit-btn,
 .cancel-btn {
     flex: 1;
-    padding: 10px;
+    padding: 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
 .submit-btn {
-    background-color: #1976d2;
+    background-color: #2196f3;
     color: white;
 }
 
 .submit-btn:hover {
-    background-color: #1565c0;
+    background-color: #1976d2;
 }
 
 .cancel-btn {
-    background-color: #757575;
-    color: white;
+    background-color: #f5f5f5;
+    color: #666;
 }
 
 .cancel-btn:hover {
-    background-color: #616161;
+    background-color: #e0e0e0;
 }
 
 .success-popup {
@@ -261,32 +293,44 @@ function closeSuccessPopup() {
 }
 
 .account-details {
-    background-color: #f5f5f5;
-    padding: 16px;
-    border-radius: 4px;
-    margin: 16px 0;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    margin: 20px 0;
+    border-left: 4px solid #26a69a;
 }
 
 .detail-row {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 .detail-row:last-child {
     margin-bottom: 0;
 }
 
+.detail-row strong {
+    color: #555;
+    min-width: 80px;
+    display: inline-block;
+}
+
 .password-section {
-    margin-top: 20px;
+    margin-top: 24px;
 }
 
 .password-section h4 {
     margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
 }
 
 .password-display {
     background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
     padding: 16px;
     margin: 12px 0;
     display: flex;
@@ -296,26 +340,29 @@ function closeSuccessPopup() {
 }
 
 .password-display code {
-    font-size: 18px;
-    font-weight: bold;
-    letter-spacing: 2px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
     flex: 1;
+    color: #1a1a1a;
+    font-family: 'Courier New', monospace;
 }
 
 .copy-btn {
     padding: 8px 16px;
-    background-color: #4caf50;
+    background-color: #26a69a;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
     white-space: nowrap;
-    transition: background-color 0.3s;
+    transition: background-color 0.2s;
 }
 
 .copy-btn:hover {
-    background-color: #45a049;
+    background-color: #00897b;
 }
 
 .copy-btn.copied {
@@ -323,24 +370,27 @@ function closeSuccessPopup() {
 }
 
 .warning {
-    color: #d32f2f;
-    font-size: 14px;
+    color: #f44336;
+    font-size: 13px;
     margin-top: 8px;
+    font-style: italic;
 }
 
 .close-btn {
     width: 100%;
-    padding: 10px;
-    background-color: #1976d2;
+    padding: 12px;
+    background-color: #2196f3;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
-    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 20px;
+    transition: background-color 0.2s;
 }
 
 .close-btn:hover {
-    background-color: #1565c0;
+    background-color: #1976d2;
 }
 </style>
