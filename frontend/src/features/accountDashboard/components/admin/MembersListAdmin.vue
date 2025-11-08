@@ -3,15 +3,9 @@
         <h4><strong>Active Members List</strong></h4>
         <div class="filter-search-container">
             <input type="text" v-model="searchTerm" placeholder="Search by name or email" class="search-bar" />
-            <div class="filter-wrapper">
-                <label for="role-filter" class="filter-label">Roles:</label>
-                <select id="role-filter" v-model="selectedRole" class="filter-dropdown">
-                    <option value="">All</option>
-                    <option value="admin">Administrator</option>
-                    <option value="member">Community Member</option>
-                    <option value="editor">Content Manager</option>
-                </select>
-            </div>
+            <button @click="makeEmailList" class="copy-btn" :class="{ copied: emailListCopied }">
+                {{ emailListCopied ? 'Copied!' : 'Make Email List' }}
+            </button>
         </div>
         
         <div class="table-container">
@@ -45,6 +39,7 @@ import {formatDate} from '../../../../utils/dateUtils';
 
 const users = ref([]);
 const searchTerm = ref('');
+const emailListCopied = ref(false);
 
 onMounted(() => {
     loadActiveMembers();
@@ -65,6 +60,21 @@ async function loadActiveMembers() {
         console.error('Error loading active members:', error);
     }
 }
+
+function makeEmailList() {
+    const emailList = users.value.map(user => user.email).join(', ');
+    navigator.clipboard.writeText(emailList)
+        .then(() => {
+            emailListCopied.value = true;
+            setTimeout(() => {
+                emailListCopied.value = false;
+            }, 2000);
+        })
+        .catch(err => {
+            console.error('Failed to copy email list:', err);
+            alert('Failed to copy email list to clipboard');
+        });
+};
 
 const filteredUsers = computed(() => {
     return users.value.filter(user => {
@@ -169,5 +179,29 @@ table td {
 
 .expiry-cell {
     text-align: center;
+}
+
+.copy-btn {
+    padding: 10px 20px; /* Increased padding to match the height of the search bar */
+    background-color: #1976d2; /* Blue color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px; /* Slightly larger font size */
+    white-space: nowrap;
+    transition: background-color 0.3s;
+    width: 100%; /* Set width to match the search bar */
+}
+
+.copy-btn:hover {
+    background-color: #1565c0; /* Darker blue for hover */
+}
+
+.copy-btn.copied {
+    background-color: #4caf50; /* Green color when copied */
+    padding: 10px 20px; /* Ensure the green copied button matches the same size */
+    font-size: 16px; /* Ensure the font size matches */
+    width: 100%; /* Ensure the width matches the search bar */
 }
 </style>
