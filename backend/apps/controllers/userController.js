@@ -100,7 +100,8 @@ module.exports = {
             const activeMembers = await User.find({ memberExpiryDate: { $gte: today } })
                 // Populate role to match only 'member' roles
                 .populate({ path: 'role', match: { name: 'member' }, select: '-_id name' })
-                .select('firstName lastName email mobilePhone -_id')
+                .select('firstName lastName email mobilePhone memberExpiryDate createdAt -_id')
+                .sort({ createdAt: -1 }) // Sort by createdAt in descending order
                 .lean();
             return res.status(200).json(activeMembers);
         } catch (error) {

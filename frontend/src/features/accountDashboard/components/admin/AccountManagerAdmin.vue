@@ -14,7 +14,7 @@
             </div>
         </div>
         
-        <div class="events-table-container">
+        <div class="table-container">
             <table>
                 <thead>
                     <tr>
@@ -181,7 +181,7 @@ async function changePassword(user) {
     font-size: 14px;
 }
 
-.events-table-container {
+.table-container {
     overflow-x: auto;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
