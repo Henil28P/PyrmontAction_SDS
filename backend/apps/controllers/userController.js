@@ -217,7 +217,7 @@ module.exports = {
                 return res.status(400).json({ message: 'User role cannot be changed.' });
             }
             await user.save();
-            return res.status(200).json({ message: 'User role updated successfully.', role: user.role.name });
+            return res.status(200).json( user.role.name );
         } catch (error) {
             console.error("Error changing user role:", error);
             return res.status(500).json({ message: 'Failed to change user role.', errors: error.message });
