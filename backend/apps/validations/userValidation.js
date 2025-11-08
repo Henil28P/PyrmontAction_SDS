@@ -145,8 +145,7 @@ const createValidator = (schema, options = {}) => {
             // Check for existing email if needed
             if (options.checkEmailExists && req.body.email) {
                 const existingEmail = await User.getEmailExists(req.body.email);
-                const userId = id ? id : req.user._id.toString();
-                console.log("Options in validator:", existingEmail);
+                const userId = id ?? (req.user?._id?.toString() ?? "");
                 if (existingEmail && existingEmail._id.toString() !== userId) {
                     return res.status(400).json({ 
                         message: 'This email address is already registered. Please use a different email.'
