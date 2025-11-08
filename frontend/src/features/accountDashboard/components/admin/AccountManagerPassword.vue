@@ -85,31 +85,33 @@ async function copyPassword() {
 }
 
 .password-display code {
-    font-size: 18px;
+    font-size: 26px;
     font-weight: bold;
     letter-spacing: 2px;
     flex: 1;
 }
 
 .copy-btn {
-    padding: 8px 16px;
-    background-color: #4caf50;
+    padding: 10px 20px; /* Increased padding for consistent size */
+    background-color: #1976d2; /* Blue color */
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px; /* Larger font size for consistency */
+    font-weight: 500;
     white-space: nowrap;
-    transition: background-color 0.3s;
-    width: auto;
+    transition: background-color 0.2s, width 0.2s; /* Added width transition */
+    width: 120px; /* Fixed width for consistency */
 }
 
 .copy-btn:hover {
-    background-color: #45a049;
+    background-color: #1565c0; /* Darker blue for hover */
 }
 
 .copy-btn.copied {
-    background-color: #2196f3;
+    background-color: #4caf50; /* Green color when copied */
+    width: 120px; /* Fixed width for consistency */
 }
 
 .warning {

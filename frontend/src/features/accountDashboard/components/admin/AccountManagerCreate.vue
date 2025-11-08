@@ -64,7 +64,7 @@
         <div v-if="createdAccount" class="popup-overlay">
             <div class="popup-content success-popup" @click.stop>
                 <h3>Account Created</h3>
-                <p>The new account has been created for:</p>
+                <p class="text-center">The new account has been created for:</p>
                 
                 <div class="account-details">
                     <div class="detail-row">
@@ -74,7 +74,7 @@
                         <strong>Email:</strong> {{ createdAccount.email }}
                     </div>
                     <div class="detail-row">
-                        <strong>Role:</strong> {{ createdAccount.role }}
+                        <strong>Role:</strong> {{ mapRole(createdAccount.role) }}
                     </div>
                 </div>
                 
@@ -120,6 +120,15 @@ function resetForm() {
         email: '',
         role: ''
     };
+}
+
+function mapRole(role) {
+    const roleMapping = {
+        admin: 'Administrator',
+        editor: 'Content Manager',
+        member: 'Community Member'
+    };
+    return roleMapping[role] || role;
 }
 
 async function createAccount() {
@@ -329,44 +338,47 @@ function closeSuccessPopup() {
 
 .password-display {
     background-color: #f5f5f5;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     padding: 16px;
-    margin: 12px 0;
+    margin: 16px 0;
+    text-align: center; /* Center the content */
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center; /* Center the code and button horizontally */
     gap: 12px;
 }
 
 .password-display code {
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 1px;
+    font-size: 26px;
+    font-weight: bold;
+    letter-spacing: 2px;
     flex: 1;
-    color: #1a1a1a;
-    font-family: 'Courier New', monospace;
+    /* font-family: 'Courier New', monospace; */
 }
 
 .copy-btn {
-    padding: 8px 16px;
-    background-color: #26a69a;
+    padding: 10px 20px; /* Increased padding for consistent size */
+    background-color: #1976d2; /* Blue color */
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 16px; /* Larger font size for consistency */
     font-weight: 500;
     white-space: nowrap;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, width 0.2s; /* Added width transition */
+    width: 120px; /* Fixed width for consistency */
 }
 
 .copy-btn:hover {
-    background-color: #00897b;
+    background-color: #1565c0; /* Darker blue for hover */
 }
 
 .copy-btn.copied {
-    background-color: #2196f3;
+    background-color: #4caf50; /* Green color when copied */
+    width: 120px; /* Fixed width for consistency */
 }
 
 .warning {
