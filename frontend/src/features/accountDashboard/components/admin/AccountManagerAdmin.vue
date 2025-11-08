@@ -30,16 +30,23 @@
                 </tr>
             </tbody>
         </table>
+        <AccountManagerPassword
+            v-if="generatedPassword"
+            :user="generatedPassword"
+            @close="generatedPassword = null"
+        />
     </div>
 </template>
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../dashboardServices';
+import AccountManagerPassword from './AccountManagerPassword.vue';
 
 const users = ref([]);
 const searchTerm = ref('');
 const selectedRole = ref('');
+const generatedPassword = ref(null);
 
 onMounted(() => {
     loadUsers();
@@ -73,6 +80,7 @@ const filteredUsers = computed(() => {
     });
 });
 
+// Switches the role of the user between 'admin' and 'editor'
 async function changeRole(user) {
     const newRole = (user.role === 'admin') ? 'editor' : 'admin';
     if (!confirm(`Change role for ${user.email} to ${newRole}?`)) return;
@@ -88,11 +96,12 @@ async function changeRole(user) {
     }
 }
 
+// Creates a new random password for the user and shows it in the password popup
 async function changePassword(user) {
     if (!confirm(`Generate random password for ${user.email}?`)) return;
     try {
         const password = await services.generateRandomPassword(useUserStore().getToken, user.id);
-        alert(`Password changed for ${user.email}\n Temporary Password: ${password}`);
+        generatedPassword.value = {email: user.email, password}; // Triggers password popup
     } catch (error) {
         console.error('Error changing user password:', error);
         alert('Failed to change user password.');
