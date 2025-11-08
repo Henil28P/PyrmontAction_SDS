@@ -1,6 +1,7 @@
 <template>
     <div class="card">
         <h3>Account Manager</h3>
+        <AccountManagerCreate @accountCreated="loadUsers" />
         <select v-model="selectedRole">
             <option value="">All</option>
             <option value="admin">Administrator</option>
@@ -42,6 +43,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../dashboardServices';
 import AccountManagerPassword from './AccountManagerPassword.vue';
+import AccountManagerCreate from './AccountManagerCreate.vue';
 
 const users = ref([]);
 const searchTerm = ref('');
