@@ -30,7 +30,9 @@
             <td class="note-cell">{{ meeting.note }}</td>
             <td class="file-cell">
               <template v-if="meeting.filename">
-                <span class="fileBadge">{{shortName(meeting.filename)}}</span>
+                <a :href="`${SERVER_URL}${meeting.fileUrl}`" :download="meeting.filename" class="fileBadge" target="_blank">
+                  {{shortName(meeting.filename)}}
+                </a>
               </template>
               <span v-else class="muted">—</span>
             </td>
@@ -70,6 +72,7 @@ import services from '../../dashboardServices';
 import AddMeeting from './MeetingMinutesAdd.vue';
 import EditMeeting from './MeetingMinutesEdit.vue';
 import { formatDate } from '../../../../utils/dateUtils';
+import SERVER_URL from '../../../../config.js'
 
 
 const meetingList = ref([])
@@ -128,6 +131,11 @@ async function deleteItem(id) {
   } catch (error) {
     console.error('Failed to delete meeting:', error);
   }
+}
+
+function getFileUrl(filename) {
+  // Assuming files are served from /uploads/meeting-minutes/ directory
+  return `/${filename}`;
 }
 
 function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' : name }
@@ -295,6 +303,16 @@ table td {
     padding: 2px 8px;
     margin-right: 6px;
     font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+.fileBadge:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+    color: #111827;
 }
 
 .badge {
