@@ -18,7 +18,7 @@
                 <div class="field">
                     <label>Change Password</label>
 					<input class="form-input" type="password" placeholder="Current Password" v-model="password.current" />
-                    <form @submit.prevent="handleUpdateEmail">
+                    <form @submit.prevent="handleUpdatePassword">
                         <input class="form-input" type="password" placeholder="New Password" v-model="password.new" :disabled="!password.current" />
 						<button class="btn-edit" type="submit" :disabled="!password.new && !password.current">Update</button>
                     </form>
@@ -95,6 +95,7 @@
 			await service.updateCurrentUser(useUserStore().getToken, data);
         	emit('userUpdated', data);
         	newEmail.value = '';
+			alert('Email updated successfully.');
 		} catch (error) {
 			console.error('Failed to update email:', error);
 			newEmail.value = '';
@@ -105,10 +106,10 @@
     async function handleUpdatePassword() {
 		try {
 			if (!confirm('Changing your password will affect login credentials. Proceed?')) { return; }
-			const data = { old: password.value.current, password: password.value.new };
+			const data = { oldPassword: password.value.current, password: password.value.new };
 			await service.updateCurrentUser(useUserStore().getToken, data);
-        	emit('userUpdated', data);
 			resetPassword();
+			alert('Password updated successfully.');
 		} catch (error) {
 			console.error('Failed to update password:', error);
 			resetPassword();

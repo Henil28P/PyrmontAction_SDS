@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const Joi = require('joi');
+const becrypt = require('bcrypt');
 
 // Reusable field definitions
 const fields = {
@@ -123,6 +124,9 @@ const schemas = {
     updating: Joi.object({
         email: fields.email.optional(),
         password: fields.password.optional(),
+        oldPassword: Joi.string().optional().messages({
+            'string.empty': 'Current password cannot be empty',
+        }),
         firstName: fields.firstName.optional(),
         lastName: fields.lastName.optional(),
         mobilePhone: fields.mobilePhone.optional(),
@@ -150,6 +154,18 @@ const createValidator = (schema, options = {}) => {
                     return res.status(400).json({ 
                         message: 'This email address is already registered. Please use a different email.'
                     });
+                }
+            }
+
+            if (options.checkPasswordExists && req.body.oldPassword && req.user) {
+                if (!req.body.password) {
+                    return res.status(400).json({ message: 'New password is required when current password is provided.'});
+                }
+                if (req.body.oldPassword === req.body.password) {
+                    return res.status(400).json({ message: 'The new password must be different from the current password.' });
+                }
+                if (await becrypt.compare(req.user.password, req.body.password)) {
+                    return res.status(400).json({ message: 'The current password cannot be the same as the new password.' });
                 }
             }
             
@@ -189,7 +205,8 @@ module.exports = {
     }),
 
     updateAccount: createValidator(schemas.updating, {
-        checkEmailExists: true
+        checkEmailExists: true,
+        checkPasswordExists: true
     }),
     // Generic validator for custom use cases
     createValidator,
