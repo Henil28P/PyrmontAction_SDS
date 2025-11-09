@@ -4,6 +4,7 @@
     import { useRouter } from 'vue-router';
     import { useUserStore } from '../../../stores/authStore';
     import service from '../services/loginAuthServices';
+    import ShowPasswordButton from '../../../components/ShowPasswordButton.vue';
 
     const loginInput = {
         email: '',
@@ -13,6 +14,7 @@
     const router = useRouter();
     const userStore = useUserStore();
     const loginErrors = ref(false);
+    const showPassword = ref(false);
 
     onMounted(() => {
         const queryParams = new URLSearchParams(window.location.search);
@@ -69,7 +71,15 @@
                         </div>
                         <div class="password-section">
                             <label for="password">Password</label>
-                            <input type="password" id="password" v-model="loginInput.password" required />
+                            <div class="password-input-wrapper">
+                                <input 
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    id="password" 
+                                    v-model="loginInput.password" 
+                                    required 
+                                />
+                                <ShowPasswordButton @update:isVisible="showPassword = $event" />
+                            </div>
                         </div>
                         <div class="error-and-forgot-password-section">
                             
@@ -177,8 +187,8 @@
     #password, #email{
         border: 1px solid #cbc8c8;
         border-radius: 5px;
-        height:35px;
-        margin-bottom:20px;
+        height: 35px;
+        margin-bottom: 20px;
        
     }
     
@@ -223,6 +233,29 @@
         font-size: small;
         grid-column: 1;
 
+    }
+
+    /* Password input wrapper */
+    .password-input-wrapper {
+        position: relative;
+        width: 100%;
+        margin-bottom: 20px;
+        display: flex; /* Changed from block to flex for alignment */
+        align-items: center; /* Ensures vertical alignment */
+    }
+
+    .password-input-wrapper input {
+        width: 100%;
+        height: 35px; /* Ensure consistent height */
+        padding-right: 40px; /* Add padding to avoid overlap with the toggle button */
+    }
+
+    .password-input-wrapper .password-toggle {
+        position: absolute;
+        right: 10px; /* Adjust position to align with the input */
+        top: 35%; /* Increased upward adjustment */
+        transform: translateY(-50%); /* Center vertically */
+        cursor: pointer;
     }
 
 
