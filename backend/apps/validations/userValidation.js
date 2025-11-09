@@ -1,6 +1,6 @@
 const User = require('../models/userModel');
 const Joi = require('joi');
-const becrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 
 // Reusable field definitions
 const fields = {
@@ -158,14 +158,16 @@ const createValidator = (schema, options = {}) => {
             }
 
             if (options.checkPasswordExists && req.body.oldPassword && req.user) {
+                // console.log("user", req.user)
+                console.log(await bcrypt.hash('admin', 12))
+                if (!await bcrypt.compare(req.body.oldPassword, req.user.password)) {
+                    return res.status(400).json({ message: 'The current password does not match.' });
+                }
                 if (!req.body.password) {
                     return res.status(400).json({ message: 'New password is required when current password is provided.'});
                 }
                 if (req.body.oldPassword === req.body.password) {
                     return res.status(400).json({ message: 'The new password must be different from the current password.' });
-                }
-                if (await becrypt.compare(req.user.password, req.body.password)) {
-                    return res.status(400).json({ message: 'The current password cannot be the same as the new password.' });
                 }
             }
             
