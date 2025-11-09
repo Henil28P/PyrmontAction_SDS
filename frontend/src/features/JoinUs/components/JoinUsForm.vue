@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import { useFormValidation } from '../composables/useFormValidation';
 import { usePasswordValidation } from '../composables/usePasswordValidation';
+import ShowPasswordButton from '../../../components/ShowPasswordButton.vue';
 
 // State options
 const stateOptions = ref([
@@ -20,6 +21,9 @@ const stateOptions = ref([
 // Composables
 const { formData, stateChosen, v$ } = useFormValidation();
 const { passwordValidator, validatePassword } = usePasswordValidation();
+
+// Password visibility
+const showPassword = ref(false);
 
 
 onMounted (() => {
@@ -73,7 +77,17 @@ const handleSubmit = async () => {
                         </div>
 
                         <div class="field">
-                            <input type="password" id="password" @input="handlePasswordInput" placeholder="Password" v-model="formData.password" :class="{'error-border': v$.password.$errors.length > 0}" />
+                            <div class="password-input-wrapper">
+                                <input 
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    id="password" 
+                                    @input="handlePasswordInput" 
+                                    placeholder="Password" 
+                                    v-model="formData.password" 
+                                    :class="{'error-border': v$.password.$errors.length > 0}" 
+                                />
+                                <ShowPasswordButton @update:isVisible="showPassword = $event" />
+                            </div>
                             <span v-for="error in v$.password.$errors" class="error-message password-border">{{ error.$message }}</span>
                             <ul class="password-requirement-section">
                                 <li :class="{'password-accept': passwordValidator.minlength}">At least 10 characters</li>
@@ -308,6 +322,16 @@ const handleSubmit = async () => {
         font-size: small;
         font-family: 'Manrope', sans-serif;
         font-weight: bold;
+    }
+
+    /* Password input wrapper */
+    .password-input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-input-wrapper input {
+        padding-right: 45px; /* Make room for the toggle button */
     }
 
 </style>
