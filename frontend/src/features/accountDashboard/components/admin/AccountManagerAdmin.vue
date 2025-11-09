@@ -20,8 +20,8 @@
                     <tr>
                         <th style="width: 20%;">Name</th>
                         <th style="width: 25%;">Email</th>
-                        <th style="width: 25%; text-align: center;">Role</th>
-                        <th style="width: 30%; text-align: center;">Action</th>
+                        <th style="width: 20%; text-align: center;">Role</th>
+                        <th style="width: 35%; text-align: center;">Action</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -182,7 +182,7 @@ function closeSuccessPopup() {
     display: flex;
     align-items: center;
     justify-content: space-between; /* Ensure header and button are on the same line */
-    margin-bottom: 40px;
+    margin-bottom: 24px;
 }
 
 .create-btn {

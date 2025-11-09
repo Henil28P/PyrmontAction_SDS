@@ -95,7 +95,7 @@ const filteredUsers = computed(() => {
 }
 
 .card h4 {
-    margin-bottom: 24px;
+    margin-bottom: 36px;
 }
 
 .filter-search-container {
