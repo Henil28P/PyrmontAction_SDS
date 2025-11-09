@@ -72,7 +72,7 @@ const minutes = ref([
 
 
 function handleUserUpdated(updatedUserData) {
-  userData.value = updatedUserData;
+  userData.value = { ...userData.value, ...updatedUserData };
   console.log('User updated successfully:', updatedUserData);
 }
 

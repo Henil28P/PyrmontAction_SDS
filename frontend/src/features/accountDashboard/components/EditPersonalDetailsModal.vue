@@ -258,10 +258,10 @@ const handleSubmit = async () => {
     }
 
     // Call API to update user
-    const response = await services.updateCurrentUser(userStore.getToken, formData);
+    await services.updateCurrentUser(userStore.getToken, formData);
     
     // Emit success event with updated data
-    emit('updated', response);
+    emit('updated', formData);
     
     // Close modal
     closeModal();

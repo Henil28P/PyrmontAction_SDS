@@ -3,7 +3,7 @@
     <!-- Account Details -->
     <section class="details">
       <div class="details-head">
-        <h2>Account Details</h2>
+        <h4><strong>Account Details</strong></h4>
         <button class="btn-edit" @click="handleEditAccountDetails">Edit</button>
       </div>
 
@@ -22,7 +22,7 @@
     <!-- Personal Details -->
     <section class="details">
       <div class="details-head">
-        <h2>Personal Details</h2>
+        <h4><strong>Personal Details</strong></h4>
         <button class="btn-edit" @click="handleEditPersonalDetails">Edit</button>
       </div>
 
@@ -116,7 +116,7 @@ function handleUserUpdated(updatedUserData) {
   box-shadow:0 4px 16px rgba(0,0,0,.04); padding:20px; margin-bottom:22px;
 }
 .details-head{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
-.details-head h2{ margin:0; font-size:1.2rem; font-weight:800; flex:1; }
+/* .details-head h2{ margin:0; font-size:1.2rem; font-weight:800; flex:1; } */
 .btn-edit{
   margin-left:auto; background:#111; color:#fff; border:0; border-radius:8px;
   padding:6px 14px; font-weight:700; cursor:pointer;
