@@ -17,9 +17,29 @@
                 </div>
                 <div class="field">
                     <label>Change Password</label>
-					<input class="form-input" type="password" placeholder="Current Password" v-model="password.current" />
+                    <div class="password-input-wrapper">
+                        <input 
+                            class="form-input" 
+                            :type="showCurrentPassword ? 'text' : 'password'" 
+                            placeholder="Current Password" 
+                            v-model="password.current" 
+                        />
+                        <ShowPasswordButton @update:isVisible="showCurrentPassword = $event" />
+                    </div>
                     <form @submit.prevent="handleUpdatePassword">
-                        <input class="form-input" type="password" placeholder="New Password" v-model="password.new" :disabled="!password.current" />
+                        <div class="password-input-wrapper">
+                            <input 
+                                class="form-input" 
+                                :type="showNewPassword ? 'text' : 'password'" 
+                                placeholder="New Password" 
+                                v-model="password.new" 
+                                :disabled="!password.current" 
+                            />
+                            <ShowPasswordButton 
+                                @update:isVisible="showNewPassword = $event" 
+                                :disabled="!password.current"
+                            />
+                        </div>
 						<button class="btn-edit" type="submit" :disabled="!password.new && !password.current">Update</button>
                     </form>
                 </div>
@@ -66,6 +86,7 @@
 <script setup>
     import { ref } from 'vue';
     import EditPersonalDetailsModal from './EditPersonalDetailsModal.vue';
+    import ShowPasswordButton from '../../../components/ShowPasswordButton.vue';
 	import service from '../dashboardServices';
 	import { useUserStore } from '../../../stores/authStore';
 
@@ -84,6 +105,8 @@
     const newEmail = ref('');
 	const password = ref({current: '', new: ''});
     const showEditModal = ref(false);
+    const showCurrentPassword = ref(false);
+    const showNewPassword = ref(false);
 
     // Methods
 	function resetPassword() { password.value.current = ''; password.value.new = ''; }
@@ -267,5 +290,16 @@
     .field form .btn-edit {
         margin-top: 20px; /* Ensures spacing above the button */
         justify-content: center; /* Centers the button horizontally */
+    }
+
+    /* Password input wrapper */
+    .password-input-wrapper {
+        position: relative;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .password-input-wrapper .form-input {
+        padding-right: 45px; /* Make room for the toggle button */
     }
 </style>
