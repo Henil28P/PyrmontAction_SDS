@@ -67,12 +67,12 @@ const handleSubmit = async () => {
         <div class="signup-container">
             <div class="signup-form-container">
                 <form class="sign-entries" @submit.prevent="handleSubmit">
-                    <h1 id="create-an-account-heading"> Become a member</h1>
+                    <h1 id="create-an-account-heading"> Become a Member</h1>
 
-                    <h2>Login Details</h2>
+                    <h2>Create Login Details</h2>
                     <div class="login-details-section">
                         <div class ="field">
-                            <input id="email" placeholder="Email address" v-model="formData.email" :class="{'error-border': v$.email.$errors.length > 0}"/>
+                            <input id="email" placeholder="Enter Email Address" v-model="formData.email" :class="{'error-border': v$.email.$errors.length > 0}"/>
                             <span v-for="error in v$.email.$errors" class="error-message email-border">{{ error.$message }}</span>
                         </div>
 
@@ -82,7 +82,7 @@ const handleSubmit = async () => {
                                     :type="showPassword ? 'text' : 'password'" 
                                     id="password" 
                                     @input="handlePasswordInput" 
-                                    placeholder="Password" 
+                                    placeholder="Create Password" 
                                     v-model="formData.password" 
                                     :class="{'error-border': v$.password.$errors.length > 0}" 
                                 />
@@ -99,7 +99,7 @@ const handleSubmit = async () => {
                         </div>
                     </div>
 
-                    <h2>Personal Details</h2>
+                    <h2>Enter Personal Details</h2>
                     <div class="personal-details-section">
                         <div class="name-section">
                             <div class="field">
@@ -125,7 +125,7 @@ const handleSubmit = async () => {
                         </div>
                     </div>
 
-                    <h2>Address Details</h2>
+                    <h2>Enter Address Details</h2>
                     <div class="address-details-section">
                         <div class="field">
                             <input type="text" id="street-name" :class="{'error-border': v$.streetName.$errors.length > 0}" v-model="formData.streetName" placeholder="Street Name"/>
@@ -159,7 +159,7 @@ const handleSubmit = async () => {
                             <span v-for="error in v$.postcode.$errors" class="error-message">{{ error.$message }}</span>
                         </div>
                     </div>
-                    <button id="submitBtn" type="submit">Sign Up</button>
+                    <button id="submitBtn" type="submit">Proceed to Payment</button>
                 </form>
             </div>
         </div>
