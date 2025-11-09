@@ -183,6 +183,14 @@ module.exports = {
     // Update current user's profile
     async updateCurrentUser(req, res) {
         try {
+            if (req.body.email && req.user.email === process.env.MASTER_ADMIN) {
+                return res.status(403).json({ message: 'Cannot change email of the master admin account.' });
+            }
+            
+            if (req.body.email && req.user.email === req.body.email) {
+                return res.status(403).json({ message: 'The new email address must be different.' });
+            }
+            
             const updatedUser = await User.findByIdAndUpdate(
                 req.user._id,
                 req.body,
