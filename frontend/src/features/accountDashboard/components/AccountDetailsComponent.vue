@@ -113,7 +113,10 @@
 
     async function handleUpdateEmail() {
 		try {
-			if (!confirm('Changing your email will affect login credentials. Proceed?')) { return; }
+			if (!confirm('Changing your email will affect login credentials. Proceed?')) { 
+                newEmail.value = '';
+                return; 
+            }
 			const data = { email: newEmail.value };
 			await service.updateCurrentUser(useUserStore().getToken, data);
         	emit('userUpdated', data);
@@ -128,7 +131,10 @@
 
     async function handleUpdatePassword() {
 		try {
-			if (!confirm('Changing your password will affect login credentials. Proceed?')) { return; }
+			if (!confirm('Changing your password will affect login credentials. Proceed?')) { 
+                resetPassword();
+                return; 
+            }
 			const data = { oldPassword: password.value.current, password: password.value.new };
 			await service.updateCurrentUser(useUserStore().getToken, data);
 			resetPassword();

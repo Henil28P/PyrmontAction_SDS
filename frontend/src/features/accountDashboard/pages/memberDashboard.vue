@@ -5,6 +5,7 @@ import { useUserStore } from '../../../stores/authStore';
 import services from '../dashboardServices';
 import AccountDetailsComponent from '../components/AccountDetailsComponent.vue';
 import { formatDate } from '@/utils/dateUtils';
+import DeleteButton from '../components/DeleteAccountButton.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -108,7 +109,7 @@ async function openRenewCheckout() {
             <!-- <span class="summary-icon">O</span> -->
             <span class="summary-label">Account Type</span>
           </div>
-          <div class="summary-value">{{ userStore?.getRole }}</div>
+          <div class="summary-value">Community Member</div>
         </article>
 
         <article class="summary-card">
@@ -184,7 +185,9 @@ async function openRenewCheckout() {
             </tbody>
           </table>
         </div>
+        
       </section>
+      <DeleteButton />
     </main>
   </div>
 </template>
