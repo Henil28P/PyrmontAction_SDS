@@ -39,6 +39,7 @@
             :userData="userData"
             @userUpdated="handleUserUpdated"
           />
+          <DeleteButton />
         </div>
 
       <div v-else-if="activeTab === 'minutes'">
@@ -66,6 +67,7 @@
   import AccountDetailsComponent from '../components/AccountDetailsComponent.vue'
   import MembersList from '../components/admin/MembersListAdmin.vue'
   import AccountManager from '../components/admin/AccountManagerAdmin.vue'
+  import DeleteButton from '../components/DeleteAccountButton.vue'
 
   const router = useRouter()
   const userData = ref(null)
