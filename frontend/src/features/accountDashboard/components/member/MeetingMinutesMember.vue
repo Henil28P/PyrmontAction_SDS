@@ -9,139 +9,149 @@ const minutes = ref([
 </script>
 
 <template>
-  <section class="minutes-card">
-    <div class="minutes-head">
-      <div class="minutes-title">
-        <h2>Meeting Minutes</h2>
-        <p class="muted">Latest published minutes</p>
-      </div>
-
-      <!-- View all button (right side) -->
-      <RouterLink to="/member/minutes" class="btn-all" aria-label="View all minutes">
+  <div class="card">
+    <div class="header">
+      <h4><strong>Meeting Minutes</strong></h4>
+      <RouterLink to="/member/minutes" class="view-all-btn" aria-label="View all minutes">
         View all
       </RouterLink>
     </div>
 
-    <div class="table-wrap">
-      <table class="table">
+    <div class="minutes-table-container">
+      <table>
         <thead>
           <tr>
-            <th>Title</th>
-            <th class="th-date">Date</th>
-            <th class="th-action">Action</th>
+            <th style="width: 10%;">Date</th>
+            <th style="width: 60%;">Title</th>
+            <th style="width: 30%; text-align: center;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="m in minutes" :key="m.id">
-            <td>
-              <div class="title-cell">
-                <span class="paper-emoji">O</span>
-                <span>{{ m.title }}</span>
-              </div>
-            </td>
-            <td class="td-date">{{ m.date }}</td>
-            <td class="td-action">
-              <a :href="m.url" target="_blank" rel="noopener" class="btn-view">View</a>
+            <td class="date-cell">{{ m.date }}</td>
+            <td class="title-cell">{{ m.title }}</td>
+            <td class="action-cell">
+              <a :href="m.url" target="_blank" rel="noopener" class="view-btn">View</a>
             </td>
           </tr>
           <tr v-if="!minutes.length">
-            <td colspan="3" class="empty">No minutes available.</td>
+            <td colspan="3" class="muted">No minutes available.</td>
           </tr>
         </tbody>
       </table>
     </div>
-  </section>
+  </div>
 </template>
 
 <style scoped>
-/* minutes card */
-.minutes-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  padding: 20px;
-}
-.minutes-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-.minutes-title h2 {
-  margin: 0 0 4px 0;
-  font-size: 1.2rem;
-  font-weight: 800;
-}
-.minutes-title .muted {
-  margin: 0;
-  color: #6b7280;
+.card {
+    padding: 24px;
+    background: white;
+    border-radius: 8px;
 }
 
-/* table */
-.table-wrap {
-  overflow: auto;
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.95rem;
-  border: 1px solid #eef0f2;
-  border-radius: 12px;
-  overflow: hidden;
+
+.view-all-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
 }
-.table thead th {
-  text-align: left;
-  background: #f6f7f9;
-  color: #475569;
-  font-weight: 800;
-  padding: 12px 14px;
-  border-bottom: 1px solid #eef0f2;
+
+.view-all-btn:hover {
+    background: #059669;
 }
-.table tbody td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f1f3f5;
+
+.minutes-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
 }
-.table tbody tr:last-child td {
-  border-bottom: 0;
+
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
+
+table thead {
+    background: #f9fafb;
+}
+
+table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+table tbody tr {
+    transition: background 0.2s ease;
+    background: white;
+}
+
+table tbody tr:hover {
+    background: #f9fafb;
+}
+
+table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.date-cell {
+    white-space: nowrap;
+    font-weight: 600;
+    color: #111827;
+}
+
 .title-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
+    font-weight: 600;
+    color: #111827;
 }
-.paper-emoji {
-  font-size: 18px;
+
+.action-cell {
+    text-align: center;
+    white-space: nowrap;
 }
-.th-date,
-.td-date {
-  width: 160px;
-  white-space: nowrap;
-  color: #64748b;
+
+.view-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
 }
-.th-action,
-.td-action {
-  width: 120px;
-  text-align: right;
+
+.view-btn:hover {
+    background: #2563eb;
 }
-.btn-view {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-weight: 800;
-  text-decoration: none;
-  color: #0ea5b7;
-  background: #e6fbff;
-  border: 1px solid #c8f4fb;
-}
-.btn-view:hover {
-  filter: brightness(0.98);
-}
-.empty {
-  text-align: center;
-  color: #64748b;
+
+.muted {
+    color: #6b7280;
+    text-align: center;
 }
 </style>
