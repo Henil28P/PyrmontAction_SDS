@@ -3,6 +3,7 @@ const JoinSession = require('../models/joinSessionModel');
 const User = require('../models/userModel');
 const userController = require('./userController');
 const joinSessionController = require('./joinSessionController');
+const emailService = require('../services/emailService');
 
 module.exports = {
     async createJoinCheckout(req, res) {
@@ -28,7 +29,7 @@ module.exports = {
                             name: 'Membership Registration',
                             description: 'Annual membership fee',
                         },
-                        unit_amount: 25 * 100, // $25.00 in cents
+                        unit_amount: parseInt(process.env.MEMBERSHIP_PRICE) * 100, // Convert to cents
                     },
                     quantity: 1,
                 }],
@@ -97,7 +98,7 @@ module.exports = {
                             name: 'Annual Membership Renewal',
                             description: 'Current Membership expires on '+ (new Date(user.memberExpiryDate)).toLocaleDateString('en-AU'),
                         },
-                        unit_amount: 25 * 100, // $25.00 in cents
+                        unit_amount: parseInt(process.env.MEMBERSHIP_PRICE) * 100, // Convert to cents
                     },
                     quantity: 1,
                 }],
@@ -159,7 +160,10 @@ module.exports = {
                     name: `${joinSession.firstName} ${joinSession.lastName}`,
                 });
 
-                userController.createMember(joinSession, customer.id);
+                const newUser = await userController.createMember(joinSession, customer.id);
+
+                // Send treasurer alert email
+                await module.exports.sendTreasuerAlert(newUser);
 
                 await joinSession.deleteOne();
                 
@@ -187,6 +191,9 @@ module.exports = {
                 user.memberExpiryDate = userController.calculateMemberExpiryDate(expiryDate);
                 await user.save();
 
+                // Send treasurer alert email
+                await module.exports.sendTreasuerAlert(user);
+
                 console.log('Renewal successful for:', user.email);
             } catch (error) {
                 console.error('Error processing successful payment:', error);
@@ -212,5 +219,17 @@ module.exports = {
         }
 
         res.status(200).send('Webhook handled');
+    },
+
+    async sendTreasuerAlert(user) {
+        try {
+            const sender = await emailService.createTransporter();
+            const email = await emailService.createPaymentAlert(user);
+            await sender.sendMail(email);
+
+            console.log('Email sent');
+        } catch (error) {
+            console.error('Failed to send treasurer alert:', error);
+        }
     }
 };
