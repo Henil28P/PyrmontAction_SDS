@@ -64,7 +64,7 @@ const handleSubmit = async () => {
             }
         }
     } catch (error) {
-        console.error(error);
+        alert(error.response?.data?.message || 'An error occurred during registration. Please try again.');
     }
 };
 </script>
