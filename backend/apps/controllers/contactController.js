@@ -1,4 +1,4 @@
-const emailService = require('../models/emailService')
+const emailService = require('../services/emailService')
 
 module.exports = {
     async sendContactMail(req, res) {
