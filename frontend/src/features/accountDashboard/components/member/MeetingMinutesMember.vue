@@ -3,9 +3,9 @@
   <div class="card">
 	<div class="header">
 	  <h4><strong>Meeting Minutes</strong></h4>
-	  <RouterLink to="/member/minutes" class="view-all-btn" aria-label="View all minutes">
+	  <button @click="showModal = true" class="view-all-btn" aria-label="View all minutes">
 		View all
-	  </RouterLink>
+	  </button>
 	</div>
 
 	<div class="minutes-table-container">
@@ -31,17 +31,62 @@
 		</tbody>
 	  </table>
 	</div>
+
+	<!-- Modal for all meeting minutes -->
+	<div v-if="showModal" class="modal-overlay" @click="showModal = false">
+	  <div class="modal-content" @click.stop>
+		<div class="modal-header">
+		  <h3><strong>All Meeting Minutes</strong></h3>
+		  <button @click="showModal = false" class="close-btn" aria-label="Close modal">&times;</button>
+		</div>
+		<div class="modal-body">
+		  <div class="minutes-table-container">
+			<table>
+			  <thead>
+				<tr>
+				  <th style="width: 20%;">Date</th>
+				  <th style="width: 50%;">Title</th>
+				  <th style="width: 30%; text-align: center;">Actions</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				<tr v-for="m in minutes" :key="m.id">
+				  <td class="date-cell">{{ m.date }}</td>
+				  <td class="title-cell">{{ m.title }}</td>
+				  <td class="action-cell">
+					<a :href="m.url" target="_blank" rel="noopener" class="view-btn">Download PDF</a>
+				  </td>
+				</tr>
+				<tr v-if="!minutes.length">
+				  <td colspan="3" class="muted">No minutes available.</td>
+				</tr>
+			  </tbody>
+			</table>
+		  </div>
+		</div>
+	  </div>
+	</div>
   </div>
 </template>
 
 <script setup>
-	import { onMounted, ref } from 'vue';
+	import { onMounted, ref, watch } from 'vue';
 	import services from '../../dashboardServices';
 	import { useUserStore } from '@/stores/authStore';
 	import { formatDate } from '@/utils/dateUtils';
 	import SERVER_URL from '../../../../config';
 
 	const minutes = ref([]);
+	const showModal = ref(false);
+
+	// Prevent background scrolling when modal is open
+	watch(showModal, (isOpen) => {
+		if (isOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+	});
 
 	async function loadMinutes() {
 		try {
@@ -177,5 +222,73 @@ table td {
 .muted {
 	color: #6b7280;
 	text-align: center;
+}
+
+/* Modal Styles */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 20px;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 12px;
+	width: 100%;
+	max-width: 1200px;
+	max-height: 85vh;
+	height: 700px;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 24px 24px 20px;
+	border-bottom: 2px solid #e5e7eb;
+}
+
+.modal-header h3 {
+	margin: 0;
+	font-size: 20px;
+	color: #111827;
+}
+
+.close-btn {
+	background: none;
+	border: none;
+	font-size: 32px;
+	color: #6b7280;
+	cursor: pointer;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+	background: #f3f4f6;
+	color: #111827;
+}
+
+.modal-body {
+	padding: 24px;
+	overflow-y: auto;
+	flex: 1;
 }
 </style>
