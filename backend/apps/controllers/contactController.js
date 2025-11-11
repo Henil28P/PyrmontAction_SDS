@@ -1,10 +1,10 @@
-const contactUsForm = require('../models/contactModel')
+const emailService = require('../models/emailService')
 
 module.exports = {
     async sendContactMail(req, res) {
         try {
-            const sender = await contactUsForm.createTransporter();
-            const email = await contactUsForm.createEmail(req);
+            const sender = await emailService.createTransporter();
+            const email = await emailService.createContactUsEmail(req);
             sender.sendMail(email, function (error) {
                 if (error) {
                     console.log(error);
