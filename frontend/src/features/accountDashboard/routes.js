@@ -1,6 +1,5 @@
 import memberDashboard from "./pages/memberDashboard.vue"
 import adminDashboard from "./pages/adminDashboard.vue"
-import MeetingMinutesMember from "./components/member/MeetingMinutesMember_old.vue" 
 
 export const accountRoutes = [
   {
@@ -21,9 +20,4 @@ export const accountRoutes = [
     component: adminDashboard
   },
 
-  // {
-  //   path: '/member/minutes',
-  //   name: 'memberMinutes',
-  //   component: MeetingMinutesMember
-  // }
 ]
