@@ -68,8 +68,20 @@ module.exports = {
             if (!user) {
                 return res.status(404).json({ message: 'User not found or expired.' });
             }
+            
+            // Create Stripe customer if it doesn't exist
             if (!user.stripeCustomerID) {
-                return res.status(400).json({ message: 'User does not have a Stripe customer ID.' });
+                console.log('Creating new Stripe customer for user:', user.email);
+                const customer = await stripe.customers.create({
+                    email: user.email,
+                    name: `${user.firstName} ${user.lastName}`,
+                    metadata: {
+                        userID: user._id.toString()
+                    }
+                });
+                user.stripeCustomerID = customer.id;
+                await user.save();
+                console.log('Stripe customer created:', customer.id);
             }
             
             // Create Stripe checkout session
