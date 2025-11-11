@@ -40,7 +40,7 @@
         </div>
       </div>
       <button @click="addProjectModal = true" class="btn-create">
-        + Create Project
+        Add Project
       </button>
     </div>
 

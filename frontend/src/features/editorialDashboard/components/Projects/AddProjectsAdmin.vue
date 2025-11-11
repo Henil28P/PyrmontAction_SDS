@@ -2,20 +2,20 @@
     <div class="modal">
         <div class="modal-content">
             <h3>Add New Project</h3>
-            <div class="form">
+            <form @submit.prevent="create" class="form">
                 <div class="row">
                     <label class="lbl">Project Name</label>
-                    <input v-model="projectForm.project_name" class="input" placeholder="Enter project name" />
+                    <input v-model="projectForm.project_name" class="input" placeholder="Enter project name" required />
                 </div>
 
                 <div class="row">
                     <label class="lbl">Description</label>
-                    <textarea v-model="projectForm.project_description" class="input" rows="6" placeholder="Type the project description…"></textarea>
+                    <textarea v-model="projectForm.project_description" class="input" rows="6" placeholder="Type the project description…" required></textarea>
                 </div>
 
                 <div class="row">
                     <label class="lbl">Type</label>
-                    <select v-model="projectForm.project_type" class="input">
+                    <select v-model="projectForm.project_type" class="input" required>
                     <option value="open">Open</option>
                     <option value="closed">Closed</option>
                     </select>
@@ -23,7 +23,7 @@
 
                 <div class="row">
                     <label class="lbl">Project Date</label>
-                    <input v-model="projectForm.project_date" type="date" class="input" />
+                    <input v-model="projectForm.project_date" type="date" class="input" required />
                 </div>
 
                 <div class="row">
@@ -32,14 +32,15 @@
                         v-model:file-name="projectForm.project_image"
                         accept="image/*"
                         ref="fileUploadRef"
+                        :required="true"
                     />
                 </div>
 
                 <div class="actions">
-                    <button class="btn primary" @click="create">Create Project</button>
-                    <button class="btn" @click="$emit('close')">Cancel</button>
+                    <button type="submit" class="btn primary">Add Project</button>
+                    <button type="button" class="btn" @click="$emit('close')">Cancel</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </template>
