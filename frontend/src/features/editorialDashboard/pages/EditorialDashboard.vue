@@ -20,7 +20,6 @@
 		</nav>
 	  </aside>
 	  <main class="main-content">
-		<h2 class="page-title">Edit {{ currentTab }}</h2>
 		<div class="card">
 		  <div v-if="currentTab === 'Projects'">
 			<ProjectsAdmin/>
@@ -168,6 +167,7 @@ function goBack() {
   border-bottom: 1px solid #f3f4f6;
   width: 100%;
   background: white;
+  height: 6vh;
 }
 .card {
   background: none;
