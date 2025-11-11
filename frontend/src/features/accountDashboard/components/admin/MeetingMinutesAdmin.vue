@@ -2,7 +2,7 @@
   <div class="card">
     <div class="header">
       <h4><strong>Meeting Minutes</strong></h4>
-      <button @click="addMeetingModal = true" class="create-btn">+ Upload Meeting Minutes</button>
+      <button @click="addMeetingModal = true" class="create-btn">Add New Item</button>
     </div>
 
     <!-- List -->
@@ -30,7 +30,13 @@
             <td class="note-cell">{{ meeting.note }}</td>
             <td class="file-cell">
               <template v-if="meeting.filename">
-                <a :href="`${SERVER_URL}${meeting.fileUrl}`" :download="meeting.filename" class="fileBadge" target="_blank">
+                <a 
+                  :href="`${SERVER_URL}${meeting.fileUrl}`" 
+                  :download="meeting.filename" 
+                  class="fileBadge" 
+                  target="_blank"
+                  :title="meeting.filename"
+                >
                   {{shortName(meeting.filename)}}
                 </a>
               </template>
@@ -94,6 +100,9 @@ onMounted(() => {
 
 async function publishItem(meeting) {
   try {
+    if (!confirm('Are you sure you want to publish this meeting minute?')) {
+      return;
+    }
     if (!meeting || !meeting._id) {
       throw new Error('Meeting ID is required');
     }
@@ -106,6 +115,7 @@ async function publishItem(meeting) {
     }
   } catch (error) {
     console.error('Failed to publish meeting:', error);
+    alert(error.response?.data?.message || 'Failed to publish meeting.');
   }
 }
 
