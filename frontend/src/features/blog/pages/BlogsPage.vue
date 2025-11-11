@@ -21,6 +21,9 @@
           <RouterLink :to="{ name: 'BlogSubmit' }" class="btn-create-blog">
             Create Blog Post
           </RouterLink>
+          <button @click="showEditModal = true" class="btn-edit-blog">
+            Edit Blog with Code
+          </button>
         </div>
 
         <!-- Loading State -->
@@ -51,19 +54,58 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Blog Modal -->
+    <Teleport to="body">
+      <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>Edit Blog with Code</h3>
+            <button @click="closeEditModal" class="close-btn">&times;</button>
+          </div>
+          
+          <div class="modal-body">
+            <p class="modal-instruction">Enter the submission code you received when you created the blog:</p>
+            
+            <input 
+              v-model="editCode" 
+              type="text" 
+              placeholder="Enter your blog code"
+              class="code-input"
+              @keyup.enter="submitEditCode"
+            />
+            
+            <p v-if="editError" class="error-message">{{ editError }}</p>
+          </div>
+
+          <div class="modal-actions">
+            <button @click="closeEditModal" class="btn-cancel">Cancel</button>
+            <button @click="submitEditCode" class="btn-submit" :disabled="!editCode.trim()">
+              Continue to Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import BlogCard from '../components/BlogCard.vue'
 import BlogDetails from '../components/BlogDetails.vue'
 import api from '../../../services/api.js'
+
+const router = useRouter()
 
 const blogs = ref([])
 const selectedBlog = ref(null)
 const loading = ref(false)
 const error = ref(null)
+const showEditModal = ref(false)
+const editCode = ref('')
+const editError = ref(null)
 
 const fetchBlogs = async () => {
   loading.value = true
@@ -85,6 +127,47 @@ const fetchBlogs = async () => {
 const handleSelectBlog = (blog) => {
   selectedBlog.value = blog
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const closeEditModal = () => {
+  showEditModal.value = false
+  editCode.value = ''
+  editError.value = null
+}
+
+const submitEditCode = async () => {
+  if (!editCode.value.trim()) {
+    editError.value = 'Please enter a valid code'
+    return
+  }
+
+  editError.value = null
+
+  try {
+    // Verify the edit code exists
+    console.log('Attempting to fetch blog with code:', editCode.value.trim())
+    const response = await api.get(`api/blogs/edit/${editCode.value.trim()}`)
+    
+    console.log('API Response:', response)
+    
+    if (response && response._id) {
+      // Navigate to edit page with the blog data
+      router.push({ 
+        name: 'BlogEdit', 
+        params: { code: editCode.value.trim() }
+      })
+    } else {
+      editError.value = 'Invalid code. Please check and try again.'
+    }
+  } catch (err) {
+    console.error('Error verifying edit code:', err)
+    if (err.response) {
+      console.log('Error response:', err.response)
+      editError.value = err.response.data?.message || 'Invalid code or blog not found.'
+    } else {
+      editError.value = 'Invalid code or blog not found. Please check your submission code.'
+    }
+  }
 }
 
 onMounted(() => {
@@ -217,7 +300,9 @@ onMounted(() => {
 .blog-actions {
   margin-bottom: 40px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 .btn-create-blog {
@@ -241,6 +326,23 @@ onMounted(() => {
 .btn-create-blog:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(36, 36, 36, 0.1);
+}
+
+.btn-edit-blog {
+  background: white;
+  color: #374151;
+  padding: 10px 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-edit-blog:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 .blogs-page__header {
@@ -349,6 +451,10 @@ onMounted(() => {
   .btn-create-blog {
     width: 100%;
   }
+  
+  .btn-edit-blog {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -366,4 +472,142 @@ onMounted(() => {
     letter-spacing: 1px;
   }
 }
+
+/* Edit Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 28px;
+  width: 480px;
+  max-width: 92vw;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-body {
+  margin-bottom: 24px;
+}
+
+.modal-instruction {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.code-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.code-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #f9fafb;
+}
+
+.btn-submit {
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 </style>
+

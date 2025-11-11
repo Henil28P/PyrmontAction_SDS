@@ -7,22 +7,21 @@
             </div>
             
             <div class="form-section">
-                <div class="form-group">
+                <div class="form-row">
                     <label>Image File</label>
                     <FileUploadNew
                         v-model:file-name="newItem.image_file_name"
                         accept="image/*"
                         ref="fileUploadRef"
-                        class="file-input"
                     />
                 </div>
                 
-                <div class="form-group">
+                <div class="form-row">
                     <label>Caption</label>
                     <input v-model="newItem.caption" type="text" placeholder="Enter caption" required class="text-input"/>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-row">
                     <label>Alt Text</label>
                     <input v-model="newItem.alt" type="text" placeholder="Enter alt text" required class="text-input"/>
                 </div>
@@ -80,25 +79,22 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    backdrop-filter: blur(4px);
 }
 
 .modal-content {
-    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-    border: 2px solid #d1fae5;
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    min-width: 500px;
-    max-width: 90vw;
-    max-height: 90vh;
+    background: white;
+    padding: 28px;
+    border-radius: 8px;
+    width: 560px;
+    max-width: 92vw;
+    max-height: 92vh;
     overflow-y: auto;
-    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
@@ -106,23 +102,13 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid #d1fae5;
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #065f46;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.modal-header h3::before {
-    content: "➕";
-    font-size: 18px;
+    color: #111827;
 }
 
 .close-btn {
@@ -138,117 +124,105 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.3s;
+    transition: all 0.2s;
 }
 
 .close-btn:hover {
-    background: #fee2e2;
-    color: #dc2626;
-    transform: scale(1.1);
+    background: #f3f4f6;
+    color: #111827;
 }
 
 .form-section {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    margin-bottom: 24px;
+    gap: 18px;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.form-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px 14px;
+    align-items: start;
 }
 
-.form-group label {
+.form-row label {
     font-size: 14px;
+    color: #374151;
+    padding-top: 10px;
     font-weight: 600;
-    color: #047857;
-    letter-spacing: 0.3px;
 }
 
 .text-input {
-    padding: 12px 16px;
-    border: 2px solid #a7f3d0;
-    border-radius: 8px;
-    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 10px 14px;
+    width: 100%;
     background: white;
-    transition: all 0.3s;
+    font-size: 14px;
     font-family: inherit;
-}
-
-.text-input:hover {
-    border-color: #6ee7b7;
+    transition: all 0.2s ease;
 }
 
 .text-input:focus {
     outline: none;
     border-color: #10b981;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .actions {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     justify-content: flex-end;
-    margin-top: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
 }
 
 .add-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: #10b981;
     color: white;
     border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
+    border-radius: 6px;
+    padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
 }
 
 .add-btn:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
-}
-
-.add-btn:active {
-    transform: translateY(0);
+    background: #059669;
 }
 
 .cancel-btn {
     background: white;
-    color: #6b7280;
-    border: 2px solid #d1d5db;
-    border-radius: 8px;
-    padding: 12px 24px;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
-    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
 }
 
 .cancel-btn:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    color: #374151;
-    transform: translateY(-1px);
-}
-
-.cancel-btn:active {
-    transform: translateY(0);
+    background: #f9fafb;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .modal-content {
-        min-width: auto;
-        margin: 20px;
-        padding: 24px;
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .form-row label {
+        padding-top: 0;
     }
     
     .actions {

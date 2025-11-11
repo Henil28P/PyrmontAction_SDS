@@ -1,46 +1,61 @@
 <template>
-  <div class="card">
-    <h2 class="title">Projects</h2>
-    <button @click="addProjectModal = true">Add New Project</button>
-    <hr class="divider" />
+  <div class="projects-wrapper">
+    <div class="projects-header">
+      <h2 class="main-title">Projects Management</h2>
+      <p class="subtitle">Create and manage community projects</p>
+    </div>
+
+    <div class="projects-actions">
+      <button @click="addProjectModal = true" class="btn-create">
+        + Create Project
+      </button>
+    </div>
 
     <!-- List -->
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th style="width:120px;">Date</th>
-            <th>Project Name</th>
-            <th style="width:120px;">Type</th>
-            <th style="width:160px;">Image</th>
-            <th style="width:160px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="project in projectList" :key="project._id">
-            <td>{{ formatDate(project.project_date) }}</td>
-            <td>{{ project.project_name }}</td>
-            <td>
-              <span class="badge" :class="project.project_type === 'open' ? 'badge-open' : 'badge-closed'">
-                {{ project.project_type === 'open' ? 'Open' : 'Closed' }}
-              </span>
-            </td>
-            <td>
-              <template v-if="project.project_image">
-                <span class="fileBadge">{{shortName(project.project_image)}}</span>
-              </template>
-              <span v-else class="muted">—</span>
-            </td>
-            <td class="actionsCell">
-              <button class="btn sm" @click="selectedProject = project">Edit</button>
-              <button class="btn sm danger" @click="deleteItem(project._id)">Delete</button>
-            </td>
-          </tr>
-          <tr v-if="!projectList.length">
-            <td colspan="6" class="muted">No projects yet.</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="projects-content">
+      <div class="section-title">
+        <h3>Upcoming Projects</h3>
+      </div>
+      
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:120px;">DATE</th>
+              <th>PROJECT TITLE</th>
+              <th style="width:120px;">STATUS</th>
+              <th style="width:160px;">IMAGE</th>
+              <th style="width:160px;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="project in projectList" :key="project._id">
+              <td>{{ formatDate(project.project_date) }}</td>
+              <td class="project-name">{{ project.project_name }}</td>
+              <td>
+                <span class="status-badge" :class="project.project_type === 'open' ? 'status-open' : 'status-closed'">
+                  {{ project.project_type === 'open' ? 'Open' : 'Closed' }}
+                </span>
+              </td>
+              <td>
+                <template v-if="project.project_image">
+                  <span class="file-badge">{{shortName(project.project_image)}}</span>
+                </template>
+                <span v-else class="text-muted">—</span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn-edit" @click="selectedProject = project">Edit</button>
+                  <button class="btn-delete" @click="deleteItem(project._id)">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!projectList.length">
+              <td colspan="5" class="empty-row">No projects yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <AddProjectsAdmin 
@@ -109,21 +124,217 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
 </script>
 
 <style scoped>
-.card{padding:16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
-.title{margin:0 0 12px 0;font-size:20px;font-weight:600}
-.btn{border:1px solid #e5e7eb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
-.btn.sm{padding:6px 10px}
-.btn.primary{background:#111;color:#fff;border-color:#111}
-.btn.danger{border-color:#ef4444;color:#ef4444}
-.muted{color:#6b7280}
-.divider{border:0;border-top:1px solid #f0f0f0;margin:12px 0}
-.table-wrap{overflow-x:auto}
-.table{width:100%;border-collapse:collapse;font-size:14px}
-.table th,.table td{padding:10px 12px;border-top:1px solid #f3f4f6;text-align:left;vertical-align:top}
-.fileBadge{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px}
-.badge{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;border:1px solid #e5e7eb}
-.badge-open{background:#ecfeff;color:#155e75;border-color:#a5f3fc}
-.badge-closed{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
-.actionsCell{display:flex;gap:6px}
-.hint{color:#6b7280}
+.projects-wrapper {
+  background: white;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+
+.projects-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.main-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.subtitle {
+  margin: 6px 0 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.projects-actions {
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-create {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-create:hover {
+  background: #059669;
+}
+
+.projects-content {
+  padding: 24px;
+}
+
+.section-title {
+  margin-bottom: 16px;
+}
+
+.section-title h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  padding: 16px;
+  border-top: 1px solid #f3f4f6;
+  text-align: left;
+  vertical-align: middle;
+  color: #374151;
+}
+
+.table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.project-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-open {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-closed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.file-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.text-muted {
+  color: #9ca3af;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-edit {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #1d4ed8;
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
+}
+
+.empty-row {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px !important;
+}
+
+@media (max-width: 768px) {
+  .projects-header {
+    padding: 20px 16px 16px;
+  }
+
+  .main-title {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .projects-actions {
+    padding: 12px 16px;
+  }
+
+  .projects-content {
+    padding: 16px;
+  }
+
+  .table-wrap {
+    border-radius: 6px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
 </style>

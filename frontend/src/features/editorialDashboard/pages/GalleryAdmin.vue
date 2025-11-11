@@ -1,20 +1,30 @@
 <template>
-    <div class="gallery-admin">
-        <div class="header-section">
-            <h1>Gallery Admin</h1>
-            <button @click="addItemModal = true" class="add-btn">Add New Image</button>
+    <div class="gallery-wrapper">
+        <div class="gallery-header">
+            <h2 class="main-title">Gallery Management</h2>
+            <p class="subtitle">Upload and manage community photos</p>
+        </div>
+
+        <div class="gallery-actions">
+            <button @click="addItemModal = true" class="btn-create">
+                + Add New Image
+            </button>
         </div>
         
-        <div class="gallery-list-section">
-            <div class="table-container">
-                <table class="gallery-table">
+        <div class="gallery-content">
+            <div class="section-title">
+                <h3>Gallery Images</h3>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th>Image</th>
-                            <th>File Name</th>
-                            <th>Caption</th>
-                            <th>Alt Text</th>
-                            <th>Actions</th>
+                            <th style="width:100px;">IMAGE</th>
+                            <th>FILE NAME</th>
+                            <th>CAPTION</th>
+                            <th>ALT TEXT</th>
+                            <th style="width:160px;">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -22,13 +32,18 @@
                             <td>
                                 <img :src="`${SERVER_URL}${item.imageUrl}`" alt="" class="thumbnail"/>
                             </td>
-                            <td>{{ item.image_file_name }}</td>
+                            <td class="file-name">{{ item.image_file_name }}</td>
                             <td>{{ item.caption }}</td>
                             <td>{{ item.alt }}</td>
-                            <td class="actions">
-                                <button @click="selectedItem = item" class="edit-btn">Edit</button>
-                                <button @click="deleteItem(item._id)" class="delete-btn">Delete</button>
+                            <td>
+                                <div class="action-buttons">
+                                    <button @click="selectedItem = item" class="btn-edit">Edit</button>
+                                    <button @click="deleteItem(item._id)" class="btn-delete">Delete</button>
+                                </div>
                             </td>
+                        </tr>
+                        <tr v-if="!imageList.length">
+                            <td colspan="5" class="empty-row">No images yet.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -104,232 +119,196 @@
 
 
 <style scoped>
-.gallery-admin {
-    padding: 32px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* Header Section */
-.header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e5e7eb;
-}
-
-.header-section h1 {
+.gallery-wrapper {
+    background: white;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: 0;
     margin: 0;
-    font-size: 28px;
+}
+
+.gallery-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.main-title {
+    font-size: 24px;
     font-weight: 700;
     color: #111827;
+    margin: 0;
+}
+
+.subtitle {
+    margin: 6px 0 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.gallery-actions {
+    padding: 16px 24px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    justify-content: flex-end;
 }
 
-.header-section h1::before {
-    content: "🖼️";
-    font-size: 24px;
-}
-
-.add-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+.btn-create {
+    background: #10b981;
     color: white;
     border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
+    padding: 10px 20px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-    letter-spacing: 0.3px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    transition: all 0.2s ease;
 }
 
-.add-btn::before {
-    content: "➕";
+.btn-create:hover {
+    background: #059669;
+}
+
+.gallery-content {
+    padding: 24px;
+}
+
+.section-title {
+    margin-bottom: 16px;
+}
+
+.section-title h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 14px;
 }
 
-.add-btn:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
-}
-
-.add-btn:active {
-    transform: translateY(0);
-}
-
-/* Gallery List Section */
-.gallery-list-section {
-    background: white;
-}
-
-.table-container {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.gallery-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-}
-
-.gallery-table thead {
-    background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
-}
-
-.gallery-table th {
-    text-align: left;
-    padding: 16px 20px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #374151;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+.table thead {
+    background: #f9fafb;
     border-bottom: 2px solid #e5e7eb;
 }
 
-.gallery-table th:first-child {
-    padding-left: 24px;
+.table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.gallery-table tbody tr {
-    border-bottom: 1px solid #f3f4f6;
-    transition: all 0.2s;
-}
-
-.gallery-table tbody tr:hover {
-    background: #f9fafb;
-    box-shadow: inset 0 0 0 1px #e5e7eb;
-}
-
-.gallery-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.gallery-table td {
-    padding: 16px 20px;
-    font-size: 14px;
-    color: #1f2937;
+.table td {
+    padding: 16px;
+    border-top: 1px solid #f3f4f6;
+    text-align: left;
     vertical-align: middle;
+    color: #374151;
 }
 
-.gallery-table td:first-child {
-    padding-left: 24px;
+.table tbody tr:hover {
+    background: #f9fafb;
 }
 
 .thumbnail {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-    cursor: pointer;
-}
-
-.thumbnail:hover {
-    transform: scale(1.8);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 10;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.edit-btn,
-.delete-btn {
-    padding: 8px 16px;
     border-radius: 6px;
-    font-size: 13px;
+    border: 1px solid #e5e7eb;
+}
+
+.file-name {
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: 2px solid;
-    letter-spacing: 0.3px;
+    color: #111827;
 }
 
-.edit-btn {
-    background: white;
-    color: #10b981;
-    border-color: #10b981;
+.action-buttons {
+    display: flex;
+    gap: 8px;
 }
 
-.edit-btn:hover {
-    background: #10b981;
-    color: white;
-    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
+.btn-edit,
+.btn-delete {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
 }
 
-.delete-btn {
-    background: white;
-    color: #ef4444;
-    border-color: #ef4444;
+.btn-edit {
+  background: #2563eb;
+  color: white;
 }
 
-.delete-btn:hover {
-    background: #ef4444;
-    color: white;
-    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-    transform: translateY(-2px);
+.btn-edit:hover {
+  background: #1d4ed8;
 }
 
-.edit-btn:active,
-.delete-btn:active {
-    transform: translateY(0);
+.btn-delete {
+  background: #ef4444;
+  color: white;
 }
 
-/* Responsive Design */
+.btn-delete:hover {
+  background: #dc2626;
+}.empty-row {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px !important;
+}
+
 @media (max-width: 768px) {
-    .gallery-admin {
-        padding: 20px;
+    .gallery-header {
+        padding: 20px 16px 16px;
     }
-    
-    .header-section {
-        flex-direction: column;
-        gap: 16px;
-        align-items: flex-start;
+
+    .main-title {
+        font-size: 20px;
     }
-    
-    .table-container {
-        overflow-x: auto;
-    }
-    
-    .gallery-table th,
-    .gallery-table td {
-        padding: 12px;
+
+    .subtitle {
         font-size: 13px;
     }
-    
-    .thumbnail {
-        width: 60px;
-        height: 60px;
+
+    .gallery-actions {
+        padding: 12px 16px;
     }
-    
-    .actions {
+
+    .gallery-content {
+        padding: 16px;
+    }
+
+    .table-wrap {
+        border-radius: 6px;
+    }
+
+    .action-buttons {
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
     }
-    
-    .edit-btn,
-    .delete-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+
+    .thumbnail {
+        width: 50px;
+        height: 50px;
     }
 }
 </style>

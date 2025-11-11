@@ -247,7 +247,7 @@ const shortContent = computed(() => {
   flex: 1;
   padding: 8px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -264,12 +264,12 @@ const shortContent = computed(() => {
 }
 
 .btn-approve {
-  background: #10b981;
+  background: #2563eb;
   color: white;
 }
 
 .btn-approve:hover {
-  background: #059669;
+  background: #1d4ed8;
 }
 
 .btn-delete {

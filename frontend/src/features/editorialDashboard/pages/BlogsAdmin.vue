@@ -1,30 +1,28 @@
 <template>
-  <div class="blogs-admin">
-    <div class="blogs-container">
-      <!-- Header -->
-      <div class="page-header">
-        <div class="header-content">
-          <h1 class="page-title">Blog Management</h1>
-          <p class="page-subtitle">Review, approve, and manage blog submissions</p>
-        </div>
-      </div>
+  <div class="blogs-wrapper">
+    <div class="blogs-header">
+      <h2 class="main-title">Blog Management</h2>
+      <p class="subtitle">Review, approve, and manage blog submissions</p>
+    </div>
 
-      <!-- Tabs -->
-      <div class="tabs">
-        <button 
-          @click="activeTab = 'pending'" 
-          :class="['tab-button', { active: activeTab === 'pending' }]"
-        >
-          Pending ({{ pendingBlogs.length }})
-        </button>
-        <button 
-          @click="activeTab = 'approved'" 
-          :class="['tab-button', { active: activeTab === 'approved' }]"
-        >
-          Approved ({{ approvedBlogs.length }})
-        </button>
-      </div>
+    <div class="tabs-container">
+      <button 
+        @click="activeTab = 'pending'" 
+        :class="['tab-button', { active: activeTab === 'pending' }]"
+      >
+        <span class="tab-text">Pending</span>
+        <span class="tab-badge">{{ pendingBlogs.length }}</span>
+      </button>
+      <button 
+        @click="activeTab = 'approved'" 
+        :class="['tab-button', { active: activeTab === 'approved' }]"
+      >
+        <span class="tab-text">Approved</span>
+        <span class="tab-badge">{{ approvedBlogs.length }}</span>
+      </button>
+    </div>
 
+    <div class="tab-content">
       <!-- Loading State -->
       <div v-if="loading" class="loading">
         <p>Loading blogs...</p>
@@ -182,92 +180,106 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.blogs-admin {
-  min-height: 100vh;
-  background: #fafafa;
-  padding-top: 0;
-}
-
-.blogs-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
-}
-
-.page-header {
-  margin-bottom: 40px;
-  padding-bottom: 24px;
-  border-bottom: 2px solid #e8e8e8;
-}
-
-.header-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.page-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: #1e293b;
+.blogs-wrapper {
+  background: white;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  padding: 0;
   margin: 0;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
-.page-subtitle {
-  font-size: 16px;
-  color: #64748b;
+.blogs-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.main-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
   margin: 0;
-  font-weight: 500;
 }
 
-.tabs {
+.subtitle {
+  margin: 6px 0 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.tabs-container {
   display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
-  border-bottom: 2px solid #e8e8e8;
+  gap: 0;
+  background: #f9fafb;
+  padding: 0 24px;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .tab-button {
-  background: none;
+  background: transparent;
   border: none;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #6b6b6b;
+  padding: 14px 20px;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
   border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: -2px;
 }
 
 .tab-button:hover {
-  color: #242424;
+  color: #111827;
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .tab-button.active {
-  color: #10b981;
-  border-bottom-color: #10b981;
+  color: #059669;
+  border-bottom-color: #059669;
+  background: white;
+}
+
+.tab-text {
+  font-size: 14px;
+}
+
+.tab-badge {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tab-button.active .tab-badge {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tab-content {
+  padding: 24px;
+  min-height: 400px;
 }
 
 .loading,
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #64748b;
-  font-size: 18px;
+  color: #6b7280;
+  font-size: 16px;
 }
 
 .retry-button {
   margin-top: 16px;
-  background: #fff;
-  color: #334155;
+  background: white;
+  color: #374151;
   border: 1px solid #e5e7eb;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
@@ -275,13 +287,14 @@ onMounted(() => {
 }
 
 .retry-button:hover {
-  border-color: #10b981;
+  border-color: #059669;
+  color: #059669;
 }
 
 .blogs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 32px;
+  gap: 24px;
 }
 
 /* Modal Styles */
@@ -444,27 +457,35 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 28px;
+  .blogs-header {
+    padding: 20px 16px 16px;
   }
 
-  .page-subtitle {
-    font-size: 14px;
+  .main-title {
+    font-size: 20px;
   }
 
-  .tabs {
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .tabs-container {
+    padding: 0 16px;
     overflow-x: auto;
-    gap: 8px;
   }
 
   .tab-button {
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .tab-content {
+    padding: 16px;
   }
 
   .blogs-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
   }
 
   .modal-content {
@@ -477,21 +498,17 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .page-title {
-    font-size: 24px;
+  .main-title {
+    font-size: 18px;
   }
 
-  .page-subtitle {
-    font-size: 13px;
+  .subtitle {
+    font-size: 12px;
   }
 
-  .blogs-container {
-    padding: 24px 16px;
-  }
-
-  .page-header {
-    margin-bottom: 24px;
-    padding-bottom: 16px;
+  .tab-badge {
+    padding: 1px 8px;
+    font-size: 11px;
   }
 }
 </style>

@@ -14,5 +14,13 @@ export const blogRoutes = [
     meta: {
       title: 'Submit Blog - Pyrmont Action'
     }
+  },
+  {
+    path: '/blogs/edit/:code',
+    name: 'BlogEdit',
+    component: () => import('./pages/BlogEdit.vue'),
+    meta: {
+      title: 'Edit Blog - Pyrmont Action'
+    }
   }
 ]

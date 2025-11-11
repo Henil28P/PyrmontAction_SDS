@@ -138,6 +138,9 @@
           
           <div class="edit-code-box">
             <div class="edit-code-text">{{ editCode }}</div>
+            <button @click="copyCode" class="copy-btn" :class="{ copied: codeCopied }">
+              {{ codeCopied ? 'Copied!' : 'Copy' }}
+            </button>
           </div>
 
           <button @click="closeSuccessModal" class="btn-return">
@@ -171,6 +174,7 @@ const submitting = ref(false)
 const showReviewModal = ref(false)
 const showSuccessModal = ref(false)
 const editCode = ref('')
+const codeCopied = ref(false)
 
 const handleImageChange = (event) => {
   const file = event.target.files[0]
@@ -243,7 +247,20 @@ const confirmSubmit = async () => {
 
 const closeSuccessModal = () => {
   showSuccessModal.value = false
+  codeCopied.value = false
   router.push({ name: 'Blogs' })
+}
+
+const copyCode = async () => {
+  try {
+    await navigator.clipboard.writeText(editCode.value)
+    codeCopied.value = true
+    setTimeout(() => {
+      codeCopied.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('Failed to copy code:', err)
+  }
 }
 
 const goBack = () => {
@@ -619,6 +636,10 @@ const goBack = () => {
   padding: 24px;
   border-radius: 8px;
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .edit-code-text {
@@ -628,6 +649,35 @@ const goBack = () => {
   letter-spacing: 3px;
   font-family: 'Courier New', monospace;
   user-select: all;
+  flex: 1;
+}
+
+.copy-btn {
+  background: #2563eb;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 28px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.copy-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.copy-btn:active {
+  transform: translateY(0);
+}
+
+.copy-btn.copied {
+  background: #16a34a;
 }
 
 .btn-return {

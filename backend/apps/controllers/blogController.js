@@ -54,9 +54,13 @@ module.exports = {
     // Get blog by edit code for visitors
     async getBlogViaCode (req, res) {
         try {
+            // Allow fetching blog regardless of status (pending or approved)
             const blog = await Blog.findOne({ editCode: req.params.id });
             if (!blog) {
-                return res.status(404).json({ message: 'Blog has either been approved or removed.' });
+                return res.status(404).json({ 
+                    message: 'Invalid code or blog not found. Please check your submission code.',
+                    type: 'not_found'
+                });
             }
             res.status(200).json(blog);
         } catch (error) {
@@ -68,14 +72,20 @@ module.exports = {
     // Update for visitor via edit code
     async updateBlogViaCode (req, res) {
         try {
-            const { id } = req.params;
-            const { title, content, author, status } = req.body;
-            const blogData = { title, content, author, status };
+            const { id } = req.params; // This is actually the editCode
+            const { title, content, author } = req.body;
+            // Always set status to pending when user edits (even if it was approved)
+            const blogData = { title, content, author, status: 'pending' };
             if (req.file) {
                 blogData.imageUrl = `/uploads/blogs/${req.file.filename}`;
                 blogData.imageName = req.file.originalname;
             }
-            const updatedBlog = await Blog.findByIdAndUpdate(id, blogData, { new: true });
+            // Find by editCode and update
+            const updatedBlog = await Blog.findOneAndUpdate(
+                { editCode: id }, 
+                blogData, 
+                { new: true }
+            );
             if (!updatedBlog) {
                 return res.status(404).json({ message: 'Blog not found or invalid edit code' });
             }
@@ -103,8 +113,9 @@ module.exports = {
     async approveBlog (req, res) {
         try {
             const { id } = req.params;
+            // Only update status, KEEP the editCode so users can still edit later
             const updatedBlog = await Blog.findByIdAndUpdate(id, 
-                { $set: { status: 'approved' }, $unset: { editCode: "" } }, 
+                { $set: { status: 'approved' } }, 
                 { new: true });
             if (!updatedBlog) {
                 return res.status(404).json({ message: 'Blog not found' });
