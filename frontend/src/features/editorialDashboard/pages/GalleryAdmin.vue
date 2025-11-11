@@ -25,8 +25,8 @@
                 <span class="count-badge">{{ filteredImages.length }} images</span>
             </div>
 
-            <div class="table-wrap">
-                <table class="table">
+            <div class="gallery-table-container">
+                <table class="gallery-table">
                     <thead>
                         <tr>
                             <th style="width:100px;">IMAGE</th>
@@ -37,22 +37,27 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in filteredImages" :key="item._id">
+                        <tr v-for="item in filteredImages" :key="item._id" class="gallery-row">
                             <td>
                                 <img :src="`${SERVER_URL}${item.imageUrl}`" alt="" class="thumbnail"/>
                             </td>
                             <td class="file-name">{{ item.image_file_name }}</td>
-                            <td>{{ item.caption }}</td>
-                            <td>{{ item.alt }}</td>
+                            <td class="caption-cell">{{ item.caption }}</td>
+                            <td class="alt-cell">{{ item.alt }}</td>
                             <td>
                                 <div class="action-buttons">
-                                    <button @click="selectedItem = item" class="btn-edit">Edit</button>
-                                    <button @click="deleteItem(item._id)" class="btn-delete">Delete</button>
+                                    <button @click="selectedItem = item" class="action-btn edit-btn">Edit</button>
+                                    <button @click="deleteItem(item._id)" class="action-btn delete-btn">Delete</button>
                                 </div>
                             </td>
                         </tr>
                         <tr v-if="!filteredImages.length">
-                            <td colspan="5" class="empty-row">{{ searchQuery ? 'No images found' : 'No images yet' }}</td>
+                            <td colspan="5" class="empty-row">
+                                <div class="empty-state">
+                                    <p class="empty-text">{{ searchQuery ? 'No images found' : 'No images yet' }}</p>
+                                    <p class="empty-hint">Click "Add Image" to upload your first image</p>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -146,6 +151,12 @@
     box-shadow: none;
     padding: 0;
     margin: 0;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .gallery-header {
@@ -239,25 +250,25 @@
     font-weight: 600;
 }
 
-.table-wrap {
+.gallery-table-container {
     overflow-x: auto;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
 }
 
-.table {
+.gallery-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
 }
 
-.table thead {
+.gallery-table thead {
     background: #f9fafb;
     border-bottom: 2px solid #e5e7eb;
 }
 
-.table th {
+.gallery-table th {
     padding: 12px 16px;
     text-align: left;
     font-size: 11px;
@@ -267,16 +278,22 @@
     letter-spacing: 0.5px;
 }
 
-.table td {
+.gallery-table tbody tr.gallery-row {
+    transition: background 0.2s ease;
+    background: white;
+}
+
+.gallery-table tbody tr.gallery-row:hover {
+    background: #f9fafb;
+}
+
+.gallery-table td {
     padding: 16px;
     border-top: 1px solid #f3f4f6;
     text-align: left;
     vertical-align: middle;
     color: #374151;
-}
-
-.table tbody tr:hover {
-    background: #f9fafb;
+    font-size: 14px;
 }
 
 .thumbnail {
@@ -292,13 +309,21 @@
     color: #111827;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 8px;
+.caption-cell {
+    color: #374151;
 }
 
-.btn-edit,
-.btn-delete {
+.alt-cell {
+    color: #6b7280;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 13px;
@@ -308,26 +333,47 @@
   border: none;
 }
 
-.btn-edit {
-  background: #2563eb;
+.edit-btn {
+  background: #3b82f6;
   color: white;
 }
 
-.btn-edit:hover {
-  background: #1d4ed8;
+.edit-btn:hover {
+  background: #2563eb;
 }
 
-.btn-delete {
+.delete-btn {
   background: #ef4444;
   color: white;
 }
 
-.btn-delete:hover {
+.delete-btn:hover {
   background: #dc2626;
-}.empty-row {
+}
+
+.empty-row {
     text-align: center;
     color: #9ca3af;
     padding: 40px !important;
+    border: none !important;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 6px 0;
+}
+
+.empty-hint {
+    font-size: 14px;
+    color: #9ca3af;
+    margin: 0;
 }
 
 @media (max-width: 768px) {
@@ -357,7 +403,7 @@
         padding: 16px;
     }
 
-    .table-wrap {
+    .gallery-table-container {
         border-radius: 6px;
     }
 

@@ -51,8 +51,8 @@
         <span class="count-badge">{{ filteredProjects.length }} projects</span>
       </div>
       
-      <div class="table-wrap">
-        <table class="table">
+      <div class="projects-table-container">
+        <table class="projects-table">
           <thead>
             <tr>
               <th style="width:120px;">DATE</th>
@@ -63,9 +63,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="project in filteredProjects" :key="project._id">
-              <td>{{ formatDate(project.project_date) }}</td>
-              <td class="project-name">{{ project.project_name }}</td>
+            <tr v-for="project in filteredProjects" :key="project._id" class="project-row">
+              <td class="date-cell">{{ formatDate(project.project_date) }}</td>
+              <td class="project-title">{{ project.project_name }}</td>
               <td>
                 <span class="status-badge" :class="project.project_type === 'open' ? 'status-open' : 'status-closed'">
                   {{ project.project_type === 'open' ? 'Open' : 'Closed' }}
@@ -79,13 +79,18 @@
               </td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn-edit" @click="selectedProject = project">Edit</button>
-                  <button class="btn-delete" @click="deleteItem(project._id)">Delete</button>
+                  <button class="action-btn edit-btn" @click="selectedProject = project">Edit</button>
+                  <button class="action-btn delete-btn" @click="deleteItem(project._id)">Delete</button>
                 </div>
               </td>
             </tr>
             <tr v-if="!filteredProjects.length">
-              <td colspan="5" class="empty-row">{{ searchQuery ? 'No projects found' : 'No projects yet' }}</td>
+              <td colspan="5" class="empty-row">
+                <div class="empty-state">
+                  <p class="empty-text">{{ searchQuery ? 'No projects found' : 'No projects yet' }}</p>
+                  <p class="empty-hint">Click "Add Project" to create your first project</p>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -195,6 +200,12 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   box-shadow: none;
   padding: 0;
   margin: 0;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .projects-header {
@@ -327,25 +338,25 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   font-weight: 600;
 }
 
-.table-wrap {
+.projects-table-container {
   overflow-x: auto;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
 }
 
-.table {
+.projects-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
 }
 
-.table thead {
+.projects-table thead {
   background: #f9fafb;
   border-bottom: 2px solid #e5e7eb;
 }
 
-.table th {
+.projects-table th {
   padding: 12px 16px;
   text-align: left;
   font-size: 11px;
@@ -355,19 +366,30 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   letter-spacing: 0.5px;
 }
 
-.table td {
+.projects-table tbody tr.project-row {
+  transition: background 0.2s ease;
+  background: white;
+}
+
+.projects-table tbody tr.project-row:hover {
+  background: #f9fafb;
+}
+
+.projects-table td {
   padding: 16px;
   border-top: 1px solid #f3f4f6;
   text-align: left;
   vertical-align: middle;
   color: #374151;
+  font-size: 14px;
 }
 
-.table tbody tr:hover {
-  background: #f9fafb;
+.date-cell {
+  font-weight: 600;
+  color: #111827;
 }
 
-.project-name {
+.project-title {
   font-weight: 600;
   color: #111827;
 }
@@ -406,11 +428,11 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.btn-edit,
-.btn-delete {
+.action-btn {
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 13px;
@@ -420,21 +442,21 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   border: none;
 }
 
-.btn-edit {
-  background: #2563eb;
+.edit-btn {
+  background: #3b82f6;
   color: white;
 }
 
-.btn-edit:hover {
-  background: #1d4ed8;
+.edit-btn:hover {
+  background: #2563eb;
 }
 
-.btn-delete {
+.delete-btn {
   background: #ef4444;
   color: white;
 }
 
-.btn-delete:hover {
+.delete-btn:hover {
   background: #dc2626;
 }
 
@@ -442,6 +464,25 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   text-align: center;
   color: #9ca3af;
   padding: 40px !important;
+  border: none !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 6px 0;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
@@ -487,7 +528,7 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
     padding: 16px;
   }
 
-  .table-wrap {
+  .projects-table-container {
     border-radius: 6px;
   }
 
