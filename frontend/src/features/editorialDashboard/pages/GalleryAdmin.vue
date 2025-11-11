@@ -6,6 +6,14 @@
         </div>
 
         <div class="gallery-actions">
+            <div class="search-bar">
+                <input 
+                    v-model="searchQuery" 
+                    type="text" 
+                    placeholder="Search by caption or filename..."
+                    class="search-input"
+                />
+            </div>
             <button @click="addItemModal = true" class="btn-create">
                 + Add New Image
             </button>
@@ -14,6 +22,7 @@
         <div class="gallery-content">
             <div class="section-title">
                 <h3>Gallery Images</h3>
+                <span class="count-badge">{{ filteredImages.length }} images</span>
             </div>
 
             <div class="table-wrap">
@@ -28,7 +37,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in imageList" :key="item._id">
+                        <tr v-for="item in filteredImages" :key="item._id">
                             <td>
                                 <img :src="`${SERVER_URL}${item.imageUrl}`" alt="" class="thumbnail"/>
                             </td>
@@ -42,8 +51,8 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="!imageList.length">
-                            <td colspan="5" class="empty-row">No images yet.</td>
+                        <tr v-if="!filteredImages.length">
+                            <td colspan="5" class="empty-row">{{ searchQuery ? 'No images found' : 'No images yet' }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -66,7 +75,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, computed } from 'vue';
     import { useUserStore } from '../../../stores/authStore';
     import services from '../editorialServices';
     import EditGalleryItemAdmin from '../components/Gallery/EditGalleryItemAdmin.vue';
@@ -76,7 +85,18 @@
     const imageList = ref([]);
     const selectedItem = ref(null);
     const addItemModal = ref(false);
+    const searchQuery = ref('');
 
+    const filteredImages = computed(() => {
+        if (!searchQuery.value) return imageList.value;
+        
+        const query = searchQuery.value.toLowerCase();
+        return imageList.value.filter(item => 
+            item.caption?.toLowerCase().includes(query) ||
+            item.image_file_name?.toLowerCase().includes(query) ||
+            item.alt?.toLowerCase().includes(query)
+        );
+    });
 
     async function loadGallery() {
         try {
@@ -151,7 +171,29 @@
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .btn-create {
@@ -176,6 +218,9 @@
 
 .section-title {
     margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .section-title h3 {
@@ -183,6 +228,15 @@
     font-weight: 700;
     color: #111827;
     margin: 0;
+}
+
+.count-badge {
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .table-wrap {
@@ -291,6 +345,12 @@
 
     .gallery-actions {
         padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-bar {
+        max-width: 100%;
     }
 
     .gallery-content {

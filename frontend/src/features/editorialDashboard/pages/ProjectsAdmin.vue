@@ -6,6 +6,39 @@
     </div>
 
     <div class="projects-actions">
+      <div class="filters-group">
+        <div class="search-bar">
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Search projects..."
+            class="search-input"
+          />
+        </div>
+        <div class="filter-buttons">
+          <button 
+            @click="statusFilter = 'all'" 
+            class="filter-btn"
+            :class="{ active: statusFilter === 'all' }"
+          >
+            All ({{ projectList.length }})
+          </button>
+          <button 
+            @click="statusFilter = 'open'" 
+            class="filter-btn"
+            :class="{ active: statusFilter === 'open' }"
+          >
+            Open ({{ openCount }})
+          </button>
+          <button 
+            @click="statusFilter = 'closed'" 
+            class="filter-btn"
+            :class="{ active: statusFilter === 'closed' }"
+          >
+            Closed ({{ closedCount }})
+          </button>
+        </div>
+      </div>
       <button @click="addProjectModal = true" class="btn-create">
         + Create Project
       </button>
@@ -14,7 +47,8 @@
     <!-- List -->
     <div class="projects-content">
       <div class="section-title">
-        <h3>Upcoming Projects</h3>
+        <h3>{{ statusFilter === 'all' ? 'All Projects' : statusFilter === 'open' ? 'Open Projects' : 'Closed Projects' }}</h3>
+        <span class="count-badge">{{ filteredProjects.length }} projects</span>
       </div>
       
       <div class="table-wrap">
@@ -29,7 +63,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="project in projectList" :key="project._id">
+            <tr v-for="project in filteredProjects" :key="project._id">
               <td>{{ formatDate(project.project_date) }}</td>
               <td class="project-name">{{ project.project_name }}</td>
               <td>
@@ -50,8 +84,8 @@
                 </div>
               </td>
             </tr>
-            <tr v-if="!projectList.length">
-              <td colspan="5" class="empty-row">No projects yet.</td>
+            <tr v-if="!filteredProjects.length">
+              <td colspan="5" class="empty-row">{{ searchQuery ? 'No projects found' : 'No projects yet' }}</td>
             </tr>
           </tbody>
         </table>
@@ -73,16 +107,46 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices';
 import EditProjectsAdmin from '../components/Projects/EditProjectsAdmin.vue';
 import AddProjectsAdmin from '../components/Projects/AddProjectsAdmin.vue';
 import { formatDate } from '../../../utils/dateUtils';
 
-const projectList = ref([]);
-const selectedProject = ref(null);
-const addProjectModal = ref(false);
+const projectList = ref([])
+const selectedProject = ref(null)
+const addProjectModal = ref(false)
+const searchQuery = ref('')
+const statusFilter = ref('all')
+
+const filteredProjects = computed(() => {
+  let filtered = projectList.value;
+  
+  // Filter by status
+  if (statusFilter.value !== 'all') {
+    filtered = filtered.filter(p => p.project_type === statusFilter.value);
+  }
+  
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.project_name?.toLowerCase().includes(query) ||
+      p.project_details?.toLowerCase().includes(query)
+    );
+  }
+  
+  return filtered;
+});
+
+const openCount = computed(() => 
+  projectList.value.filter(p => p.project_type === 'open').length
+);
+
+const closedCount = computed(() => 
+  projectList.value.filter(p => p.project_type === 'closed').length
+);
 
 async function loadProjects() {
   try {
@@ -156,7 +220,68 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.filters-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
+}
+
+.search-bar {
+  flex: 1;
+  max-width: 350px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.filter-btn.active {
+  background: #10b981;
+  color: white;
 }
 
 .btn-create {
@@ -181,6 +306,9 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
 
 .section-title {
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .section-title h3 {
@@ -188,6 +316,15 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
   font-weight: 700;
   color: #111827;
   margin: 0;
+}
+
+.count-badge {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .table-wrap {
@@ -322,6 +459,28 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
 
   .projects-actions {
     padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filters-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-bar {
+    max-width: 100%;
+  }
+  
+  .filter-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filter-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
   }
 
   .projects-content {
