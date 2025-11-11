@@ -31,6 +31,9 @@ console.log('Is Authenticated:', userStore.isAuthenticated);
       </div>
 
       <ul class="navigation">
+        <li><RouterLink class="link" :to="{ name: 'about' }">About Us</RouterLink></li>
+        <li><RouterLink class="link" :to="{ name: 'Events' }">Events</RouterLink></li>
+        <li><RouterLink class="link" :to="{ name: 'Blogs' }">Blogs</RouterLink></li>
         <li class="dropdown">
           <span class="link">Projects ▾</span>
           <ul class="dropdown-menu">
@@ -38,9 +41,6 @@ console.log('Is Authenticated:', userStore.isAuthenticated);
             <li><RouterLink class="link" :to="{ name: 'projects', params: { projectType: 'closed' }}">Closed Projects</RouterLink></li>
           </ul>
         </li>
-        <li><RouterLink class="link" :to="{ name: 'about' }">About Us</RouterLink></li>
-        <li><RouterLink class="link" :to="{ name: 'Events' }">Event Calendar</RouterLink></li>
-        <li><RouterLink class="link" :to="{ name: 'Blogs' }">Blogs</RouterLink></li>
         <li><RouterLink class="link" :to="{ name: 'gallery' }">Gallery</RouterLink></li>
         <li><RouterLink class="link" :to="{ name: 'contact' }">Contact</RouterLink></li>
         <li v-if="!userStore.isAuthenticated">
