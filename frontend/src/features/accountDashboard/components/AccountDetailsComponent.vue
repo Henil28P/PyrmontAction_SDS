@@ -68,7 +68,7 @@
                 </div>
                 <div class="field">
                     <label>Address</label>
-                    <div class="field-value">{{ userData?.streetName + ", " + userData?.city + ", " + userData?.state + ", " + userData?.postcode }}</div>
+                    <div class="field-value">{{ userData?.streetName + ", " + userData?.city + " " + userData?.state + ", " + userData?.postcode }}</div>
                 </div>
             </div>
         </section>

@@ -138,7 +138,9 @@ async function openRenewCheckout() {
 
       <!-- Meeting Minutes Component -->
       <MeetingMinutesMember />
-
+      
+      <!-- Delete Button Component -->
+      <DeleteButton />
     </main>
   </div>
 </template>

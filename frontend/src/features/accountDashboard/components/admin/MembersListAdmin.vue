@@ -4,7 +4,7 @@
         <div class="filter-search-container">
             <input type="text" v-model="searchTerm" placeholder="Search by name or email" class="search-bar" />
             <button @click="makeEmailList" class="copy-btn" :class="{ copied: emailListCopied }">
-                {{ emailListCopied ? 'Copied!' : 'Make Email List' }}
+                {{ emailListCopied ? 'Copied!' : 'Copy Email List' }}
             </button>
         </div>
         

@@ -21,8 +21,8 @@ const minutes = ref([
       <table>
         <thead>
           <tr>
-            <th style="width: 10%;">Date</th>
-            <th style="width: 60%;">Title</th>
+            <th style="width: 20%;">Date</th>
+            <th style="width: 50%;">Title</th>
             <th style="width: 30%; text-align: center;">Actions</th>
           </tr>
         </thead>
@@ -31,7 +31,7 @@ const minutes = ref([
             <td class="date-cell">{{ m.date }}</td>
             <td class="title-cell">{{ m.title }}</td>
             <td class="action-cell">
-              <a :href="m.url" target="_blank" rel="noopener" class="view-btn">View</a>
+              <a :href="m.url" target="_blank" rel="noopener" class="view-btn">Download PDF</a>
             </td>
           </tr>
           <tr v-if="!minutes.length">
@@ -58,13 +58,13 @@ const minutes = ref([
 }
 
 .view-all-btn {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 10px 20px;
+    margin-left: auto;
+    background: #111;
+    color: #fff;
+    border: 0;
     border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 6px 14px;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
@@ -72,7 +72,7 @@ const minutes = ref([
 }
 
 .view-all-btn:hover {
-    background: #059669;
+    background: #333;
 }
 
 .minutes-table-container {

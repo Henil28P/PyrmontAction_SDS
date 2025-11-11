@@ -2,7 +2,7 @@
     <div>
         <div class="header">
             <h4><strong>Account Manager</strong></h4>
-            <button @click="showCreateForm = true" class="create-btn">Create Account</button>
+            <button @click="showCreateForm = true" class="create-btn">Create Manager</button>
         </div>
         
         <!-- Create Account Form Popup -->
