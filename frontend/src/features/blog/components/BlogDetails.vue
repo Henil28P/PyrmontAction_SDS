@@ -16,7 +16,6 @@
         <span class="meta-separator">·</span>
         <span class="meta-date">{{ formattedDate }}</span>
         <span class="meta-separator">·</span>
-        <span class="meta-read-time">{{ readTime }} min read</span>
       </div>
 
       <!-- Featured Image -->
@@ -57,13 +56,6 @@ const formattedDate = computed(() => {
     month: 'long',
     day: 'numeric'
   })
-})
-
-const readTime = computed(() => {
-  if (!props.blog?.content) return 1
-  const wordsPerMinute = 200
-  const words = props.blog.content.split(/\s+/).length
-  return Math.max(1, Math.ceil(words / wordsPerMinute))
 })
 </script>
 

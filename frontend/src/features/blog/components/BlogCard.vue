@@ -27,9 +27,7 @@
       
       <p class="blog-card__excerpt">{{ shortContent }}</p>
       
-      <div class="blog-card__footer">
-        <span class="blog-card__read-time">{{ readTime }} min read</span>
-      </div>
+
     </div>
   </article>
 </template>
@@ -66,13 +64,6 @@ const shortContent = computed(() => {
   return props.blog.content.length > props.contentMax
     ? props.blog.content.slice(0, props.contentMax).trim() + '…'
     : props.blog.content
-})
-
-const readTime = computed(() => {
-  if (!props.blog?.content) return 1
-  const wordsPerMinute = 200
-  const words = props.blog.content.split(/\s+/).length
-  return Math.max(1, Math.ceil(words / wordsPerMinute))
 })
 </script>
 
