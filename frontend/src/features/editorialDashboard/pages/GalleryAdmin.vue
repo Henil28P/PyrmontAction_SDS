@@ -1,34 +1,58 @@
 <template>
-    <div class="gallery-admin">
-        <div class="header-section">
-            <h1>Gallery Admin</h1>
-            <button @click="addItemModal = true" class="add-btn">Add New Image</button>
+    <div class="gallery-wrapper">
+        <div class="gallery-header">
+            <h2 class="main-title">Gallery Management</h2>
+            <p class="subtitle">Upload and manage community photos</p>
+        </div>
+
+        <div class="gallery-actions">
+            <div class="search-bar">
+                <input 
+                    v-model="searchQuery" 
+                    type="text" 
+                    placeholder="Search by caption or filename..."
+                    class="search-input"
+                />
+            </div>
+            <button @click="addItemModal = true" class="btn-create">
+                + Add New Image
+            </button>
         </div>
         
-        <div class="gallery-list-section">
-            <div class="table-container">
-                <table class="gallery-table">
+        <div class="gallery-content">
+            <div class="section-title">
+                <h3>Gallery Images</h3>
+                <span class="count-badge">{{ filteredImages.length }} images</span>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th>Image</th>
-                            <th>File Name</th>
-                            <th>Caption</th>
-                            <th>Alt Text</th>
-                            <th>Actions</th>
+                            <th style="width:100px;">IMAGE</th>
+                            <th>FILE NAME</th>
+                            <th>CAPTION</th>
+                            <th>ALT TEXT</th>
+                            <th style="width:160px;">ACTIONS</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in imageList" :key="item._id">
+                        <tr v-for="item in filteredImages" :key="item._id">
                             <td>
                                 <img :src="`${SERVER_URL}${item.imageUrl}`" alt="" class="thumbnail"/>
                             </td>
-                            <td>{{ item.image_file_name }}</td>
+                            <td class="file-name">{{ item.image_file_name }}</td>
                             <td>{{ item.caption }}</td>
                             <td>{{ item.alt }}</td>
-                            <td class="actions">
-                                <button @click="selectedItem = item" class="edit-btn">Edit</button>
-                                <button @click="deleteItem(item._id)" class="delete-btn">Delete</button>
+                            <td>
+                                <div class="action-buttons">
+                                    <button @click="selectedItem = item" class="btn-edit">Edit</button>
+                                    <button @click="deleteItem(item._id)" class="btn-delete">Delete</button>
+                                </div>
                             </td>
+                        </tr>
+                        <tr v-if="!filteredImages.length">
+                            <td colspan="5" class="empty-row">{{ searchQuery ? 'No images found' : 'No images yet' }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -51,7 +75,7 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, computed } from 'vue';
     import { useUserStore } from '../../../stores/authStore';
     import services from '../editorialServices';
     import EditGalleryItemAdmin from '../components/Gallery/EditGalleryItemAdmin.vue';
@@ -61,7 +85,18 @@
     const imageList = ref([]);
     const selectedItem = ref(null);
     const addItemModal = ref(false);
+    const searchQuery = ref('');
 
+    const filteredImages = computed(() => {
+        if (!searchQuery.value) return imageList.value;
+        
+        const query = searchQuery.value.toLowerCase();
+        return imageList.value.filter(item => 
+            item.caption?.toLowerCase().includes(query) ||
+            item.image_file_name?.toLowerCase().includes(query) ||
+            item.alt?.toLowerCase().includes(query)
+        );
+    });
 
     async function loadGallery() {
         try {
@@ -104,232 +139,236 @@
 
 
 <style scoped>
-.gallery-admin {
-    padding: 32px;
-    max-width: 1400px;
-    margin: 0 auto;
+.gallery-wrapper {
+    background: white;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
 }
 
-/* Header Section */
-.header-section {
+.gallery-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.main-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.subtitle {
+    margin: 6px 0 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.gallery-actions {
+    padding: 16px 24px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e5e7eb;
+    gap: 16px;
 }
 
-.header-section h1 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #111827;
+.search-bar {
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.btn-create {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-create:hover {
+    background: #059669;
+}
+
+.gallery-content {
+    padding: 24px;
+}
+
+.section-title {
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.header-section h1::before {
-    content: "🖼️";
-    font-size: 24px;
+.section-title h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
 }
 
-.add-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-    letter-spacing: 0.3px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.add-btn::before {
-    content: "➕";
-    font-size: 14px;
-}
-
-.add-btn:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
-}
-
-.add-btn:active {
-    transform: translateY(0);
-}
-
-/* Gallery List Section */
-.gallery-list-section {
-    background: white;
-}
-
-.table-container {
-    border: 1px solid #e5e7eb;
+.count-badge {
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 4px 12px;
     border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-size: 13px;
+    font-weight: 600;
 }
 
-.gallery-table {
+.table-wrap {
+    overflow-x: auto;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    font-size: 14px;
 }
 
-.gallery-table thead {
-    background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
-}
-
-.gallery-table th {
-    text-align: left;
-    padding: 16px 20px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #374151;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+.table thead {
+    background: #f9fafb;
     border-bottom: 2px solid #e5e7eb;
 }
 
-.gallery-table th:first-child {
-    padding-left: 24px;
+.table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.gallery-table tbody tr {
-    border-bottom: 1px solid #f3f4f6;
-    transition: all 0.2s;
-}
-
-.gallery-table tbody tr:hover {
-    background: #f9fafb;
-    box-shadow: inset 0 0 0 1px #e5e7eb;
-}
-
-.gallery-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.gallery-table td {
-    padding: 16px 20px;
-    font-size: 14px;
-    color: #1f2937;
+.table td {
+    padding: 16px;
+    border-top: 1px solid #f3f4f6;
+    text-align: left;
     vertical-align: middle;
+    color: #374151;
 }
 
-.gallery-table td:first-child {
-    padding-left: 24px;
+.table tbody tr:hover {
+    background: #f9fafb;
 }
 
 .thumbnail {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
-    cursor: pointer;
-}
-
-.thumbnail:hover {
-    transform: scale(1.8);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 10;
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.edit-btn,
-.delete-btn {
-    padding: 8px 16px;
     border-radius: 6px;
-    font-size: 13px;
+    border: 1px solid #e5e7eb;
+}
+
+.file-name {
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: 2px solid;
-    letter-spacing: 0.3px;
+    color: #111827;
 }
 
-.edit-btn {
-    background: white;
-    color: #10b981;
-    border-color: #10b981;
+.action-buttons {
+    display: flex;
+    gap: 8px;
 }
 
-.edit-btn:hover {
-    background: #10b981;
-    color: white;
-    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
+.btn-edit,
+.btn-delete {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
 }
 
-.delete-btn {
-    background: white;
-    color: #ef4444;
-    border-color: #ef4444;
+.btn-edit {
+  background: #2563eb;
+  color: white;
 }
 
-.delete-btn:hover {
-    background: #ef4444;
-    color: white;
-    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-    transform: translateY(-2px);
+.btn-edit:hover {
+  background: #1d4ed8;
 }
 
-.edit-btn:active,
-.delete-btn:active {
-    transform: translateY(0);
+.btn-delete {
+  background: #ef4444;
+  color: white;
 }
 
-/* Responsive Design */
+.btn-delete:hover {
+  background: #dc2626;
+}.empty-row {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px !important;
+}
+
 @media (max-width: 768px) {
-    .gallery-admin {
-        padding: 20px;
+    .gallery-header {
+        padding: 20px 16px 16px;
     }
-    
-    .header-section {
-        flex-direction: column;
-        gap: 16px;
-        align-items: flex-start;
+
+    .main-title {
+        font-size: 20px;
     }
-    
-    .table-container {
-        overflow-x: auto;
-    }
-    
-    .gallery-table th,
-    .gallery-table td {
-        padding: 12px;
+
+    .subtitle {
         font-size: 13px;
     }
-    
-    .thumbnail {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .actions {
+
+    .gallery-actions {
+        padding: 12px 16px;
         flex-direction: column;
-        gap: 6px;
+        align-items: stretch;
     }
     
-    .edit-btn,
-    .delete-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+    .search-bar {
+        max-width: 100%;
+    }
+
+    .gallery-content {
+        padding: 16px;
+    }
+
+    .table-wrap {
+        border-radius: 6px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .thumbnail {
+        width: 50px;
+        height: 50px;
     }
 }
 </style>
