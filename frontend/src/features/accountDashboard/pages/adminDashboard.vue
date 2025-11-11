@@ -39,7 +39,7 @@
             :userData="userData"
             @userUpdated="handleUserUpdated"
           />
-          <DeleteButton />
+          <DeleteButton v-if="userData"/>
         </div>
 
       <div v-else-if="activeTab === 'minutes'">

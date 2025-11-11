@@ -137,10 +137,10 @@ async function openRenewCheckout() {
       />
 
       <!-- Meeting Minutes Component -->
-      <MeetingMinutesMember />
+      <MeetingMinutesMember v-if="userData"/>
       
       <!-- Delete Button Component -->
-      <DeleteButton />
+      <DeleteButton v-if="userData"/>
     </main>
   </div>
 </template>
