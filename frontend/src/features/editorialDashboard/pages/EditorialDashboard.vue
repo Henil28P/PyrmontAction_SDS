@@ -26,6 +26,9 @@
           <div v-else-if="currentTab === 'Gallery'">
             <GalleryAdmin />
           </div>
+          <div v-else-if="currentTab === 'Blogs'">
+            <BlogsAdmin />
+          </div>
           <div v-else class="placeholder">
             <p>Edit {{ currentTab }} content here.</p>
           </div>
@@ -40,12 +43,14 @@ import { ref } from 'vue'
 import ProjectsAdmin from './ProjectsAdmin.vue'
 import GalleryAdmin from './GalleryAdmin.vue'
 import EventsAdmin from './EventsAdmin.vue'
+import BlogsAdmin from './BlogsAdmin.vue'
 
 
 const tabs = [
   { name: 'Projects', label: 'Projects', icon: '📁', color: '#fbbf24' },
   { name: 'Events', label: 'Events', icon: '📅', color: '#38bdf8' },
-  { name: 'Gallery', label: 'Gallery', icon: '🖼️', color: '#f472b6' }
+  { name: 'Gallery', label: 'Gallery', icon: '🖼️', color: '#f472b6' },
+  { name: 'Blogs', label: 'Blogs', icon: '📝', color: '#8b5cf6' }
 ]
 const currentTab = ref('Projects')
 
