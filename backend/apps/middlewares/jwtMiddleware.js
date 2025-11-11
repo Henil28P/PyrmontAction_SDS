@@ -23,7 +23,6 @@ const verifyToken = async (req, res, next) => {
         }
         
         // Add user info to request object (only what's actually in the token)
-        console.log(decoded);
         const user = await User.findById(decoded.id).populate('role');
         if (!user) {
             return res.status(404).json({ message: 'Not a valid user for this token' });

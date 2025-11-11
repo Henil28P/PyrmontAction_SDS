@@ -32,6 +32,9 @@ module.exports = {
                     },
                     quantity: 1,
                 }],
+                payment_intent_data: {
+                    receipt_email: req.body.email, // Send receipt to customer email
+                },
                 metadata: {
                     type: 'join',
                     joinSessionID: joinSession._id.toString(),
@@ -61,8 +64,6 @@ module.exports = {
 
     async createRenewCheckout(req, res) {
         try {
-            console.log('Renew checkout request body:', req.user);
-            
             // Verify the user session exists
             const user = await User.findById(req.user._id);
             if (!user) {
@@ -100,6 +101,9 @@ module.exports = {
                     },
                     quantity: 1,
                 }],
+                payment_intent_data: {
+                    receipt_email: user.email, // Send receipt to customer email
+                },
                 metadata: {
                     type: 'renew',
                     userID: user._id.toString(),

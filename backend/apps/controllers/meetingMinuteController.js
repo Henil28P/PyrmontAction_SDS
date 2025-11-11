@@ -4,8 +4,6 @@ module.exports = {
   // *** Create ***
   // Handle file upload and create meeting minute
   async createMeeting(req, res) {   
-    console.log('Request body:', req.body);
-    console.log('Uploaded file:', req.file);
     try {
       const { title, note, status } = req.body;
       const meetingData = { title, note, status };
@@ -66,14 +64,12 @@ module.exports = {
   // Update an existing meeting minute
   async updateMeeting(req, res) {
     try {
-      console.log('Update request body:', req.body);
       const updatedMeeting = await MeetingMinute.findByIdAndUpdate(
         req.params.id,
         req.body,
         { new: true }
       );
       
-      console.log('Updated meeting:', updatedMeeting);
       if (!updatedMeeting) return res.status(404).json({ message: 'Not found' });
       res.json(updatedMeeting);
     } catch (err) {
@@ -82,8 +78,6 @@ module.exports = {
   },
 
   async updateMeetingWithFile(req, res) {   
-    console.log('Request body:', req.body);
-    console.log('Uploaded file:', req.file);
     try {
       const { title, note, status } = req.body;
       const meetingData = { title, note, status };

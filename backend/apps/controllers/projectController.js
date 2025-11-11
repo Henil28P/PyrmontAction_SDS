@@ -3,8 +3,6 @@ const Project = require('../models/projectModel');
 module.exports = {
     // Create project with image upload (following meeting minutes pattern)
     async createProject(req, res) {   
-        console.log('Request body:', req.body);
-        console.log('Uploaded file:', req.file);
         try {
             const { project_name, project_description, project_type } = req.body;
             
@@ -78,7 +76,6 @@ module.exports = {
     // Update project (following meeting minutes pattern)
     async updateProject(req, res) {
         try {
-            console.log('Update request body:', req.body);
             const { id } = req.params;
             const { project_name, project_description, project_type, project_image } = req.body;
             const project_date = req.body.project_date ? new Date(req.body.project_date) : undefined;
@@ -89,7 +86,6 @@ module.exports = {
                 { new: true }
             );
             
-            console.log('Updated project:', updatedProject);
             if (!updatedProject) return res.status(404).json({ message: 'Not found' });
             res.json(updatedProject);
         } catch (err) {
@@ -99,8 +95,6 @@ module.exports = {
 
     // Update project with file upload (following meeting minutes pattern)
     async updateProjectWithFile(req, res) {   
-        console.log('Request body:', req.body);
-        console.log('Uploaded file:', req.file);
         try {
             const { project_name, project_description, project_type } = req.body;
             const projectData = { 
