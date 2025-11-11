@@ -13,7 +13,7 @@
             <p v-if="activeTab === 'manager'" class="hero__sub">Manage and create Accounts here.</p>
           </div>
           <button class="editorial-btn" @click="$router.push('/editorial-dashboard')">
-            Editorial
+            Editorial<br> Dashboard
           </button>
         </div>
       </section>
@@ -138,17 +138,22 @@
 }
 
 .editorial-btn {
-  background: #1976d2;
-  color: #fff;
+  /* background: #a78bfa; */
+  background: #3B82F6;
+  color: #fafafa;
   border: none;
   border-radius: 8px;
-  padding: 10px 20px;
+  padding: 10px 30px;
   cursor: pointer;
-  font-size: 15px;
-  transition: background 0.2s;
+  font-size: 20px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
+  transition: all 0.2s;
 }
 .editorial-btn:hover {
-  background: #155a8a;
+  background: #1769ec;
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+  transform: translateY(-1px);
 }
 
 /* tabs */
