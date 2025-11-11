@@ -3,50 +3,52 @@
         <div class="modal-content">
             <h3>Edit Event</h3>
 
-            <div class="row">
-                <label class="lbl">Event Title</label>
-                <input v-model="editForm.title" class="input" placeholder="Enter event title" />
-            </div>
+            <form @submit.prevent="editEvent">
+                <div class="row">
+                    <label class="lbl">Event Title</label>
+                    <input v-model="editForm.title" class="input" placeholder="Enter event title" required />
+                </div>
 
-            <div class="row">
-                <label class="lbl">Date</label>
-                <input v-model="editForm.date" type="date" class="input" :min="today()" />
-            </div>
+                <div class="row">
+                    <label class="lbl">Date</label>
+                    <input v-model="editForm.date" type="date" class="input" :min="today()" required />
+                </div>
 
-            <div class="row">
-                <label class="lbl">Start Time</label>
-                <input v-model="editForm.startTime" type="time" class="input" />
-            </div>
+                <div class="row">
+                    <label class="lbl">Start Time</label>
+                    <input v-model="editForm.startTime" type="time" class="input" required />
+                </div>
 
-            <div class="row">
-                <label class="lbl">End Time</label>
-                <input v-model="editForm.endTime" type="time" class="input" :disabled="!editForm.startTime" />
-            </div>
+                <div class="row">
+                    <label class="lbl">End Time</label>
+                    <input v-model="editForm.endTime" type="time" class="input" :disabled="!editForm.startTime" @change="validateEndTime" required />
+                </div>
 
-            <div class="row">
-                <label class="lbl">Location</label>
-                <input v-model="editForm.location" class="input" placeholder="Enter event location" />
-            </div>
+                <div class="row">
+                    <label class="lbl">Location</label>
+                    <input v-model="editForm.location" class="input" placeholder="Enter event location" required />
+                </div>
 
-            <div class="row">
-                <label class="lbl">Description</label>
-                <textarea v-model="editForm.description" class="input" rows="6" placeholder="Enter event description"></textarea>
-            </div>
+                <div class="row">
+                    <label class="lbl">Description</label>
+                    <textarea v-model="editForm.description" class="input" rows="6" placeholder="Enter event description" required></textarea>
+                </div>
 
-            <div class="row">
-                <label class="lbl">Attach Image</label>
-                <FileUploadEdit
-                    :current-file-name="editForm.imageName"
-                    v-model:file-name="editForm.newImage"
-                    accept="image/*"
-                    ref="fileUploadRef"
-                />
-            </div>
+                <div class="row">
+                    <label class="lbl">Attach Image</label>
+                    <FileUploadEdit
+                        :current-file-name="editForm.imageName"
+                        v-model:file-name="editForm.newImage"
+                        accept="image/*"
+                        ref="fileUploadRef"
+                    />
+                </div>
 
-            <div class="actions">
-                <button class="btn primary" @click="editEvent">Save</button>
-                <button class="btn" @click="$emit('close')">Cancel</button>
-            </div>
+                <div class="actions">
+                    <button type="submit" class="btn primary">Save</button>
+                    <button type="button" class="btn" @click="$emit('close')">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>  
 </template>
@@ -78,6 +80,15 @@
     function getImagePath(imageName) {
         // Adjust this path based on your backend image serving endpoint
         return `/uploads/events/${imageName}`;
+    }
+
+    function validateEndTime() {
+        if (editForm.value.startTime && editForm.value.endTime) {
+            if (editForm.value.endTime <= editForm.value.startTime) {
+                alert('End time must be after start time.');
+                editForm.value.endTime = '';
+            }
+        }
     }
 
     async function editEvent() {
