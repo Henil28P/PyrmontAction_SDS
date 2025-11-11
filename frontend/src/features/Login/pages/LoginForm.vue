@@ -51,6 +51,11 @@
             loginErrors.value = true;
         }
     }
+
+    const handleForgotPassword = () => {
+        router.push('/contact');
+        alert('Password reset functionality coming soon! Please contact support.');
+    }
 </script>
 
 <template>
@@ -88,7 +93,7 @@
                         <div class="error-and-forgot-password-section">
                             
                             <span v-if="loginErrors" id="error-message">Incorrect Username or Password</span>
-                            <a href="link" id="forgot-password-link"> Forgot Password </a>
+                            <a href="#" @click.prevent="handleForgotPassword" id="forgot-password-link"> Forgot Password </a>
                         </div>
                         
                         <button id="submitBtn" type="submit">Sign In</button>
