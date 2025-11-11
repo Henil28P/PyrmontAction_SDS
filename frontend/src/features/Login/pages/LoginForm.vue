@@ -17,6 +17,10 @@
     const showPassword = ref(false);
 
     onMounted(() => {
+        if (userStore.isAuthenticated) {
+            alert('You are already logged in.');
+            router.push('/');
+        }
         const queryParams = new URLSearchParams(window.location.search);
         const status = queryParams.get('status');
 

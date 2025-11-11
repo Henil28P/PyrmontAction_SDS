@@ -5,6 +5,7 @@ import { onMounted, ref } from 'vue';
 import { useFormValidation } from '../composables/useFormValidation';
 import { usePasswordValidation } from '../composables/usePasswordValidation';
 import ShowPasswordButton from '../../../components/ShowPasswordButton.vue';
+import { useUserStore } from '../../../stores/authStore';
 
 // State options
 const stateOptions = ref([
@@ -22,11 +23,17 @@ const stateOptions = ref([
 const { formData, stateChosen, v$ } = useFormValidation();
 const { passwordValidator, validatePassword } = usePasswordValidation();
 
-// Password visibility
+const userStore = useUserStore();
+const router = useRouter();
 const showPassword = ref(false);
 
 
 onMounted (() => {
+    if (userStore.isAuthenticated) {
+        alert('You are already logged in.');
+        router.push('/');
+    }
+    
     const queryParams = new URLSearchParams(window.location.search);
     const status = queryParams.get('status');
     const sessionID = queryParams.get('sessionID');
