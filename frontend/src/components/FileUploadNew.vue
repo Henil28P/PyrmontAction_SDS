@@ -1,7 +1,7 @@
 <template>
     <div class="file-upload-wrapper">
         <div class="fileZone">
-            <input ref="fileInput" type="file" :accept="accept" @change="chooseFile" />
+            <input ref="fileInput" type="file" :accept="accept" @change="chooseFile" :required="props.required"/>
             <div v-if="fileName" class="fileList">
                 <span class="chip-name">{{ fileName }}</span>
             </div>
