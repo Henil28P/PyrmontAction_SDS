@@ -179,7 +179,8 @@ module.exports = {
                 }
 
                 // Calculate new expiry date and update user object
-                user.memberExpiryDate = userController.calculateMemberExpiryDate(user.memberExpiryDate);
+                const expiryDate = user.memberExpiryDate ? user.memberExpiryDate : new Date();
+                user.memberExpiryDate = userController.calculateMemberExpiryDate(expiryDate);
                 await user.save();
 
                 console.log('Renewal successful for:', user.email);
