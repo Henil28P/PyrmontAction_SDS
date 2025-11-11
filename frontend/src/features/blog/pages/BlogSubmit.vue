@@ -76,6 +76,7 @@
             v-model="formData.author"
             type="text"
             placeholder="Your name"
+            :required="showAuthorField"
           />
         </div>
 
