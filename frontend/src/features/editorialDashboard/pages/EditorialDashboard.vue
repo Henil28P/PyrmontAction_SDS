@@ -3,6 +3,10 @@
     <div class="editorial-dashboard">
       <aside class="sidebar">
         <nav>
+          <button class="back-button" @click="goBackToAccount">
+            <span class="icon">←</span>
+            Return to My Account
+          </button>
           <button
             v-for="tab in tabs"
             :key="tab.name"
@@ -40,11 +44,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../../../stores/authStore'
 import ProjectsAdmin from './ProjectsAdmin.vue'
 import GalleryAdmin from './GalleryAdmin.vue'
 import EventsAdmin from './EventsAdmin.vue'
 import BlogsAdmin from './BlogsAdmin.vue'
 
+const router = useRouter()
+const userStore = useUserStore()
 
 const tabs = [
   { name: 'Projects', label: 'Projects', icon: '📁', color: '#fbbf24' },
@@ -53,6 +61,15 @@ const tabs = [
   { name: 'Blogs', label: 'Blogs', icon: '📝', color: '#8b5cf6' }
 ]
 const currentTab = ref('Projects')
+
+function goBackToAccount() {
+  // Check if user is admin
+  if (userStore.role === 'admin') {
+    router.push('/dashboard/admin')
+  } else {
+    router.push('/account')
+  }
+}
 
 </script>
 
@@ -107,6 +124,17 @@ const currentTab = ref('Projects')
   color: #111827;
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.sidebar button.back-button {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-weight: 500;
+}
+.sidebar button.back-button:hover {
+  background: #f3f4f6;
+  color: #111827;
 }
 .icon {
   font-size: 1.2em;

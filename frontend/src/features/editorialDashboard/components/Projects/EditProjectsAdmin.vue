@@ -3,14 +3,21 @@
     <div class="modal-content">
       <h3>Edit Project</h3>
 
+      <form @submit.prevent="saveEdit">
       <div class="row">
         <label class="lbl">Project Name</label>
-        <input v-model="editForm.project_name" class="input" placeholder="Enter project name" />
+        <div>
+          <input v-model="editForm.project_name" class="input" placeholder="Enter project name" aria-required="true" />
+          <div v-if="errors.project_name" class="error">{{ errors.project_name }}</div>
+        </div>
       </div>
 
       <div class="row">
         <label class="lbl">Description</label>
-        <textarea v-model="editForm.project_description" class="input" rows="6" placeholder="Type the project description…"></textarea>
+        <div>
+          <textarea v-model="editForm.project_description" class="input" rows="6" placeholder="Type the project description…" aria-required="true"></textarea>
+          <div v-if="errors.project_description" class="error">{{ errors.project_description }}</div>
+        </div>
       </div>
 
       <div class="row">
@@ -23,7 +30,10 @@
 
       <div class="row">
         <label class="lbl">Project Date</label>
-        <input v-model="editForm.project_date" type="date" class="input" required />
+        <div>
+          <input v-model="editForm.project_date" type="date" class="input" required aria-required="true" />
+          <div v-if="errors.project_date" class="error">{{ errors.project_date }}</div>
+        </div>
       </div>
 
       <div class="row">
@@ -37,15 +47,16 @@
       </div>
 
       <div class="actions">
-        <button class="btn primary" @click="saveEdit">Save</button>
-        <button class="btn" @click="$emit('close')">Cancel</button>
+        <button class="btn primary" type="submit" :disabled="!isFormValid" :aria-disabled="!isFormValid">Save</button>
+        <button class="btn" type="button" @click="$emit('close')">Cancel</button>
       </div>
+      </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useUserStore } from '../../../../stores/authStore';
 import services from '../../editorialServices';
 import FileUploadEdit from '../../../../components/FileUploadEdit.vue';
@@ -59,6 +70,11 @@ const props = defineProps({
 });
 
 const fileUploadRef = ref(null);
+const errors = reactive({
+  project_name: '',
+  project_description: '',
+  project_date: ''
+});
 
 const editForm = ref({
   ...props.project,
@@ -68,8 +84,36 @@ const editForm = ref({
 
 const emits = defineEmits(['updateProject', 'close']);
 
+function clearErrors(){
+  Object.keys(errors).forEach(k => errors[k] = '');
+}
+
+function validateForm(){
+  clearErrors();
+  let valid = true;
+  if (!editForm.value.project_name || !editForm.value.project_name.trim()){
+    errors.project_name = 'Project name is required.'; valid = false;
+  }
+  if (!editForm.value.project_description || !editForm.value.project_description.trim()){
+    errors.project_description = 'Description is required.'; valid = false;
+  }
+  if (!editForm.value.project_date){
+    errors.project_date = 'Project date is required.'; valid = false;
+  }
+  return valid;
+}
+
+const isFormValid = computed(() => {
+  if (!editForm.value.project_name || !editForm.value.project_name.trim()) return false;
+  if (!editForm.value.project_description || !editForm.value.project_description.trim()) return false;
+  if (!editForm.value.project_date) return false;
+  return true;
+});
+
 async function saveEdit() {
   try {
+    if (!validateForm()) return;
+
     const formData = new FormData();
     formData.append('project_name', editForm.value.project_name);
     formData.append('project_description', editForm.value.project_description);
@@ -80,11 +124,20 @@ async function saveEdit() {
         formData.append('file', fileUploadRef.value.fileInput.files[0]);
     }
 
-    const response = await services.updateProjectWithFile(useUserStore().getToken, editForm.value._id, formData);
+    const response = await services.updateProjectWithFile(
+        useUserStore().getToken, 
+        props.project._id, 
+        formData
+    );
+    
     emits('updateProject', response);
     emits('close');
   } catch (error) {
-    console.error('Failed to save edit:', error);
+    console.error('Failed to update project:', error);
+    if (error?.response?.data?.errors) {
+      const srv = error.response.data.errors;
+      Object.keys(srv).forEach(k => { if (errors[k] !== undefined) errors[k] = srv[k]; });
+    }
   }
 }
 </script>
@@ -116,10 +169,7 @@ async function saveEdit() {
   gap: 10px;
   justify-content: flex-end;
 }
-.row{display:grid;grid-template-columns:140px 1fr;gap:10px 12px;align-items:start;margin-bottom:10px}
-.lbl{font-size:14px;color:#374151;padding-top:8px}
-.input{border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;width:100%;background:#fff;font:inherit}
-.actions{display:flex;gap:10px;justify-content:flex-end}
 .btn{border:1px solid #e5e7eb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
-.btn.primary{background:#111;color:#fff;border-color:#111}
+.btn.primary{background:#2563eb;color:#fff}
+.error{color:#dc2626;font-size:13px;margin-top:6px}
 </style>

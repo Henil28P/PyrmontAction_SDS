@@ -3,34 +3,53 @@
         <div class="modal-content">
             <h3>Edit Event</h3>
 
+            <form @submit.prevent="editEvent">
             <div class="row">
                 <label class="lbl">Event Title</label>
-                <input v-model="editForm.title" class="input" placeholder="Enter event title" />
+                <div>
+                    <input v-model="editForm.title" class="input" placeholder="Enter event title" aria-required="true" />
+                    <div v-if="errors.title" class="error">{{ errors.title }}</div>
+                </div>
             </div>
 
             <div class="row">
                 <label class="lbl">Date</label>
-                <input v-model="editForm.date" type="date" class="input" :min="today()" />
+                <div>
+                    <input v-model="editForm.date" type="date" class="input" :min="today()" aria-required="true" />
+                    <div v-if="errors.date" class="error">{{ errors.date }}</div>
+                </div>
             </div>
 
             <div class="row">
                 <label class="lbl">Start Time</label>
-                <input v-model="editForm.startTime" type="time" class="input" />
+                <div>
+                    <input v-model="editForm.startTime" type="time" class="input" aria-required="true" />
+                    <div v-if="errors.startTime" class="error">{{ errors.startTime }}</div>
+                </div>
             </div>
 
             <div class="row">
                 <label class="lbl">End Time</label>
-                <input v-model="editForm.endTime" type="time" class="input" :disabled="!editForm.startTime" />
+                <div>
+                    <input v-model="editForm.endTime" type="time" class="input" :disabled="!editForm.startTime" aria-required="true" />
+                    <div v-if="errors.endTime" class="error">{{ errors.endTime }}</div>
+                </div>
             </div>
 
             <div class="row">
                 <label class="lbl">Location</label>
-                <input v-model="editForm.location" class="input" placeholder="Enter event location" />
+                <div>
+                    <input v-model="editForm.location" class="input" placeholder="Enter event location" aria-required="true" />
+                    <div v-if="errors.location" class="error">{{ errors.location }}</div>
+                </div>
             </div>
 
             <div class="row">
                 <label class="lbl">Description</label>
-                <textarea v-model="editForm.description" class="input" rows="6" placeholder="Enter event description"></textarea>
+                <div>
+                    <textarea v-model="editForm.description" class="input" rows="6" placeholder="Enter event description" aria-required="true"></textarea>
+                    <div v-if="errors.description" class="error">{{ errors.description }}</div>
+                </div>
             </div>
 
             <div class="row">
@@ -44,15 +63,16 @@
             </div>
 
             <div class="actions">
-                <button class="btn primary" @click="editEvent">Save</button>
-                <button class="btn" @click="$emit('close')">Cancel</button>
+                <button class="btn primary" type="submit" :disabled="!isFormValid" :aria-disabled="!isFormValid">Save</button>
+                <button class="btn" type="button" @click="$emit('close')">Cancel</button>
             </div>
+            </form>
         </div>
     </div>  
 </template>
 
 <script setup>
-    import { ref } from 'vue';
+    import { ref, reactive, computed } from 'vue';
     import { today, getLocalDate, getLocalTime, validTimes, dateTimeStr } from '../../../../utils/dateUtils';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
@@ -67,12 +87,63 @@
 
     const emits = defineEmits(['editEvent', 'close']);
     const fileUploadRef = ref(null);
+    const errors = reactive({
+        title: '',
+        date: '',
+        startTime: '',
+        endTime: '',
+        location: '',
+        description: ''
+    });
+
     const editForm = ref({ 
         ...props.eventData,
         date: getLocalDate(props.eventData.startDate),
         startTime: getLocalTime(props.eventData.startDate),
         endTime: getLocalTime(props.eventData.endDate),
         newImage: '',
+    });
+
+    function clearErrors(){
+        Object.keys(errors).forEach(k => errors[k] = '');
+    }
+
+    function validateForm(){
+        clearErrors();
+        let valid = true;
+        if (!editForm.value.title || !editForm.value.title.trim()){
+            errors.title = 'Title is required.'; valid = false;
+        }
+        if (!editForm.value.date){
+            errors.date = 'Date is required.'; valid = false;
+        }
+        if (!editForm.value.startTime){
+            errors.startTime = 'Start time is required.'; valid = false;
+        }
+        if (!editForm.value.endTime){
+            errors.endTime = 'End time is required.'; valid = false;
+        }
+        if (editForm.value.startTime && editForm.value.endTime && !validTimes(editForm.value.startTime, editForm.value.endTime)){
+            errors.endTime = 'End time must be after start time.'; valid = false;
+        }
+        if (!editForm.value.location || !editForm.value.location.trim()){
+            errors.location = 'Location is required.'; valid = false;
+        }
+        if (!editForm.value.description || !editForm.value.description.trim()){
+            errors.description = 'Description is required.'; valid = false;
+        }
+        return valid;
+    }
+
+    const isFormValid = computed(() => {
+        if (!editForm.value.title || !editForm.value.title.trim()) return false;
+        if (!editForm.value.date) return false;
+        if (!editForm.value.startTime) return false;
+        if (!editForm.value.endTime) return false;
+        if (editForm.value.startTime && editForm.value.endTime && !validTimes(editForm.value.startTime, editForm.value.endTime)) return false;
+        if (!editForm.value.location || !editForm.value.location.trim()) return false;
+        if (!editForm.value.description || !editForm.value.description.trim()) return false;
+        return true;
     });
 
     function getImagePath(imageName) {
@@ -82,10 +153,8 @@
 
     async function editEvent() {
         try {
-            if (!validTimes(editForm.value.startTime, editForm.value.endTime)) {
-                alert('End time must be after start time.');
-                return;
-            }
+            if (!validateForm()) return;
+
             const startDate = dateTimeStr(editForm.value.date, editForm.value.startTime);
             const endDate = dateTimeStr(editForm.value.date, editForm.value.endTime);
             const formData = new FormData();
@@ -104,6 +173,10 @@
             emits('close');
         } catch (error) {
             console.error('Failed to edit event:', error);
+            if (error?.response?.data?.errors) {
+                const srv = error.response.data.errors;
+                Object.keys(srv).forEach(k => { if (errors[k] !== undefined) errors[k] = srv[k]; });
+            }
         }
     }
 </script>
@@ -222,6 +295,12 @@ textarea.input {
 .btn.primary:hover {
   background: #059669;
   border-color: #059669;
+}
+
+.error {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 6px;
 }
 
 

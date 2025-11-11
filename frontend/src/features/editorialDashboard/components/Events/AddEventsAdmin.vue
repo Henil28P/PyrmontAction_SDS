@@ -3,10 +3,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add New Event</h3>
-                <button @click="$emit('close')" class="close-btn">×</button>
+                <button @click="$emit('close')" class="close-btn" type="button">×</button>
             </div>
             
-            <div class="form-section">
+            <form @submit.prevent="addEvent('publish')" class="form-section">
                     <div class="form-row">
                         <label>Event Title</label>
                         <div>
@@ -66,12 +66,12 @@
                         <div v-if="errors.image" class="error">{{ errors.image }}</div>
                     </div>
                 </div>
-            </div>
 
-            <div class="actions">
-                <button class="add-btn" :disabled="!isFormValid" @click="addEvent('publish')" :aria-disabled="!isFormValid">Add Event</button>
-                <button class="cancel-btn" @click="$emit('close')">Cancel</button>
-            </div>
+                <div class="actions">
+                    <button class="add-btn" type="submit" :disabled="!isFormValid" :aria-disabled="!isFormValid">Save</button>
+                    <button class="cancel-btn" type="button" @click="$emit('close')">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 </template>

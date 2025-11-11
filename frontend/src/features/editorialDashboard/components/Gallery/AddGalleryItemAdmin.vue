@@ -3,63 +3,105 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add New Gallery Image</h3>
-                <button @click="$emit('close')" class="close-btn">×</button>
+                <button @click="$emit('close')" class="close-btn" type="button">×</button>
             </div>
             
-            <div class="form-section">
+            <form @submit.prevent="addNewItem" class="form-section">
                 <div class="form-row">
                     <label>Image File</label>
-                    <FileUploadNew
-                        v-model:file-name="newItem.image_file_name"
-                        accept="image/*"
-                        ref="fileUploadRef"
-                    />
+                    <div>
+                        <FileUploadNew
+                            v-model:file-name="newItem.image_file_name"
+                            accept="image/*"
+                            ref="fileUploadRef"
+                        />
+                        <div v-if="errors.image" class="error">{{ errors.image }}</div>
+                    </div>
                 </div>
                 
                 <div class="form-row">
                     <label>Caption</label>
-                    <input v-model="newItem.caption" type="text" placeholder="Enter caption" required class="text-input"/>
+                    <div>
+                        <input v-model="newItem.caption" type="text" placeholder="Enter caption" required class="text-input" aria-required="true" />
+                        <div v-if="errors.caption" class="error">{{ errors.caption }}</div>
+                    </div>
                 </div>
                 
                 <div class="form-row">
                     <label>Alt Text</label>
-                    <input v-model="newItem.alt" type="text" placeholder="Enter alt text" required class="text-input"/>
+                    <div>
+                        <input v-model="newItem.alt" type="text" placeholder="Enter alt text" required class="text-input" aria-required="true" />
+                        <div v-if="errors.alt" class="error">{{ errors.alt }}</div>
+                    </div>
                 </div>
-            </div>
             
             <div class="actions">
-                <button @click="addNewItem" class="add-btn">Add Image</button>
-                <button @click="$emit('close')" class="cancel-btn">Cancel</button>
+                <button type="submit" class="add-btn" :disabled="!isFormValid" :aria-disabled="!isFormValid">Save</button>
+                <button type="button" @click="$emit('close')" class="cancel-btn">Cancel</button>
             </div>
+            </form>
         </div>
     </div>
 </template>
 
 <script setup>
-    import { ref } from 'vue';
+    import { ref, reactive, computed } from 'vue';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../editorialServices';
     import FileUploadNew from '../../../../components/FileUploadNew.vue';
 
     const emits = defineEmits(['addItem', 'close']);
     const fileUploadRef = ref(null);
+    const errors = reactive({
+        caption: '',
+        alt: '',
+        image: ''
+    });
+
     const newItem = ref({
         caption: '',
         alt: '',
         image_file_name: ''
     });
 
+    function clearErrors(){
+        Object.keys(errors).forEach(k => errors[k] = '');
+    }
+
+    function validateForm(){
+        clearErrors();
+        let valid = true;
+        if (!newItem.value.caption || !newItem.value.caption.trim()){
+            errors.caption = 'Caption is required.'; valid = false;
+        }
+        if (!newItem.value.alt || !newItem.value.alt.trim()){
+            errors.alt = 'Alt text is required.'; valid = false;
+        }
+        const hasFile = !!(fileUploadRef.value?.fileInput?.files && fileUploadRef.value.fileInput.files.length > 0);
+        if (!hasFile){
+            errors.image = 'Please select an image file.'; valid = false;
+        }
+        return valid;
+    }
+
+    const isFormValid = computed(() => {
+        if (!newItem.value.caption || !newItem.value.caption.trim()) return false;
+        if (!newItem.value.alt || !newItem.value.alt.trim()) return false;
+        const hasFile = !!(fileUploadRef.value?.fileInput?.files && fileUploadRef.value.fileInput.files.length > 0);
+        if (!hasFile) return false;
+        return true;
+    });
+
     async function addNewItem() {
         try {
+            if (!validateForm()) return;
+
             const formData = new FormData();
             formData.append('caption', newItem.value.caption);
             formData.append('alt', newItem.value.alt);
             
             if (fileUploadRef.value?.fileInput?.files[0]) {
                 formData.append('file', fileUploadRef.value.fileInput.files[0]);
-            } else {
-                alert('Please select an image file.');
-                return;
             }
 
             const response = await services.uploadGalleryImage(useUserStore().token, formData);
@@ -67,8 +109,11 @@
             emits('close');
         } catch (error) {
             console.error('Failed to add new gallery item:', error);
+            if (error?.response?.data?.errors) {
+                const srv = error.response.data.errors;
+                Object.keys(srv).forEach(k => { if (errors[k] !== undefined) errors[k] = srv[k]; });
+            }
         }
-        
     }
 </script>
 
@@ -194,6 +239,11 @@
     background: #059669;
 }
 
+.add-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .cancel-btn {
     background: white;
     color: #374151;
@@ -208,6 +258,12 @@
 
 .cancel-btn:hover {
     background: #f9fafb;
+}
+
+.error {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 6px;
 }
 
 /* Responsive Design */
