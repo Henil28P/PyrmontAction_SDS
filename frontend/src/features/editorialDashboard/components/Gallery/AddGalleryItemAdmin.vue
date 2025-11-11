@@ -3,34 +3,37 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add New Gallery Image</h3>
-                <button @click="$emit('close')" class="close-btn">×</button>
+                <button type="button" @click="$emit('close')" class="close-btn">×</button>
             </div>
             
-            <div class="form-section">
-                <div class="form-row">
-                    <label>Image File</label>
-                    <FileUploadNew
-                        v-model:file-name="newItem.image_file_name"
-                        accept="image/*"
-                        ref="fileUploadRef"
-                    />
+            <form @submit.prevent="addNewItem">
+                <div class="form-section">
+                    <div class="form-row">
+                        <label>Image File</label>
+                        <FileUploadNew
+                            v-model:file-name="newItem.image_file_name"
+                            accept="image/*"
+                            ref="fileUploadRef"
+                            :required="true"
+                        />
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Caption</label>
+                        <input v-model="newItem.caption" type="text" placeholder="Enter caption" required class="text-input"/>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label>Alt Text</label>
+                        <input v-model="newItem.alt" type="text" placeholder="Enter alt text" required class="text-input"/>
+                    </div>
                 </div>
                 
-                <div class="form-row">
-                    <label>Caption</label>
-                    <input v-model="newItem.caption" type="text" placeholder="Enter caption" required class="text-input"/>
+                <div class="actions">
+                    <button type="submit" class="add-btn">Add Image</button>
+                    <button type="button" @click="$emit('close')" class="cancel-btn">Cancel</button>
                 </div>
-                
-                <div class="form-row">
-                    <label>Alt Text</label>
-                    <input v-model="newItem.alt" type="text" placeholder="Enter alt text" required class="text-input"/>
-                </div>
-            </div>
-            
-            <div class="actions">
-                <button @click="addNewItem" class="add-btn">Add Image</button>
-                <button @click="$emit('close')" class="cancel-btn">Cancel</button>
-            </div>
+            </form>
         </div>
     </div>
 </template>

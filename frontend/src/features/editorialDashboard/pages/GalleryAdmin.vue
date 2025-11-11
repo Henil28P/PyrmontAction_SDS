@@ -15,7 +15,7 @@
                 />
             </div>
             <button @click="addItemModal = true" class="btn-create">
-                + Add New Image
+                Add Image
             </button>
         </div>
         

@@ -175,13 +175,13 @@ textarea.input {
 
 .btn {
   border: 1px solid #d1d5db;
-  background: #fff;
+  background: white;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn:hover {
@@ -189,12 +189,13 @@ textarea.input {
 }
 
 .btn.primary {
-  background: #111;
-  color: #fff;
-  border-color: #111;
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
 }
 
 .btn.primary:hover {
-  background: #000;
+  background: #059669;
+  border-color: #059669;
 }
 </style>
