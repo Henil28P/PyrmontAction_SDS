@@ -2,6 +2,17 @@
 
 A community-driven web platform for membership management, secure online payments, and improved communication. Features include member registration and renewals, Stripe payment integration, members-only content access, automated notifications, and an admin dashboard.
 
+# Running Frontend
+- `$ cd frontend`
+- `$ npm install`
+- `$ npm run dev`
+
+# Running Frontend
+- `$ cd backend`
+- `$ npm install`
+- `$ npm run stripe:login` log in to stripe
+- `$ npm run dev:with-stripe` log in to stripe
+
 # End-to-End Testing
 
 - `$ npx playwright install` to first install/update the E2E framework (Playwright)

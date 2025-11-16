@@ -44,5 +44,4 @@ npm run test:e2e -- --project=chromium
 # Runs the tests of a specific file
 npm run test:e2e -- tests/example.spec.ts
 # Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+npm run test:e2e -- --debug```
