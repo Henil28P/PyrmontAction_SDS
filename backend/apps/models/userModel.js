@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const User = require('./userModel');
 
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, lowercase: true, trim: true },
@@ -12,25 +13,10 @@ const userSchema = new mongoose.Schema({
     city: { type: String, default: '' },
     state: { type: String, default: '' },
     postcode: { type: String, default: '' },
-    isActive: { type: Boolean, default: true },
+    stripeCustomerID: { type: String, default: '' },
+    memberExpiryDate: { type: Date, default: null },
     role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
 }, { timestamps: true });
-
-// Pre-save middleware to hash password
-userSchema.pre('save', async function (next) {
-    // Only hash the password if it has been modified (or is new)
-    if (!this.isModified('password')) return next();
-    
-    try {
-        const salt = 12;
-        this.password = await bcrypt.hash(this.password, salt);
-        console.log("1", await bcrypt.hash("1", salt));
-        console.log("admin", await bcrypt.hash("admin", salt));
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
 
 // Pre-update middleware to hash password
 userSchema.pre('findOneAndUpdate', async function (next) {
@@ -49,11 +35,16 @@ userSchema.pre('findOneAndUpdate', async function (next) {
     next();
 });
 
+// Alias findByIdAndUpdate to trigger the same middleware
+userSchema.pre('findByIdAndUpdate', async function (next) {
+    this.setQuery({ _id: this.getQuery()._id }); // Ensure the query is consistent
+    next();
+});
+
 // Adding static methods to the schema
 userSchema.statics.getEmailExists = async function (email) {
     const user = await this.findOne({ email });
-    if (!user) return false;
-    return true;
+    return user;
 };
 
 module.exports = mongoose.model('User', userSchema);

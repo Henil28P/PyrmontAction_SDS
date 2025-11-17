@@ -1,46 +1,100 @@
 <template>
-  <div class="card">
-    <h2 class="title">Projects</h2>
-    <button @click="addProjectModal = true">Add New Project</button>
-    <hr class="divider" />
+  <div class="projects-wrapper">
+    <div class="projects-header">
+      <h2 class="main-title">Projects Management</h2>
+      <p class="subtitle">Create and manage community projects</p>
+    </div>
+
+    <div class="projects-actions">
+      <div class="filters-group">
+        <div class="search-bar">
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Search projects..."
+            class="search-input"
+          />
+        </div>
+        <div class="filter-buttons">
+          <button 
+            @click="statusFilter = 'all'" 
+            class="filter-btn"
+            :class="{ active: statusFilter === 'all' }"
+          >
+            All ({{ projectList.length }})
+          </button>
+          <button 
+            @click="statusFilter = 'open'" 
+            class="filter-btn"
+            :class="{ active: statusFilter === 'open' }"
+          >
+            Open ({{ openCount }})
+          </button>
+          <button 
+            @click="statusFilter = 'closed'" 
+            class="filter-btn"
+            :class="{ active: statusFilter === 'closed' }"
+          >
+            Closed ({{ closedCount }})
+          </button>
+        </div>
+      </div>
+      <button @click="addProjectModal = true" class="btn-create">
+        Add Project
+      </button>
+    </div>
 
     <!-- List -->
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th style="width:120px;">Date</th>
-            <th>Project Name</th>
-            <th style="width:120px;">Type</th>
-            <th style="width:160px;">Image</th>
-            <th style="width:160px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="project in projectList" :key="project._id">
-            <td>{{ formatDate(project.project_date) }}</td>
-            <td>{{ project.project_name }}</td>
-            <td>
-              <span class="badge" :class="project.project_type === 'open' ? 'badge-open' : 'badge-closed'">
-                {{ project.project_type === 'open' ? 'Open' : 'Closed' }}
-              </span>
-            </td>
-            <td>
-              <template v-if="project.project_image">
-                <span class="fileBadge">{{shortName(project.project_image)}}</span>
-              </template>
-              <span v-else class="muted">—</span>
-            </td>
-            <td class="actionsCell">
-              <button class="btn sm" @click="selectedProject = project">Edit</button>
-              <button class="btn sm danger" @click="deleteItem(project._id)">Delete</button>
-            </td>
-          </tr>
-          <tr v-if="!projectList.length">
-            <td colspan="6" class="muted">No projects yet.</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="projects-content">
+      <div class="section-title">
+        <h3>{{ statusFilter === 'all' ? 'All Projects' : statusFilter === 'open' ? 'Open Projects' : 'Closed Projects' }}</h3>
+        <span class="count-badge">{{ filteredProjects.length }} projects</span>
+      </div>
+      
+      <div class="projects-table-container">
+        <table class="projects-table">
+          <thead>
+            <tr>
+              <th style="width:120px;">DATE</th>
+              <th>PROJECT TITLE</th>
+              <th style="width:120px;">STATUS</th>
+              <th style="width:160px;">IMAGE</th>
+              <th style="width:160px;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="project in filteredProjects" :key="project._id" class="project-row">
+              <td class="date-cell">{{ formatDate(project.project_date) }}</td>
+              <td class="project-title">{{ project.project_name }}</td>
+              <td>
+                <span class="status-badge" :class="project.project_type === 'open' ? 'status-open' : 'status-closed'">
+                  {{ project.project_type === 'open' ? 'Open' : 'Closed' }}
+                </span>
+              </td>
+              <td>
+                <template v-if="project.project_image">
+                  <span class="file-badge">{{shortName(project.project_image)}}</span>
+                </template>
+                <span v-else class="text-muted">—</span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn edit-btn" @click="selectedProject = project">Edit</button>
+                  <button class="action-btn delete-btn" @click="deleteItem(project._id)">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!filteredProjects.length">
+              <td colspan="5" class="empty-row">
+                <div class="empty-state">
+                  <p class="empty-text">{{ searchQuery ? 'No projects found' : 'No projects yet' }}</p>
+                  <p class="empty-hint">Click "Add Project" to create your first project</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <AddProjectsAdmin 
@@ -58,16 +112,46 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '../../../stores/authStore'
 import services from '../editorialServices';
 import EditProjectsAdmin from '../components/Projects/EditProjectsAdmin.vue';
 import AddProjectsAdmin from '../components/Projects/AddProjectsAdmin.vue';
 import { formatDate } from '../../../utils/dateUtils';
 
-const projectList = ref([]);
-const selectedProject = ref(null);
-const addProjectModal = ref(false);
+const projectList = ref([])
+const selectedProject = ref(null)
+const addProjectModal = ref(false)
+const searchQuery = ref('')
+const statusFilter = ref('all')
+
+const filteredProjects = computed(() => {
+  let filtered = projectList.value;
+  
+  // Filter by status
+  if (statusFilter.value !== 'all') {
+    filtered = filtered.filter(p => p.project_type === statusFilter.value);
+  }
+  
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.project_name?.toLowerCase().includes(query) ||
+      p.project_details?.toLowerCase().includes(query)
+    );
+  }
+  
+  return filtered;
+});
+
+const openCount = computed(() => 
+  projectList.value.filter(p => p.project_type === 'open').length
+);
+
+const closedCount = computed(() => 
+  projectList.value.filter(p => p.project_type === 'closed').length
+);
 
 async function loadProjects() {
   try {
@@ -109,21 +193,348 @@ function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' :
 </script>
 
 <style scoped>
-.card{padding:16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
-.title{margin:0 0 12px 0;font-size:20px;font-weight:600}
-.btn{border:1px solid #e5e7eb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
-.btn.sm{padding:6px 10px}
-.btn.primary{background:#111;color:#fff;border-color:#111}
-.btn.danger{border-color:#ef4444;color:#ef4444}
-.muted{color:#6b7280}
-.divider{border:0;border-top:1px solid #f0f0f0;margin:12px 0}
-.table-wrap{overflow-x:auto}
-.table{width:100%;border-collapse:collapse;font-size:14px}
-.table th,.table td{padding:10px 12px;border-top:1px solid #f3f4f6;text-align:left;vertical-align:top}
-.fileBadge{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px}
-.badge{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;border:1px solid #e5e7eb}
-.badge-open{background:#ecfeff;color:#155e75;border-color:#a5f3fc}
-.badge-closed{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
-.actionsCell{display:flex;gap:6px}
-.hint{color:#6b7280}
+.projects-wrapper {
+  background: white;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.projects-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.main-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.subtitle {
+  margin: 6px 0 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.projects-actions {
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.filters-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex: 1;
+}
+
+.search-bar {
+  flex: 1;
+  max-width: 350px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.filter-btn.active {
+  background: #10b981;
+  color: white;
+}
+
+.btn-create {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-create:hover {
+  background: #059669;
+}
+
+.projects-content {
+  padding: 24px;
+}
+
+.section-title {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.count-badge {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.projects-table-container {
+  overflow-x: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.projects-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.projects-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.projects-table tbody tr.project-row {
+  transition: background 0.2s ease;
+  background: white;
+}
+
+.projects-table tbody tr.project-row:hover {
+  background: #f9fafb;
+}
+
+.projects-table td {
+  padding: 16px;
+  border-top: 1px solid #f3f4f6;
+  text-align: left;
+  vertical-align: middle;
+  color: #374151;
+  font-size: 14px;
+}
+
+.date-cell {
+  font-weight: 600;
+  color: #111827;
+}
+
+.project-title {
+  font-weight: 600;
+  color: #111827;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-open {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-closed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.file-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.text-muted {
+  color: #9ca3af;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.edit-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #2563eb;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.empty-row {
+  text-align: center;
+  color: #9ca3af;
+  padding: 40px !important;
+  border: none !important;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 6px 0;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .projects-header {
+    padding: 20px 16px 16px;
+  }
+
+  .main-title {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .projects-actions {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filters-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .search-bar {
+    max-width: 100%;
+  }
+  
+  .filter-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filter-btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .projects-content {
+    padding: 16px;
+  }
+
+  .projects-table-container {
+    border-radius: 6px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
 </style>

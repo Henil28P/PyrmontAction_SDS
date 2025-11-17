@@ -1,16 +1,33 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '../../../stores/authStore';
-import service from '../services/loginAuthServices'
+    import { onMounted } from 'vue';
+    import { ref } from 'vue';
+    import { useRouter } from 'vue-router';
+    import { useUserStore } from '../../../stores/authStore';
+    import service from '../services/loginAuthServices';
+    import ShowPasswordButton from '../../../components/ShowPasswordButton.vue';
 
     const loginInput = {
         email: '',
         password: ''
     }
+
     const router = useRouter();
     const userStore = useUserStore();
     const loginErrors = ref(false);
+    const showPassword = ref(false);
+
+    onMounted(() => {
+        if (userStore.isAuthenticated) {
+            alert('You are already logged in.');
+            router.push('/');
+        }
+        const queryParams = new URLSearchParams(window.location.search);
+        const status = queryParams.get('status');
+
+        if (status === 'success') {
+            alert('Registration was successful!');
+        }
+    });
 
     const handleSubmit = async() => {
         try{
@@ -35,8 +52,10 @@ import service from '../services/loginAuthServices'
         }
     }
 
-    
-
+    const handleForgotPassword = () => {
+        router.push('/contact');
+        alert('Password reset functionality coming soon! Please contact support.');
+    }
 </script>
 
 <template>
@@ -61,12 +80,20 @@ import service from '../services/loginAuthServices'
                         </div>
                         <div class="password-section">
                             <label for="password">Password</label>
-                            <input type="password" id="password" v-model="loginInput.password" required />
+                            <div class="password-input-wrapper">
+                                <input 
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    id="password" 
+                                    v-model="loginInput.password" 
+                                    required 
+                                />
+                                <ShowPasswordButton @update:isVisible="showPassword = $event" />
+                            </div>
                         </div>
                         <div class="error-and-forgot-password-section">
                             
                             <span v-if="loginErrors" id="error-message">Incorrect Username or Password</span>
-                            <a href="link" id="forgot-password-link"> Forgot Password </a>
+                            <a href="#" @click.prevent="handleForgotPassword" id="forgot-password-link"> Forgot Password </a>
                         </div>
                         
                         <button id="submitBtn" type="submit">Sign In</button>
@@ -169,8 +196,8 @@ import service from '../services/loginAuthServices'
     #password, #email{
         border: 1px solid #cbc8c8;
         border-radius: 5px;
-        height:35px;
-        margin-bottom:20px;
+        height: 35px;
+        margin-bottom: 20px;
        
     }
     
@@ -215,6 +242,29 @@ import service from '../services/loginAuthServices'
         font-size: small;
         grid-column: 1;
 
+    }
+
+    /* Password input wrapper */
+    .password-input-wrapper {
+        position: relative;
+        width: 100%;
+        margin-bottom: 20px;
+        display: flex; /* Changed from block to flex for alignment */
+        align-items: center; /* Ensures vertical alignment */
+    }
+
+    .password-input-wrapper input {
+        width: 100%;
+        height: 35px; /* Ensure consistent height */
+        padding-right: 40px; /* Add padding to avoid overlap with the toggle button */
+    }
+
+    .password-input-wrapper .password-toggle {
+        position: absolute;
+        right: 10px; /* Adjust position to align with the input */
+        top: 35%; /* Increased upward adjustment */
+        transform: translateY(-50%); /* Center vertically */
+        cursor: pointer;
     }
 
 

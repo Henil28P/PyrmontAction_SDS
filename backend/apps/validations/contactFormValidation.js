@@ -1,6 +1,3 @@
-// Middleware to validate contact form inputs
-// Error Array with the fields that fail will be sent back to frontend
-// Frontend will display error messages accordingly
 module.exports = {
     
     emailRegex: function(input){

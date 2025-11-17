@@ -4,8 +4,6 @@ module.exports = {
   // *** Create ***
   // Handle file upload and create meeting minute
   async createMeeting(req, res) {   
-    console.log('Request body:', req.body);
-    console.log('Uploaded file:', req.file);
     try {
       const { title, note, status } = req.body;
       const meetingData = { title, note, status };
@@ -29,39 +27,49 @@ module.exports = {
   // *** Read ***
   // List published
   async getPublishedMeeting(_req, res) {
-    const publishedMinutes = await MeetingMinute.find({ status: 'published' }).sort({ createdAt: -1 });
-    res.json(publishedMinutes);
+    try {
+      const publishedMinutes = await MeetingMinute.find({ status: 'published' }).sort({ createdAt: -1 });
+      res.json(publishedMinutes);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   },
 
   // List all
   async getAllMeetings(_req, res) {
-    const allMinutes = await MeetingMinute.find().sort({ createdAt: -1 });
-    res.json(allMinutes);
+    try {
+      const allMinutes = await MeetingMinute.find().sort({ createdAt: -1 });
+      res.json(allMinutes);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   },
 
   // Update
   // Publish
   async publishMeeting(req, res) {
-    const meeting = await MeetingMinute.findByIdAndUpdate(
-      req.params.id,
-      { status: 'published' },
-      { new: true }
-    );
-    if (!meeting) return res.status(404).json({ message: 'Not found' });
-    res.json(meeting);
+    try {
+      const meeting = await MeetingMinute.findByIdAndUpdate(
+        req.params.id,
+        { status: 'published' },
+        { new: true }
+      );
+      if (!meeting) return res.status(404).json({ message: 'Not found' });
+      res.json(meeting);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   },
 
   // Update an existing meeting minute
   async updateMeeting(req, res) {
     try {
-      console.log('Update request body:', req.body);
       const updatedMeeting = await MeetingMinute.findByIdAndUpdate(
         req.params.id,
         req.body,
         { new: true }
       );
       
-      console.log('Updated meeting:', updatedMeeting);
       if (!updatedMeeting) return res.status(404).json({ message: 'Not found' });
       res.json(updatedMeeting);
     } catch (err) {
@@ -70,8 +78,6 @@ module.exports = {
   },
 
   async updateMeetingWithFile(req, res) {   
-    console.log('Request body:', req.body);
-    console.log('Uploaded file:', req.file);
     try {
       const { title, note, status } = req.body;
       const meetingData = { title, note, status };

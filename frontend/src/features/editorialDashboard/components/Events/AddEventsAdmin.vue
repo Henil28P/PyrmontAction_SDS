@@ -2,43 +2,53 @@
     <div class="modal">
         <div class="modal-content">
             <h3>Add New Event</h3>
-            <div class="row">
-                <label class="lbl">Event Title</label>
-                <input v-model="eventForm.title" class="input" placeholder="Enter event title" />
-            </div>
-            <div class="row">
-                <label class="lbl">Date</label>
-                <input v-model="eventForm.date" type="date" class="input" :min="today()" />
-            </div>
-            <div class="row">
-                <label class="lbl">Start Time</label>
-                <input v-model="eventForm.startTime" type="time" class="input" />
-            </div>
-            <div class="row">
-                <label class="lbl">End Time</label>
-                <input v-model="eventForm.endTime" type="time" class="input" :disabled="!eventForm.startTime" />
-            </div>
-            <div class="row">
-                <label class="lbl">Location</label>
-                <input v-model="eventForm.location" class="input" placeholder="Enter event location" />
-            </div>
-            <div class="row">
-                <label class="lbl">Description</label>
-                <textarea v-model="eventForm.description" class="input" rows="6" placeholder="Enter event description"></textarea>
-            </div>
-            <div class="row">
-                <label class="lbl">Attach Image</label>
-                <FileUploadNew
-                    v-model:file-name="eventForm.imageName"
-                    accept="image/*"
-                    ref="fileUploadRef"
-                />
-            </div>
-            <div class="actions">
-                <button class="btn" @click="addEvent('draft')">Save as Draft</button>
-                <button class="btn primary" @click="addEvent('publish')">Publish</button>
-                <button class="btn" @click="$emit('close')">Cancel</button>
-            </div>
+            
+            <form @submit.prevent="addEvent('draft')">
+                <div class="form-group">
+                    <label>Event Title</label>
+                    <input v-model="eventForm.title" class="text-input" placeholder="Enter event title" required />
+                </div>
+                
+                <div class="form-group">
+                    <label>Date</label>
+                    <input v-model="eventForm.date" type="date" class="text-input" :min="today()" required />
+                </div>
+                
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input v-model="eventForm.startTime" type="time" class="text-input" required />
+                </div>
+                
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input v-model="eventForm.endTime" type="time" class="text-input" :disabled="!eventForm.startTime" @change="validateEndTime" required />
+                </div>
+                
+                <div class="form-group">
+                    <label>Location</label>
+                    <input v-model="eventForm.location" class="text-input" placeholder="Enter event location" required />
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea v-model="eventForm.description" class="text-input" rows="6" placeholder="Enter event description" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Attach Image</label>
+                    <FileUploadNew
+                        v-model:file-name="eventForm.imageName"
+                        accept="image/*"
+                        ref="fileUploadRef"
+                        :required="true"
+                    />
+                </div>
+                
+                <div class="actions">
+                    <button type="submit" class="btn primary">Save</button>
+                    <button type="button" class="btn" @click="$emit('close')">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 </template>
@@ -62,6 +72,15 @@
         endTime: '',
         imageName: '',
     });
+
+    function validateEndTime() {
+        if (eventForm.value.startTime && eventForm.value.endTime) {
+            if (eventForm.value.endTime <= eventForm.value.startTime) {
+                alert('End time must be after start time.');
+                eventForm.value.endTime = '';
+            }
+        }
+    }
 
     async function addEvent(status) {
         try {
@@ -99,119 +118,146 @@
 
 <style scoped>
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .modal-content {
-  background: white;
-  padding: 28px;
-  border-radius: 8px;
-  width: 560px;
-  max-width: 92vw;
-  max-height: 92vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  animation: slideUp 0.2s ease;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.modal-content h3 {
+    margin: 0 0 24px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
 }
 
-h3 {
-  margin: 0 0 24px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 10px 14px;
-  align-items: start;
-  margin-bottom: 18px;
+.form-group {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 12px;
+    align-items: start;
 }
 
-.lbl {
-  font-size: 14px;
-  color: #374151;
-  padding-top: 10px;
-  font-weight: 600;
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    padding-top: 10px;
+    text-align: left;
 }
 
-.input {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 10px 14px;
-  width: 100%;
-  background: white;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s ease;
+.text-input {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 10px 12px;
+    width: 100%;
+    background: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
 }
 
-.input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+.text-input:hover {
+    border-color: #9ca3af;
 }
 
-textarea.input {
-  resize: vertical;
-  min-height: 120px;
+.text-input:focus {
+    outline: none;
+    border-color: #111;
+}
+
+.text-input:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+textarea.text-input {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
 }
 
 .actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
 }
 
 .btn {
-  border: 1px solid #d1d5db;
-  background: white;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
+    border: 1px solid #d1d5db;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .btn:hover {
-  background: #f9fafb;
+    background: #f9fafb;
 }
 
 .btn.primary {
-  background: #10b981;
-  color: white;
-  border-color: #10b981;
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
 }
 
 .btn.primary:hover {
-  background: #059669;
-  border-color: #059669;
+    background: #059669;
+    border-color: #059669;
 }
 
-
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 24px;
+        max-width: 95%;
+    }
+    
+    .form-group {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .form-group label {
+        padding-top: 0;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
 </style>

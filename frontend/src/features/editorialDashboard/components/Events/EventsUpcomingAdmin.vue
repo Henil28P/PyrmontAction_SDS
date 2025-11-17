@@ -3,7 +3,7 @@
         <div class="action-header">
             <h3 class="section-title">Upcoming Events</h3>
             <button @click="addEventModal = true" class="create-btn">
-                + Create Event
+                Create Event
             </button>
         </div>
 

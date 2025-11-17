@@ -2,38 +2,50 @@
     <div class="modal">
         <div class="modal-content">
             <h3>Add Meeting Minutes</h3>
-            <div class="form">
-            <div class="row">
-                <label class="lbl">Title</label>
-                <input v-model="meetingForm.title" class="input" placeholder="Enter title" />
-            </div>
+            <form class="form" @submit.prevent="handleSubmit">
+                <div class="row">
+                    <label class="lbl" for="title">Title</label>
+                    <input 
+                        id="title"
+                        v-model="meetingForm.title" 
+                        class="input" 
+                        placeholder="Enter title"
+                        required
+                    />
+                </div>
 
-            <div class="row">
-                <label class="lbl">Notes</label>
-                <textarea v-model="meetingForm.note" class="input" rows="6" placeholder="Type the meeting notes…"></textarea>
-            </div>
+                <div class="row">
+                    <label class="lbl" for="notes">Notes</label>
+                    <textarea 
+                        id="notes"
+                        v-model="meetingForm.note" 
+                        class="input" 
+                        rows="6" 
+                        placeholder="Type the meeting notes…"
+                    ></textarea>
+                </div>
 
-            <div class="row">
-                <label class="lbl">Attach PDF</label>
-                <FileUploadNew
-                    v-model:file-name="meetingForm.filename"
-                    accept="application/pdf"
-                    ref="fileUploadRef"
-                />
-            </div>
+                <div class="row">
+                    <label class="lbl">Attach PDF</label>
+                    <FileUploadNew
+                        v-model:file-name="meetingForm.filename"
+                        accept="application/pdf"
+                        ref="fileUploadRef"
+                        :required="true"
+                    />
+                </div>
 
-            <div class="actions">
-                <button class="btn" @click="create('draft')">Save Draft</button>
-                <button class="btn primary" @click="create('published')">Publish</button>
-                <button class="btn" @click="$emit('close')">Cancel</button>
-            </div>
+                <div class="actions">
+                    <button type="submit" class="btn primary">Save</button>
+                    <button type="button" class="btn" @click="$emit('close')">Cancel</button>
+                </div>
+            </form>
         </div>
-    </div>
     </div>
 </template>
 
 <script setup>
-    import { ref } from 'vue';
+    import { ref, onMounted, onUnmounted } from 'vue';
     import { useUserStore } from '../../../../stores/authStore';
     import services from '../../dashboardServices';
     import FileUploadNew from '../../../../components/FileUploadNew.vue';
@@ -49,14 +61,22 @@
         createdAt: null
     })
 
-    async function create(status) {
+    // Prevent background scrolling when modal is open
+    onMounted(() => {
+        document.body.style.overflow = 'hidden';
+    });
+
+    onUnmounted(() => {
+        document.body.style.overflow = '';
+    });
+
+    async function handleSubmit() {
         try {
-            meetingForm.value.status = status;
             // Create FormData for file upload
             const formData = new FormData();
             formData.append('title', meetingForm.value.title);
             formData.append('note', meetingForm.value.note);
-            formData.append('status', meetingForm.value.status);
+            formData.append('status', 'draft');
             
             // Append PDF file if selected
             if (fileUploadRef.value?.fileInput?.files[0]) {
@@ -87,16 +107,17 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow: hidden;
 }
 
 .modal-content {
     background: white;
-    padding: 20px;
-    border-radius: 8px;
+    padding: 24px;
+    border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    min-width: 400px;
+    width: 600px;
     max-width: 90vw;
-    max-height: 90vh;
+    max-height: 80vh;
     overflow-y: auto;
 }
 

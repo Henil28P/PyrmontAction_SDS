@@ -26,7 +26,6 @@ module.exports = {
     async getGalleryImages(req, res){
         try{
             const images = await Gallery.find().sort({createdAt: -1});
-            console.log("Fetched gallery images:", images);
             res.status(200).json(images);
         }
         catch(error){

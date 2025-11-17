@@ -107,16 +107,16 @@
           </div>
 
           <div class="form-group">
-            <label for="postalCode">Postal Code</label>
+            <label for="postcode">Postal Code</label>
             <input
-              id="postalCode"
-              v-model="formData.postalCode"
+              id="postcode"
+              v-model="formData.postcode"
               type="text"
               class="form-input"
-              :class="{'error-border': v$.postalCode.$errors.length > 0}"
+              :class="{'error-border': v$.postcode.$errors.length > 0}"
               placeholder="4 digits"
             />
-            <span v-for="error in v$.postalCode.$errors" :key="error.$uid" class="error-message">
+            <span v-for="error in v$.postcode.$errors" :key="error.$uid" class="error-message">
               {{ error.$message }}
             </span>
           </div>
@@ -187,7 +187,7 @@ const formData = reactive({
   streetName: '',
   city: '',
   state: '',
-  postalCode: ''
+  postcode: ''
 });
 
 // Validation rules
@@ -209,7 +209,7 @@ const rules = computed(() => {
     streetName: {},
     city: {},
     state: { stateValidator: stateValidator },
-    postalCode: { 
+    postcode: { 
       numeric: helpers.withMessage('Postcode must be numeric', numeric),
       minLength: helpers.withMessage('Postcode must be 4 digits', minLength(4)),
       maxLength: helpers.withMessage('Postcode must be 4 digits', maxLength(4))
@@ -229,7 +229,7 @@ watch(() => props.userData, (newUserData) => {
     formData.streetName = newUserData.streetName || '';
     formData.city = newUserData.city || '';
     formData.state = newUserData.state || '';
-    formData.postalCode = newUserData.postalCode || newUserData.postcode || '';
+    formData.postcode = newUserData.postcode || newUserData.postcode || '';
     
     // Set state dropdown
     stateChosen.value = newUserData.state || 'Default';
@@ -258,10 +258,10 @@ const handleSubmit = async () => {
     }
 
     // Call API to update user
-    const response = await services.updateCurrentUser(userStore.getToken, formData);
+    await services.updateCurrentUser(userStore.getToken, formData);
     
     // Emit success event with updated data
-    emit('updated', response);
+    emit('updated', formData);
     
     // Close modal
     closeModal();

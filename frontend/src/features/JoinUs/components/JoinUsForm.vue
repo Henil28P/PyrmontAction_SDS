@@ -1,113 +1,72 @@
 <script setup>
-    import joinUsService from '../services/joinUsAuthService';
-    import { computed, ref} from 'vue';
-    import { useRouter } from 'vue-router';
-    import useVuelidate from '@vuelidate/core';
-    import { required, helpers, email, minLength, maxLength, numeric } from '@vuelidate/validators';
+import service from '../services/joinUsAuthService';
+import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { useFormValidation } from '../composables/useFormValidation';
+import { usePasswordValidation } from '../composables/usePasswordValidation';
+import ShowPasswordButton from '../../../components/ShowPasswordButton.vue';
+import { useUserStore } from '../../../stores/authStore';
 
-    const stateChosen = ref('Default');
-    const stateOptions = ref([
-        {text: 'State', value: "Default", placeholder: true},
-        {text: 'NSW', value: "NSW", placeholder: false},
-        {text: 'SA', value: "SA", placeholder: false},
-        {text: 'WA', value: "WA", placeholder: false},
-        {text: 'NT', value: "NT", placeholder: false},
-        {text: 'QLD', value: "QLD", placeholder: false},
-        {text: 'VIC', value: "VIC", placeholder: false},
-        {text: 'TAS', value: "TAS", placeholder: false}
-    ]);
+// State options
+const stateOptions = ref([
+  { text: 'State', value: 'Default', placeholder: true },
+  { text: 'NSW', value: 'NSW', placeholder: false },
+  { text: 'SA', value: 'SA', placeholder: false },
+  { text: 'WA', value: 'WA', placeholder: false },
+  { text: 'NT', value: 'NT', placeholder: false },
+  { text: 'QLD', value: 'QLD', placeholder: false },
+  { text: 'VIC', value: 'VIC', placeholder: false },
+  { text: 'TAS', value: 'TAS', placeholder: false },
+]);
 
-    // Form Data Structure
-    const formData = ref({
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: '',
-        mobilePhone: '',
-        areaOfInterest: '',
-        streetName: '',
-        city: '',
-        state: '',
-        postcode: ''
-    });
+// Composables
+const { formData, stateChosen, v$ } = useFormValidation();
+const { passwordValidator, validatePassword } = usePasswordValidation();
 
-    function passwordCheck(){
-        passwordValidator.value.minlength = formData.value.password.length >= 10;
-        passwordValidator.value.uppercase = /[A-Z]/.test(formData.value.password);
-        passwordValidator.value.lowercase = /[a-z]/.test(formData.value.password);
-        passwordValidator.value.number = /[0-9]/.test(formData.value.password);
-        passwordValidator.value.symbols = /[!@#$%^&*()/?]/.test(formData.value.password);
+const userStore = useUserStore();
+const router = useRouter();
+const showPassword = ref(false);
+
+
+onMounted (() => {
+    if (userStore.isAuthenticated) {
+        alert('You are already logged in.');
+        router.push('/');
     }
-
-    // Custom validator for vuelidator module
-    const validNumber = helpers.withMessage(
-      'Must be exactly 10 digits, start with 04',
-      (value) => /^[0-9]{10}$/.test(value) && value.startsWith('04')
-    );
     
-    const stateValidator = helpers.withMessage(
-      'State is required',
-      (value) => value !== 'Default'
-    );
-
-    // Update the rules object
-    const rules = computed(() => {
-        return {
-            email: { 
-                required: helpers.withMessage('Email is required', required), 
-                email: helpers.withMessage('Please enter a valid email address', email) 
-            },
-            password: {required: helpers.withMessage('Password is required', required)},
-            firstName: { required: helpers.withMessage('First name is required', required) },
-            lastName: { required: helpers.withMessage('Last name is required', required) },
-            mobilePhone: { 
-              validNumber: validNumber
-            },
-            areaOfInterest: { required: helpers.withMessage('Area of interest is required', required) },
-            streetName: { required: helpers.withMessage('Street name is required', required) },
-            city: { required: helpers.withMessage('City name is required', required) },
-            state: { stateValidator: stateValidator },
-            postcode: { 
-                required: helpers.withMessage('Postcode is required', required),
-                numeric: numeric,
-                minLength: minLength(4),
-                maxLength: maxLength(4)
-             },
-        };
-    });
-
-    // Vuelidate Variables
-    const v$ = useVuelidate(rules, formData);
-
-    const passwordValidator = ref({
-        minlength: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        symbols: false,
-    });
+    const queryParams = new URLSearchParams(window.location.search);
+    const status = queryParams.get('status');
+    const sessionID = queryParams.get('sessionID');
+    if (status === 'cancelled' && sessionID) {
+        service.deleteJoinSession(sessionID);
+        alert('Payment was cancelled. Please try again to complete your membership registration.');
+    }
+});
 
 
+// Methods
+const handlePasswordInput = () => {
+  validatePassword(formData.value.password);
+};
 
-    const router = useRouter();
+const handleSubmit = async () => {
+    try {
+        formData.value.state = stateChosen.value;
 
-    const handleSubmit = async () => {
-        try {
-            formData.value.state = stateChosen.value;
+        const result = await v$.value.$validate();
 
-            const result = await v$.value.$validate();
-            console.log("Validation result:", result);
-            console.log("Validation state:", v$.value);
-
-            if (result) {
-                await joinUsService.joinus(formData.value); // Create user
-                await router.push('/login'); //redirect to login page
+        if (result) {
+            const response = await service.createJoinCheckout(formData.value);
+            if (response.checkoutUrl) {
+                window.location.href = response.checkoutUrl; // Redirect to Stripe Checkout
+            } else {
+                console.error("Checkout URL not provided in response.");
             }
-
-        } catch (error) {
-            console.error(error);
         }
-    };
+    } catch (error) {
+        alert(error.response?.data?.message || 'An error occurred during registration. Please try again.');
+    }
+};
 </script>
 
 <template>
@@ -115,17 +74,27 @@
         <div class="signup-container">
             <div class="signup-form-container">
                 <form class="sign-entries" @submit.prevent="handleSubmit">
-                    <h1 id="create-an-account-heading"> Become a member</h1>
+                    <h1 id="create-an-account-heading"> Become a Member</h1>
 
-                    <h2>Login Details</h2>
+                    <h2>Create Login Details</h2>
                     <div class="login-details-section">
                         <div class ="field">
-                            <input id="email" placeholder="Email address" v-model="formData.email" :class="{'error-border': v$.email.$errors.length > 0}"/>
+                            <input id="email" placeholder="Enter Email Address" v-model="formData.email" :class="{'error-border': v$.email.$errors.length > 0}"/>
                             <span v-for="error in v$.email.$errors" class="error-message email-border">{{ error.$message }}</span>
                         </div>
 
                         <div class="field">
-                            <input type="password" id="password" @input="passwordCheck" placeholder="Password" v-model="formData.password" :class="{'error-border': v$.password.$errors.length > 0}" />
+                            <div class="password-input-wrapper">
+                                <input 
+                                    :type="showPassword ? 'text' : 'password'" 
+                                    id="password" 
+                                    @input="handlePasswordInput" 
+                                    placeholder="Create Password" 
+                                    v-model="formData.password" 
+                                    :class="{'error-border': v$.password.$errors.length > 0}" 
+                                />
+                                <ShowPasswordButton @update:isVisible="showPassword = $event" />
+                            </div>
                             <span v-for="error in v$.password.$errors" class="error-message password-border">{{ error.$message }}</span>
                             <ul class="password-requirement-section">
                                 <li :class="{'password-accept': passwordValidator.minlength}">At least 10 characters</li>
@@ -137,7 +106,7 @@
                         </div>
                     </div>
 
-                    <h2>Personal Details</h2>
+                    <h2>Enter Personal Details</h2>
                     <div class="personal-details-section">
                         <div class="name-section">
                             <div class="field">
@@ -163,7 +132,7 @@
                         </div>
                     </div>
 
-                    <h2>Address Details</h2>
+                    <h2>Enter Address Details</h2>
                     <div class="address-details-section">
                         <div class="field">
                             <input type="text" id="street-name" :class="{'error-border': v$.streetName.$errors.length > 0}" v-model="formData.streetName" placeholder="Street Name"/>
@@ -178,7 +147,13 @@
 
                             <div class="field">
                                 <select v-model="stateChosen" id="state" :class="v$.state.$errors.length > 0 ? 'error-border' : 'input-valid'" required>
-                                    <option v-for="state in stateOptions" :value="state.value" :disabled="state.placeholder" :hidden="state.placeholder">
+                                    <option 
+                                      v-for="state in stateOptions" 
+                                      :key="state.value"
+                                      :value="state.value" 
+                                      :disabled="state.placeholder" 
+                                      :hidden="state.placeholder"
+                                    >
                                         {{ state.text }}
                                     </option>
                                 </select>
@@ -191,7 +166,7 @@
                             <span v-for="error in v$.postcode.$errors" class="error-message">{{ error.$message }}</span>
                         </div>
                     </div>
-                    <button id="submitBtn" type="submit">Sign Up</button>
+                    <button id="submitBtn" type="submit">Proceed to Payment</button>
                 </form>
             </div>
         </div>
@@ -354,6 +329,16 @@
         font-size: small;
         font-family: 'Manrope', sans-serif;
         font-weight: bold;
+    }
+
+    /* Password input wrapper */
+    .password-input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .password-input-wrapper input {
+        padding-right: 45px; /* Make room for the toggle button */
     }
 
 </style>

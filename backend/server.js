@@ -7,6 +7,10 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors());
+
+// Stripe webhook route MUST come before express.json() middleware
+app.use('/api/payments/stripe/webhook', express.raw({type: 'application/json'}), require('./apps/controllers/paymentContoller').handleWebhook);
+
 app.use(express.json());
 
 // Serve static files from uploads directory
@@ -29,9 +33,11 @@ app.use('/api/users', require('./apps/routes/userRoutes'));
 app.use('/api/projects', require('./apps/routes/projectRoutes'));
 app.use('/api/gallery', require('./apps/routes/galleryRoutes')); 
 app.use('/api/contact', require('./apps/routes/contactRoutes')); 
-app.use('/api/auth', require('./apps/routes/authRoutes')); 
+app.use('/api/join', require('./apps/routes/joinSessionRoutes')); 
 app.use('/api/events', require('./apps/routes/eventRoutes')); 
 app.use('/api/minutes', require('./apps/routes/meetingMinuteRoutes'));
+app.use('/api/blogs', require('./apps/routes/blogRoutes'));
+app.use('/api/payments', require('./apps/routes/paymentRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

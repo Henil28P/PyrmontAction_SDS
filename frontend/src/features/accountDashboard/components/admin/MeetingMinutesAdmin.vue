@@ -1,42 +1,51 @@
 ﻿<template>
   <div class="card">
-    <h2 class="title">Meeting Minutes</h2>
-    <button @click="addMeetingModal = true">Upload New Meeting Minutes</button>
-    <hr class="divider" />
+    <div class="header">
+      <h4><strong>Meeting Minutes</strong></h4>
+      <button @click="addMeetingModal = true" class="create-btn">Add New Item</button>
+    </div>
 
     <!-- List -->
-    <div class="table-wrap">
-      <table class="table">
+    <div class="events-table-container">
+      <table>
         <thead>
           <tr>
-            <th style="width:120px;">Date</th>
-            <th>Title</th>
-            <th style="width:120px;">Status</th>
-            <th style="width:140px;">Note</th>
-            <th style="width:160px;">Files</th>
-            <th style="width:160px;">Actions</th>
+            <th style="width: 10%;">Date</th>
+            <th style="width: 20%;">Title</th>
+            <th style="width: 10%; text-align: center;">Status</th>
+            <th style="width: 25%;">Note</th>
+            <th style="width: 12%;">Files</th>
+            <th style="width: 23%; text-align: center;">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="meeting in meetingList" :key="meeting._id">
-            <td>{{ formatDate(meeting.createdAt) }}</td>
-            <td>{{ meeting.title }}</td>
-            <td>
+            <td class="date-cell">{{ formatDate(meeting.createdAt) }}</td>
+            <td class="title-cell">{{ meeting.title }}</td>
+            <td class="status-cell">
               <span class="badge" :class="meeting.status === 'published' ? 'badge-pub' : 'badge-draft'">
                 {{ meeting.status === 'published' ? 'Published' : 'Draft' }}
               </span>
             </td>
-            <td>{{ meeting.note }}</td>
-            <td>
+            <td class="note-cell">{{ meeting.note }}</td>
+            <td class="file-cell">
               <template v-if="meeting.filename">
-                <span class="fileBadge">{{shortName(meeting.filename)}}</span>
+                <a 
+                  :href="`${SERVER_URL}${meeting.fileUrl}`" 
+                  :download="meeting.filename" 
+                  class="fileBadge" 
+                  target="_blank"
+                  :title="meeting.filename"
+                >
+                  {{shortName(meeting.filename)}}
+                </a>
               </template>
               <span v-else class="muted">—</span>
             </td>
-            <td class="actionsCell">
-              <button class="btn sm" @click="publishItem(meeting)" v-if="meeting.status === 'draft'">Publish</button>
-              <button class="btn sm" @click="selectedMeeting = meeting">Edit</button>
-              <button class="btn sm danger" @click="deleteItem(meeting._id)">Delete</button>
+            <td class="action-cell">
+              <button class="publish-btn action-btn" @click="publishItem(meeting)" v-if="meeting.status === 'draft'">Publish</button>
+              <button class="edit-btn action-btn" @click="selectedMeeting = meeting">Edit</button>
+              <button class="delete-btn" @click="deleteItem(meeting._id)">Delete</button>
             </td>
           </tr>
           <tr v-if="!meetingList.length">
@@ -69,6 +78,7 @@ import services from '../../dashboardServices';
 import AddMeeting from './MeetingMinutesAdd.vue';
 import EditMeeting from './MeetingMinutesEdit.vue';
 import { formatDate } from '../../../../utils/dateUtils';
+import SERVER_URL from '../../../../config.js'
 
 
 const meetingList = ref([])
@@ -90,6 +100,9 @@ onMounted(() => {
 
 async function publishItem(meeting) {
   try {
+    if (!confirm('Are you sure you want to publish this meeting minute?')) {
+      return;
+    }
     if (!meeting || !meeting._id) {
       throw new Error('Meeting ID is required');
     }
@@ -102,6 +115,7 @@ async function publishItem(meeting) {
     }
   } catch (error) {
     console.error('Failed to publish meeting:', error);
+    alert(error.response?.data?.message || 'Failed to publish meeting.');
   }
 }
 
@@ -129,25 +143,203 @@ async function deleteItem(id) {
   }
 }
 
+function getFileUrl(filename) {
+  // Assuming files are served from /uploads/meeting-minutes/ directory
+  return `/${filename}`;
+}
+
 function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' : name }
 
 </script>
 
 <style scoped>
-.card{padding:16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff}
-.title{margin:0 0 12px 0;font-size:20px;font-weight:600}
-.btn{border:1px solid #e5e7eb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
-.btn.sm{padding:6px 10px}
-.btn.primary{background:#111;color:#fff;border-color:#111}
-.btn.danger{border-color:#ef4444;color:#ef4444}
-.muted{color:#6b7280}
-.divider{border:0;border-top:1px solid #f0f0f0;margin:12px 0}
-.table-wrap{overflow-x:auto}
-.table{width:100%;border-collapse:collapse;font-size:14px}
-.table th,.table td{padding:10px 12px;border-top:1px solid #f3f4f6;text-align:left;vertical-align:top}
-.fileBadge{display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px}
-.badge{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;border:1px solid #e5e7eb}
-.badge-draft{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
-.badge-pub{background:#ecfeff;color:#155e75;border-color:#a5f3fc}
-.actionsCell{display:flex;gap:6px}
+.card {
+    padding: 24px;
+    background: white;
+    border-radius: 8px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.create-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.create-btn:hover {
+    background: #059669;
+}
+
+.events-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table thead {
+    background: #f9fafb;
+}
+
+table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+table tbody tr {
+    transition: background 0.2s ease;
+    background: white;
+}
+
+table tbody tr:hover {
+    background: #f9fafb;
+}
+
+table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.date-cell {
+    white-space: nowrap;
+    font-weight: 600;
+    color: #111827;
+}
+
+.title-cell {
+    font-weight: 600;
+    color: #111827;
+}
+
+.status-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.note-cell {
+    color: #6b7280;
+}
+
+.file-cell {
+    white-space: nowrap;
+}
+
+.action-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.action-cell button {
+    margin: 0 3px;
+}
+
+.action-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.publish-btn {
+    background: #10b981;
+    color: white;
+}
+
+.publish-btn:hover {
+    background: #059669;
+}
+
+.edit-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #2563eb;
+}
+
+.delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    background: #dc2626;
+}
+
+.muted {
+    color: #6b7280;
+    text-align: center;
+}
+
+.fileBadge {
+    display: inline-block;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+.fileBadge:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+    color: #111827;
+}
+
+.badge {
+    display: inline-block;
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-draft {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-pub {
+    background: #d1fae5;
+    color: #065f46;
+}
 </style>

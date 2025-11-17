@@ -20,7 +20,7 @@
         </Slide>
         </Carousel>
     <CoreValues />
-    <BecomeMember />
+    <BecomeMember v-if="!userStore.isAuthenticated"/>
     </div>
 </template>
 
@@ -30,12 +30,14 @@ import Carousel from "../components/Carousel.vue";
 import Slide from "../components/Slide.vue";
 import CoreValues from "../components/CoreValues.vue"
 import BecomeMember from "../components/BecomeMemberSection.vue"
-
 import { ref, onMounted } from 'vue';
 import projects from "../../projects/services/projectServices"
+import { useUserStore } from '../../../stores/authStore';
+
 const project = ref([]);
 let response;
 const isLoaded = ref(false);
+const userStore = useUserStore();
 
 onMounted(async () => {
   try {

@@ -1,277 +1,294 @@
+
 <template>
-  <div class="page">
-    <div class="header">
-      <div>
-        <h2 class="title">Meeting Minutes</h2>
-        <p class="subtitle">Browse all published meeting minutes</p>
-      </div>
+  <div class="card">
+	<div class="header">
+	  <h4><strong>Meeting Minutes</strong></h4>
+	  <button @click="showModal = true" class="view-all-btn" aria-label="View all minutes">
+		View all
+	  </button>
+	</div>
 
-      <div class="filters">
-        <input
-          v-model="q"
-          class="input"
-          placeholder="Search title or notes..."
-        />
-        <select v-model="year" class="input">
-          <option :value="''">All years</option>
-          <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
-        </select>
-      </div>
-    </div>
+	<div class="minutes-table-container">
+	  <table>
+		<thead>
+		  <tr>
+			<th style="width: 20%;">Date</th>
+			<th style="width: 50%;">Title</th>
+			<th style="width: 30%; text-align: center;">Actions</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr v-for="m in minutes.slice(0, 3)" :key="m.id">
+			<td class="date-cell">{{ m.date }}</td>
+			<td class="title-cell">{{ m.title }}</td>
+			<td class="action-cell">
+			  <a :href="m.url" target="_blank" rel="noopener" class="view-btn">Download PDF</a>
+			</td>
+		  </tr>
+		  <tr v-if="!minutes.length">
+			<td colspan="3" class="muted">No minutes available.</td>
+		  </tr>
+		</tbody>
+	  </table>
+	</div>
 
-    <div class="card">
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width:120px;">Date</th>
-              <th>Title</th>
-              <th style="width:160px;">Files</th>
-              <th style="width:120px;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="m in filtered" :key="m.id">
-              <td class="td-date">{{ m.date }}</td>
-              <td>
-                <div class="t-title">{{ m.title }}</div>
-                <div class="t-body" v-if="m.body">{{ truncate(m.body, 110) }}</div>
-              </td>
-              <td>
-                <template v-if="m.files?.length">
-                  <a
-                    v-for="(f, i) in m.files"
-                    :key="i"
-                    class="fileBadge"
-                    :href="fileURL(f)"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    {{ shortName(f.name) }}
-                  </a>
-                </template>
-                <span v-else class="muted">—</span>
-              </td>
-              <td class="td-action">
-                <button class="btn-view" @click="open(m)">View</button>
-              </td>
-            </tr>
-            <tr v-if="!filtered.length">
-              <td colspan="4" class="empty">No meeting minutes found.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Viewer Modal -->
-    <div v-if="viewer" class="modal">
-      <div class="modalCard">
-        <div class="modalHead">
-          <h3 class="modalTtl">{{ viewer.title }}</h3>
-          <button class="btn-close" @click="viewer = null">✕</button>
-        </div>
-        <div class="meta">Date: <b>{{ viewer.date }}</b></div>
-        <p class="body">{{ viewer.body || '—' }}</p>
-
-        <div class="subttl">Files</div>
-        <ul class="files">
-          <li v-for="(f,i) in viewer.files" :key="i">
-            <a :href="fileURL(f)" target="_blank" rel="noopener">📄 {{ f.name }}</a>
-          </li>
-          <li v-if="!viewer.files?.length" class="muted">—</li>
-        </ul>
-      </div>
-    </div>
+	<!-- Modal for all meeting minutes -->
+	<div v-if="showModal" class="modal-overlay" @click="showModal = false">
+	  <div class="modal-content" @click.stop>
+		<div class="modal-header">
+		  <h3><strong>All Meeting Minutes</strong></h3>
+		  <button @click="showModal = false" class="close-btn" aria-label="Close modal">&times;</button>
+		</div>
+		<div class="modal-body">
+		  <div class="minutes-table-container">
+			<table>
+			  <thead>
+				<tr>
+				  <th style="width: 20%;">Date</th>
+				  <th style="width: 50%;">Title</th>
+				  <th style="width: 30%; text-align: center;">Actions</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				<tr v-for="m in minutes" :key="m.id">
+				  <td class="date-cell">{{ m.date }}</td>
+				  <td class="title-cell">{{ m.title }}</td>
+				  <td class="action-cell">
+					<a :href="m.url" target="_blank" rel="noopener" class="view-btn">Download PDF</a>
+				  </td>
+				</tr>
+				<tr v-if="!minutes.length">
+				  <td colspan="3" class="muted">No minutes available.</td>
+				</tr>
+			  </tbody>
+			</table>
+		  </div>
+		</div>
+	  </div>
+	</div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+	import { onMounted, ref, watch } from 'vue';
+	import services from '../../dashboardServices';
+	import { useUserStore } from '@/stores/authStore';
+	import { formatDate } from '@/utils/dateUtils';
+	import SERVER_URL from '../../../../config';
 
-const props = defineProps({ items: { type: Array, default: () => [] } })
+	const minutes = ref([]);
+	const showModal = ref(false);
 
-// Demo fallback
-const demo = ref([
-  { id: 1, date: '2025-06-01', title: 'Monthly Committee', body: 'Budget approvals and project updates.', status: 'published', files: [{ name: 'minutes-jun-2025.pdf' }] },
-  { id: 2, date: '2025-05-12', title: 'Special Session', body: 'Park event planning; volunteers.', status: 'published', files: [] },
-  { id: 3, date: '2025-04-10', title: 'Working Group', body: 'Infrastructure proposals and motions.', status: 'draft', files: [{ name: 'proposal-apr.pdf' }] },
-])
+	// Prevent background scrolling when modal is open
+	watch(showModal, (isOpen) => {
+		if (isOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+	});
 
-const pdfMap = import.meta.glob('../assets/minutes/**/*.pdf', { eager: true, query: '?url', import: 'default' })
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
+	async function loadMinutes() {
+		try {
+			console.log('Loading meeting minutes...');
+			const response = await services.getPublishedMeetingMinutes(useUserStore().getToken);
+			console.log('Meeting minutes response:', response);
+			minutes.value = response.map(m => ({
+				id: m._id,
+				date: formatDate(m.createdAt),
+				title: m.title,
+				url: `${SERVER_URL}${m.fileUrl}`
+			}));
+			console.log('Mapped minutes:', minutes.value);
+		} catch (error) {
+			console.error('Error loading meeting minutes:', error);
+			console.error('Error details:', error.response?.data);
+		}
+	}
 
-const list = computed(() => (props.items.length ? props.items : demo.value))
-const published = computed(() => list.value
-  .filter(x => x.status === 'published')
-  .sort((a, b) => new Date(b.date) - new Date(a.date)))
+	onMounted(() => {
+		loadMinutes();
+	});
 
-const years = computed(() => {
-  const s = new Set(published.value.map(m => new Date(m.date).getFullYear()))
-  return Array.from(s).sort((a, b) => b - a)
-})
-
-const q = ref('')
-const year = ref('')
-
-const filtered = computed(() =>
-  published.value.filter(m => {
-    const okYear = year.value ? new Date(m.date).getFullYear() === Number(year.value) : true
-    const text = (m.title + ' ' + (m.body || '')).toLowerCase()
-    const okQ = q.value ? text.includes(q.value.toLowerCase()) : true
-    return okYear && okQ
-  })
-)
-
-function truncate(s, n) { return s && s.length > n ? s.slice(0, n - 1) + '…' : s }
-function shortName(name) { return name.length > 18 ? name.slice(0, 16) + '…' : name }
-
-function fileURL(f) {
-  const v = typeof f === 'string' ? { name: f } : f
-  if (!v?.name) return '#'
-  const n = v.name
-  if (/^https?:\/\//.test(n)) return n
-  if (n.startsWith('/uploads/')) return API_BASE + n
-  const key = Object.keys(pdfMap).find(k => k.endsWith('/' + n))
-  return key ? pdfMap[key] : '#'
-}
-
-const viewer = ref(null)
-function open(m) { viewer.value = m }
 </script>
 
 <style scoped>
-.page {
-  background: #f9fafb;
-  min-height: 100vh;
-  padding: 24px;
-  color: #0f172a;
-}
-
-/* Header */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.title {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 800;
-}
-.subtitle {
-  margin: 2px 0 0;
-  color: #6b7280;
-}
-.filters {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.input {
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 8px 12px;
-  background: #fff;
-  font-size: 0.95rem;
-}
-
-/* Card + Table */
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-  padding: 20px;
+	padding: 24px;
+	background: white;
+	border-radius: 8px;
 }
-.table-wrap { overflow-x: auto; }
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-}
-.table th, .table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f1f3f5;
-  text-align: left;
-  vertical-align: top;
-}
-.table th {
-  background: #f6f7f9;
-  color: #475569;
-  font-weight: 800;
-}
-.t-title { font-weight: 700; }
-.t-body { color: #6b7280; font-size: 13px; margin-top: 4px; }
-.fileBadge {
-  display: inline-block;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  padding: 3px 8px;
-  margin-right: 6px;
-  font-size: 12px;
-  text-decoration: none;
-  color: #111;
-}
-.td-date { color: #64748b; white-space: nowrap; }
-.td-action { text-align: right; }
-.btn-view {
-  display: inline-block;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-weight: 700;
-  text-decoration: none;
-  color: #0ea5b7;
-  background: #e6fbff;
-  border: 1px solid #c8f4fb;
-  cursor: pointer;
-}
-.btn-view:hover { filter: brightness(0.98); }
-.empty { text-align: center; color: #64748b; }
 
-/* Modal */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  z-index: 1000;
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20px;
 }
-.modalCard {
-  max-width: min(700px, 96vw);
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+
+.view-all-btn {
+	margin-left: auto;
+	background: #111;
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	padding: 6px 14px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-decoration: none;
+	display: inline-block;
 }
-.modalHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+
+.view-all-btn:hover {
+	background: #333;
 }
-.modalTtl {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 800;
+
+.minutes-table-container {
+	overflow-x: auto;
+	border-radius: 8px;
+	border: 1px solid #e5e7eb;
 }
-.btn-close {
-  border: none;
-  background: #f3f4f6;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 8px;
+
+table {
+	width: 100%;
+	border-collapse: collapse;
 }
-.btn-close:hover { background: #e5e7eb; }
-.meta { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
-.subttl { font-weight: 700; margin-top: 14px; }
-.files { margin: 6px 0 0 20px; }
-.body { white-space: pre-wrap; color: #1f2937; font-size: 0.95rem; line-height: 1.6; }
+
+table thead {
+	background: #f9fafb;
+}
+
+table th {
+	padding: 12px 16px;
+	text-align: left;
+	font-weight: 600;
+	color: #374151;
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-bottom: 2px solid #e5e7eb;
+}
+
+table tbody tr {
+	transition: background 0.2s ease;
+	background: white;
+}
+
+table tbody tr:hover {
+	background: #f9fafb;
+}
+
+table td {
+	padding: 14px 16px;
+	border-bottom: 1px solid #f3f4f6;
+	font-size: 14px;
+}
+
+.date-cell {
+	white-space: nowrap;
+	font-weight: 600;
+	color: #111827;
+}
+
+.title-cell {
+	font-weight: 600;
+	color: #111827;
+}
+
+.action-cell {
+	text-align: center;
+	white-space: nowrap;
+}
+
+.view-btn {
+	display: inline-block;
+	padding: 6px 14px;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	border: none;
+	background: #3b82f6;
+	color: white;
+	text-decoration: none;
+}
+
+.view-btn:hover {
+	background: #2563eb;
+}
+
+.muted {
+	color: #6b7280;
+	text-align: center;
+}
+
+/* Modal Styles */
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 20px;
+}
+
+.modal-content {
+	background: white;
+	border-radius: 12px;
+	width: 100%;
+	max-width: 1200px;
+	max-height: 85vh;
+	height: 700px;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 24px 24px 20px;
+	border-bottom: 2px solid #e5e7eb;
+}
+
+.modal-header h3 {
+	margin: 0;
+	font-size: 20px;
+	color: #111827;
+}
+
+.close-btn {
+	background: none;
+	border: none;
+	font-size: 32px;
+	color: #6b7280;
+	cursor: pointer;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+	background: #f3f4f6;
+	color: #111827;
+}
+
+.modal-body {
+	padding: 24px;
+	overflow-y: auto;
+	flex: 1;
+}
 </style>
